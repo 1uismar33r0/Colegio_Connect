@@ -1,0 +1,31 @@
+# Local secrets and configuration
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.local
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+*.swp
+
+# Java / Gradle / Maven output
+**/target/
+**/build/
+**/.gradle/
+*.class
+
+# JavaScript / TypeScript output
+**/node_modules/
+**/dist/
+**/coverage/
+**/.vite/
+
+# Test and runtime output
+**/test-results/
+**/playwright-report/
+*.log
