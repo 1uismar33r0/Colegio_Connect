@@ -1,6 +1,6 @@
 ## Related issue
 
-Closes #
+Related to #
 
 ## What changed
 
