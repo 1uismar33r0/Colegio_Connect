@@ -9,6 +9,8 @@
 .idea/
 .vscode/
 *.iml
+*.iws
+*.ipr
 .DS_Store
 Thumbs.db
 *.swp
@@ -18,6 +20,27 @@ Thumbs.db
 **/build/
 **/.gradle/
 *.class
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+HELP.md
+.mvn/wrapper/maven-wrapper.jar
+
+# Spring Tool Suite (STS)
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/nbdist/
+/.nb-gradle/
 
 # JavaScript / TypeScript output
 **/node_modules/
