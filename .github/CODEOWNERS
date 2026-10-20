@@ -1,0 +1,7 @@
+# Shared repository and infrastructure configuration
+/.github/ @DCGabriel10
+/infra/ @DCGabriel10
+
+# Application areas
+/backend/ @Massinl
+/frontend/ @1uismar33r0

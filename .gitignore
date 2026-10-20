@@ -1,13 +1,33 @@
-HELP.md
-target/
-.mvn/wrapper/maven-wrapper.jar
+# Local secrets and configuration
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.local
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+Thumbs.db
+*.swp
+
+# Java / Gradle / Maven output
+**/target/
+**/build/
+**/.gradle/
+*.class
 !**/src/main/**/target/
 !**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+HELP.md
+.mvn/wrapper/maven-wrapper.jar
 
-#application.properties
-.DS_Store
-
-### STS ###
+# Spring Tool Suite (STS)
 .apt_generated
 .classpath
 .factorypath
@@ -16,21 +36,19 @@ target/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-
-### NetBeans ###
+# NetBeans
 /nbproject/private/
 /nbbuild/
-/dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+# JavaScript / TypeScript output
+**/node_modules/
+**/dist/
+**/coverage/
+**/.vite/
+
+# Test and runtime output
+**/test-results/
+**/playwright-report/
+*.log
