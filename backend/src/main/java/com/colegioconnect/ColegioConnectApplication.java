@@ -1,4 +1,4 @@
-package com.colegioconnect.colegio_connect;
+package com.colegioconnect;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

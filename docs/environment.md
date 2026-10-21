@@ -10,4 +10,10 @@ The shared local environment has not been set up yet. Gabriel will add Docker an
 - Use separate development values from any hosted environment values. Never reuse production credentials locally.
 - If a secret is exposed in a commit or pull request, notify the team and rotate it; deleting the text from a later commit is not enough.
 
-No environment variable names, ports, database accounts, or external providers have been selected in this repository yet.
+No environment variable names, database accounts, or external providers have been selected in this repository yet.
+
+## Backend
+
+- Java 25 is required.
+- The API runs on port 8080 (Spring Boot default).
+- No environment variables are needed yet. Database settings will be added in issue #6.
