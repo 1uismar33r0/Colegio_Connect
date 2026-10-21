@@ -4,7 +4,7 @@ Colegio Connect is a three-developer university capstone project. The planned pl
 
 ## Development status
 
-The backend (Spring Boot) has been initialized. The frontend, database, local services, and CI have not been initialized yet. The full capstone proposal is not stored here. The architecture below reflects the agreed project plan and should be checked against the proposal when it becomes available.
+The backend (Spring Boot) and Docker development environment have been initialized. The frontend and CI have not been initialized yet. The full capstone proposal is not stored here. The architecture below reflects the agreed project plan and should be checked against the proposal when it becomes available.
 
 ## Planned architecture
 
@@ -36,11 +36,30 @@ Directories without a project contain placeholders until their owners add them. 
 
 Do not commit passwords, tokens, connection strings containing credentials, or populated local environment files.
 
+## Run the complete development stack
+
+Requirements: Docker Desktop with Docker Compose.
+
+1. Copy `.env.example` to `.env`.
+2. Replace `POSTGRES_PASSWORD` in `.env` with a local-only password.
+3. From the repository root, run `docker compose up --build --wait`.
+4. Confirm that `docker compose ps` reports all three services as healthy. Use `docker compose logs -f backend` to follow backend logs when needed.
+
+The stack exposes:
+
+- Backend health: http://localhost:8080/actuator/health
+- Swagger UI: http://localhost:8080/swagger-ui.html
+- PostgreSQL: `localhost:5432`
+- Mailpit inbox: http://localhost:8025
+- Mailpit SMTP: `localhost:1025`
+
+Stop the services with `docker compose down`. The named `postgres_data` volume keeps database data across container restarts and recreation. To deliberately remove local database data, run `docker compose down --volumes`.
+
 ## Backend
 
 Requirements: Java 25 (Temurin). Check with `java -version`.
 
-Run from the `backend/` folder:
+To run the backend outside Docker, first start its dependencies from the repository root with `docker compose up -d postgres mailpit`. Export the datasource variables documented in [docs/environment.md](docs/environment.md), then run from the `backend/` folder:
 
 | Command | What it does |
 | --- | --- |
