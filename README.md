@@ -4,7 +4,7 @@ Colegio Connect is a three-developer university capstone project. The planned pl
 
 ## Development status
 
-Stage 1 is beginning. This repository currently provides a shared workspace and contribution guidance; the applications, database, local services, and CI have not been initialized yet. The full capstone proposal is not stored here. The architecture below reflects the agreed project plan and should be checked against the proposal when it becomes available.
+The backend (Spring Boot) has been initialized. The frontend, database, local services, and CI have not been initialized yet. The full capstone proposal is not stored here. The architecture below reflects the agreed project plan and should be checked against the proposal when it becomes available.
 
 ## Planned architecture
 
@@ -19,14 +19,14 @@ Stage 1 is beginning. This repository currently provides a shared workspace and 
 
 | Path | Purpose |
 | --- | --- |
-| `backend/` | Spring Boot application and backend tests, to be initialized by Cristian |
+| `backend/` | Spring Boot application and backend tests (Cristian) |
 | `frontend/` | React application and frontend tests, to be initialized by Luis |
 | `docs/` | Shared project and development documentation |
 | `infra/` | Docker and deployment configuration, to be added by Gabriel |
 | `e2e/` | End-to-end tests when the application flows exist |
 | `load-tests/` | Load tests when there are endpoints to measure |
 
-These directories contain placeholders until their owners add the corresponding projects. There are no application run or test commands yet. Each owner should document commands when their project is initialized; Gabriel will document the combined local environment when it exists.
+Directories without a project contain placeholders until their owners add them. Each owner documents their commands when their project is initialized; Gabriel will document the combined local environment when it exists.
 
 ## Getting started
 
@@ -35,3 +35,24 @@ These directories contain placeholders until their owners add the corresponding 
 3. Read [docs/environment.md](docs/environment.md) before adding local configuration.
 
 Do not commit passwords, tokens, connection strings containing credentials, or populated local environment files.
+
+## Backend
+
+Requirements: Java 25 (Temurin). Check with `java -version`.
+
+Run from the `backend/` folder:
+
+| Command | What it does |
+| --- | --- |
+| `./mvnw spring-boot:run` | Start the API at http://localhost:8080 |
+| `./mvnw test` | Run the tests |
+
+Useful URLs while the app is running:
+- Health: http://localhost:8080/actuator/health
+- OpenAPI JSON: http://localhost:8080/v3/api-docs
+- Swagger UI: http://localhost:8080/swagger-ui.html
+
+### Package structure
+The backend is organized by module (`accounts`, `listings`, ...). Each module
+creates its own layers when needed: `controller/`, `service/`, `repository/`,
+`entity/`, `dto/`. Shared code goes in `common/`.
