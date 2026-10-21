@@ -1,6 +1,6 @@
 # Environment configuration
 
-The shared local environment has not been set up yet. Gabriel will add Docker and PostgreSQL setup instructions here when that work is implemented. Cristian and Luis will document the configuration their applications require as they initialize them.
+Docker Compose provides the shared backend, PostgreSQL 18, and Mailpit development environment. Copy `.env.example` to the ignored `.env` file and replace the sample database password before starting it. Never commit `.env`.
 
 ## Team rules
 
@@ -10,10 +10,25 @@ The shared local environment has not been set up yet. Gabriel will add Docker an
 - Use separate development values from any hosted environment values. Never reuse production credentials locally.
 - If a secret is exposed in a commit or pull request, notify the team and rotate it; deleting the text from a later commit is not enough.
 
-No environment variable names, database accounts, or external providers have been selected in this repository yet.
+## Docker Compose variables
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `POSTGRES_DB` | Yes | Local database name |
+| `POSTGRES_USER` | Yes | Local database role |
+| `POSTGRES_PASSWORD` | Yes | Local-only database password; replace the example value |
+| `POSTGRES_PORT` | No | Host PostgreSQL port; defaults to `5432` |
+| `BACKEND_PORT` | No | Host backend port; defaults to `8080` |
+| `MAILPIT_SMTP_PORT` | No | Host SMTP port; defaults to `1025` |
+| `MAILPIT_UI_PORT` | No | Host Mailpit UI port; defaults to `8025` |
+
+Ports bind to `127.0.0.1` so development services are not exposed to the local network. PostgreSQL data is stored in the `postgres_data` named volume. PostgreSQL 18 uses `/var/lib/postgresql` as its persistent volume mount.
 
 ## Backend
 
 - Java 25 is required.
 - The API runs on port 8080 (Spring Boot default).
-- No environment variables are needed yet. Database settings will be added in issue #6.
+- In Docker, Compose supplies `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, and `SPRING_DATASOURCE_PASSWORD` to the backend.
+- To run Spring Boot directly on the host, set those same variables. Use `jdbc:postgresql://localhost:5432/<POSTGRES_DB>` as the URL and reuse the local username and password from `.env`.
+- Compose also supplies `SPRING_MAIL_HOST=mailpit` and `SPRING_MAIL_PORT=1025`. The mail service integration can consume these settings when it is implemented.
+- Flyway is enabled and will apply Cristian's migrations from `backend/src/main/resources/db/migration` when they are added in issue #6. This infrastructure change intentionally does not define the application schema.
