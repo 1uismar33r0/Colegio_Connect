@@ -18,7 +18,13 @@ This is a three-person capstone project. Keep changes small enough for another t
 - OpenAPI documentation is updated when an API contract changes.
 - No secrets or populated local environment files are committed.
 
-CI workflows and required GitHub checks are still to be added. A pull request should state clearly when a check is not yet available.
+## Continuous integration
+
+Every push and every pull request targeting `main` runs the backend Maven verification with Java 25, validates the Docker Compose configuration, and builds the backend Docker image. Maven's standard `verify` lifecycle discovers the existing backend tests and any compatible tests added later.
+
+The stable `CI Gate` check succeeds only when both the backend and container jobs succeed. A push to `main` also stores the built Docker image as a downloadable GitHub Actions artifact for seven days; CI does not publish images to a registry.
+
+Frontend checks and npm Dependabot updates will be added after Issue #13 establishes the frontend package manager, lockfile, and scripts. The OpenAPI artifact requested by Issue #5 also remains separate work. Branch protection is intentionally not configured yet: the team will select `CI Gate` as the required check after this workflow has been reviewed and verified on GitHub.
 
 ## Working across areas
 
