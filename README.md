@@ -4,7 +4,11 @@ Colegio Connect is a three-developer university capstone project. The planned pl
 
 ## Development status
 
-The backend (Spring Boot) and Docker development environment have been initialized. The frontend and CI have not been initialized yet. The full capstone proposal is not stored here. The architecture below reflects the agreed project plan and should be checked against the proposal when it becomes available.
+As observed on October 26, 2026, the Spring Boot backend foundation and Docker development environment are on `main`. CI/Dependabot is implemented with passing branch checks in open PR #89; the identity database is in open PR #88. Luis has exploratory HTML wireframes, but no React application is established on `main`. Authentication and business workflows remain incomplete.
+
+Start with the [project status and ordered roadmap](docs/project/status.md), [approved proposal and requirement/issue traceability](docs/project/traceability.md), and [verified test evidence](docs/testing/test-evidence.md). The status page records observation dates, exact revisions, contributions and blockers. The architecture below describes the intended system, not completed functionality.
+
+The [development policy](AGENTS.md) makes inspection, proposal alignment, testing, documentation and review part of every task. Historical progress and incidents are linked from the dashboard; the [midterm evidence index](docs/reports/midterm/evidence-index.md) tracks the November 10 report. Hosting remains a [pending decision](docs/decisions/0001-hosting.md); [deployment prerequisites](docs/deployment.md) describe the work still needed.
 
 ## Planned architecture
 
@@ -72,6 +76,7 @@ Useful URLs while the app is running:
 - Swagger UI: http://localhost:8080/swagger-ui.html
 
 ### Package structure
+
 The backend is organized by module (`accounts`, `listings`, ...). Each module
 creates its own layers when needed: `controller/`, `service/`, `repository/`,
 `entity/`, `dto/`. Shared code goes in `common/`.

@@ -32,3 +32,11 @@ Ports bind to `127.0.0.1` so development services are not exposed to the local n
 - To run Spring Boot directly on the host, set those same variables. Use `jdbc:postgresql://localhost:5432/<POSTGRES_DB>` as the URL and reuse the local username and password from `.env`.
 - Compose also supplies `SPRING_MAIL_HOST=mailpit` and `SPRING_MAIL_PORT=1025`. The mail service integration can consume these settings when it is implemented.
 - Flyway is enabled and will apply Cristian's migrations from `backend/src/main/resources/db/migration` when they are added in issue #6. This infrastructure change intentionally does not define the application schema.
+
+## Verification boundary and related documentation
+
+Observed October 26, 2026: the main baseline is `1714e5e`; PR #88 contains the proposed V1 migration and PostgreSQL 18.6 Testcontainers setup, and PR #89 contains CI. Both are open. The baseline context test excludes datasource and Flyway auto-configuration, so a passing baseline test is not migration verification. See [test evidence](testing/test-evidence.md) for historical Docker/Java results and live branch CI, and [project status](project/status.md) for integration dependencies.
+
+The local host must actually select Java 25; changing the Maven project version does not install a JDK. Docker's Java 25 build is an alternative when the engine is available. Port overrides documented above can avoid conflicts with existing services. Choose the local database password before first initialization; changing `.env` later does not reset an existing PostgreSQL volume's credentials.
+
+Hosted configuration, private networking, secrets and recovery remain prerequisites in [deployment.md](deployment.md). Follow [AGENTS.md](../AGENTS.md) when changing setup or recording new verification.
