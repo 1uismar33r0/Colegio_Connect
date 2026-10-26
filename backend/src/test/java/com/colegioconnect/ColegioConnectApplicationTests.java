@@ -2,16 +2,13 @@ package com.colegioconnect;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
-@SpringBootTest(properties = {
-		"spring.autoconfigure.exclude="
-				+ "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration,"
-				+ "org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration"
-})
+@SpringBootTest
+@Import(TestcontainersConfiguration.class)
 class ColegioConnectApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
-
+    @Test
+    void contextLoads() {
+    }
 }
