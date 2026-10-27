@@ -2,6 +2,8 @@ name: CI
 
 on:
   push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
@@ -10,8 +12,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   backend:
@@ -66,7 +68,6 @@ jobs:
           path: colegio-connect-image.tar
           if-no-files-found: error
           retention-days: 7
-          compression-level: 0
 
   ci-gate:
     name: CI Gate

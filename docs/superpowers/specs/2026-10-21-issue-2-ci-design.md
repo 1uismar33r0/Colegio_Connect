@@ -6,7 +6,7 @@ Add a secure, reliable GitHub Actions quality gate and dependency-update configu
 
 ## Scope
 
-The CI workflow runs on every branch push and every pull request targeting `main`. It verifies the Java 25 backend with Maven, validates Docker Compose, builds the backend container, and exposes one stable `CI Gate` check for later branch protection. A push to `main` also uploads the built image as a downloadable artifact retained for seven days.
+The CI workflow runs on every pull request targeting `main` and on pushes to `main`. Ordinary feature-branch pushes do not run a duplicate verification alongside the pull request workflow. It verifies the Java 25 backend with Maven, validates Docker Compose, builds the backend container, and exposes one stable `CI Gate` check for later branch protection. A push to `main` also uploads the built image as a downloadable artifact retained for seven days.
 
 Dependabot covers Maven in `/backend`, GitHub Actions, the backend Dockerfile, and root Docker Compose images. npm checks and npm Dependabot are deferred until Issue #13 supplies a frontend manifest, lockfile, package manager, and scripts. Gradle is not configured because the repository has no Gradle project.
 
@@ -18,7 +18,7 @@ Dependabot covers Maven in `/backend`, GitHub Actions, the backend Dockerfile, a
 2. `container` validates `compose.yaml` with `.env.example`, builds `backend/Dockerfile`, and, only for a push to `main`, saves and uploads the image as a compressed artifact. It does not publish to a registry.
 3. `ci-gate` always runs after both jobs and fails unless both succeeded. Branch protection will eventually require only its stable display name, `CI Gate`.
 
-The workflow grants only `contents: read`, uses no secrets, avoids `pull_request_target`, pins external actions to full commit SHAs, cancels superseded runs, and sets job timeouts. Required jobs are not path-filtered.
+The workflow grants only `contents: read`, uses no secrets, avoids `pull_request_target`, pins external actions to full commit SHAs, cancels superseded runs for the same pull request, and sets job timeouts. Pushes to `main` are not canceled, and different pull requests use separate concurrency groups. Required jobs are not path-filtered.
 
 ## Dependency updates
 
