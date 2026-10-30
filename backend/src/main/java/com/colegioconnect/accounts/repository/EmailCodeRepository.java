@@ -9,5 +9,5 @@ import com.colegioconnect.accounts.entity.EmailCode;
 
 public interface EmailCodeRepository extends JpaRepository<EmailCode, UUID> {
 
-    Optional<EmailCode> findByCode(String code);
+    Optional<EmailCode> findFirstByUserOrderByExpiresAtDesc(String code);
 }
