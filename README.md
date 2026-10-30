@@ -75,3 +75,17 @@ Useful URLs while the app is running:
 The backend is organized by module (`accounts`, `listings`, ...). Each module
 creates its own layers when needed: `controller/`, `service/`, `repository/`,
 `entity/`, `dto/`. Shared code goes in `common/`.
+
+
+### Registration (issue #7)
+
+| Endpoint | What it does | Success |
+| --- | --- | --- |
+| `POST /api/auth/register` | Creates an account with a `@upr.edu` email and sends a 6-digit code | 201 |
+| `POST /api/auth/verify` | Verifies the email with the code | 204 |
+| `POST /api/auth/resend` | Sends a new code (max 1 per minute, 5 per hour) | 202 |
+
+Codes expire in 10 minutes, can be used once, and are blocked after 5 wrong attempts.
+Passwords must be 15 to 64 characters (NIST 800-63B-4).
+
+In development, verification emails go to Mailpit: http://localhost:8025
