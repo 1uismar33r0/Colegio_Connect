@@ -66,6 +66,12 @@
 			<artifactId>spring-security-crypto</artifactId>
 		</dependency>
 
+		<!-- Sending emails (Mailpit) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
 		<!-- OpenAPI: /v3/api-docs y Swagger UI -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
