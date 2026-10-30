@@ -1,4 +1,4 @@
-package com.colegioconnect.email;
+package com.colegioconnect.notifications;
 
 public interface EmailService {
 
