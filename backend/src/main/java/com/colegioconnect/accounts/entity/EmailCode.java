@@ -28,6 +28,12 @@ public class EmailCode {
 
     private Instant expiresAt;
 
+    private Instant createdAt;
+
+    private Instant usedAt; // null until the code is used
+
+    private int attempts;
+
     protected EmailCode() {
         // Required by JPA
     }
@@ -36,10 +42,19 @@ public class EmailCode {
         this.user = user;
         this.codeHash = codeHash;
         this.expiresAt = expiresAt;
+        this.createdAt = Instant.now();
+        this.attempts = 0;
+
     }
 
     public UUID getId() { return id; }
     public User getUser() { return user; }
     public String getCodeHash() { return codeHash; }
     public Instant getExpiresAt() { return expiresAt; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getUsedAt() { return usedAt; }
+    public int getAttempts() { return attempts; }
+
+    public void markUsed() { this.usedAt = Instant.now(); }
+    public void addAttempt() { this.attempts++; }
 }

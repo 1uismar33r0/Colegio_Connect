@@ -30,5 +30,6 @@ Ports bind to `127.0.0.1` so development services are not exposed to the local n
 - The API runs on port 8080 (Spring Boot default).
 - In Docker, Compose supplies `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, and `SPRING_DATASOURCE_PASSWORD` to the backend.
 - To run Spring Boot directly on the host, set those same variables. Use `jdbc:postgresql://localhost:5432/<POSTGRES_DB>` as the URL and reuse the local username and password from `.env`.
-- Compose also supplies `SPRING_MAIL_HOST=mailpit` and `SPRING_MAIL_PORT=1025`. The mail service integration can consume these settings when it is implemented.
+- Compose also supplies `SPRING_MAIL_HOST=mailpit` and `SPRING_MAIL_PORT=1025`. Outside Docker, the backend uses `localhost:1025` (Mailpit on the host).
 - Flyway is enabled and will apply Cristian's migrations from `backend/src/main/resources/db/migration` when they are added in issue #6. This infrastructure change intentionally does not define the application schema.
+- `app.mail.from` sets the sender address for emails (default `no-reply@colegioconnect.local`).
