@@ -60,10 +60,10 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- Hash de contraseñas (BCrypt), sin el Spring Security completo -->
+		<!-- Spring Security: login, sessions, CSRF (includes BCrypt) -->
 		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-crypto</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
 		<!-- Sending emails (Mailpit) -->
@@ -110,6 +110,13 @@
 			<artifactId>testcontainers-postgresql</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		
 	</dependencies>
 
 	<build>
