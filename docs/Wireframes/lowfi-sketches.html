@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Colegio Connect — Low-fi Sketches</title>
+<style>
+  :root { --ink:#333; --paper:#fbfaf6; --soft:#e9e7e0; --line:#9a9890; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#ecebe5; color:var(--ink);
+    font-family:"Segoe Print","Bradley Hand","Chalkboard SE","Comic Sans MS","Marker Felt",cursive; }
+  .page { max-width:1200px; margin:0 auto; padding:24px; }
+  h1 { margin:0; font-size:30px; }
+  .sub { margin:4px 0 16px; color:#666; font-size:14px; }
+  .tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .tabs button { font:inherit; font-size:14px; padding:8px 14px; background:var(--paper); color:var(--ink);
+    border:2px solid var(--ink); border-radius:255px 15px 225px 15px/15px 225px 15px 255px; cursor:pointer; }
+  .tabs button[aria-pressed="true"] { background:var(--ink); color:var(--paper); }
+  .sheet { display:none; background:var(--paper); border:2px solid var(--ink); padding:14px;
+    border-radius:8px 14px 6px 12px; min-height:560px; }
+  .sheet.active { display:block; }
+  .box { border:2px solid var(--ink); padding:10px; border-radius:255px 8px 225px 8px/8px 225px 8px 255px; background:var(--paper); }
+  .box + .box { margin-top:12px; }
+  .top { display:flex; align-items:center; gap:14px; padding:8px 12px; margin-bottom:12px; }
+  .logo { font-weight:700; border:2px solid var(--ink); padding:4px 10px; border-radius:50px 10px 40px 10px/10px 40px 10px 50px; }
+  .searchbar { flex:1; height:30px; border:2px solid var(--ink); border-radius:20px 6px 18px 6px/6px 18px 6px 20px; padding:3px 12px; color:#888; font-size:13px; }
+  .me { width:34px; height:34px; border:2px solid var(--ink); border-radius:50%; display:grid; place-items:center; font-size:11px; }
+  .layout { display:grid; grid-template-columns:150px 1fr; gap:12px; }
+  .side .it { padding:8px; margin-bottom:6px; border:2px dashed var(--line); border-radius:6px; font-size:13px; }
+  .side .it.on { border:2px solid var(--ink); background:var(--soft); font-weight:700; }
+  h2 { margin:0 0 4px; font-size:22px; }
+  h3 { margin:0 0 6px; font-size:15px; }
+  .note { font-size:12px; color:#777; }
+  .line { height:7px; background:var(--soft); border-radius:6px; margin:7px 0; }
+  .w90{width:90%} .w70{width:70%} .w50{width:50%} .w30{width:30%}
+  .btn { display:inline-block; font-size:12px; padding:5px 10px; border:2px solid var(--ink); margin-right:6px;
+    border-radius:255px 8px 225px 8px/8px 225px 8px 255px; }
+  .btn.fill { background:var(--ink); color:var(--paper); }
+  .pill { display:inline-block; font-size:11px; padding:2px 8px; border:1.5px solid var(--ink); border-radius:20px; margin-right:4px; }
+  .head { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; margin-bottom:12px; }
+  .filters { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  .filters span { border:2px solid var(--ink); padding:4px 12px; font-size:12px; border-radius:6px 14px 6px 14px; }
+  .cols { display:grid; grid-template-columns:1.5fr .8fr; gap:12px; }
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:12px; }
+  .stat b { font-size:24px; display:block; }
+  .imgph { width:70px; height:56px; border:2px solid var(--ink); position:relative; flex:none; }
+  .imgph::before,.imgph::after { content:""; position:absolute; inset:0;
+    background:linear-gradient(to top right,transparent calc(50% - 1px),var(--ink) 50%,transparent calc(50% + 1px)); }
+  .imgph::after { transform:scaleX(-1); }
+  .card { display:flex; gap:10px; }
+  .card > div:last-child { flex:1; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th,td { text-align:left; padding:8px 6px; border-bottom:2px dashed var(--line); }
+  th { font-size:11px; text-transform:uppercase; color:#777; }
+  .legend { margin-top:12px; font-size:12px; color:#777; }
+  @media (max-width:700px){ .layout,.cols{grid-template-columns:1fr} .stats{grid-template-columns:1fr} .top{flex-wrap:wrap} .side{display:flex;gap:6px;overflow-x:auto} .side .it{white-space:nowrap} }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Colegio Connect ✎</h1>
+  <p class="sub">Low-fi sketches · pick a role · layout only, all content is placeholder</p>
+  <div class="tabs" role="group" aria-label="Choose a role sketch">
+    <button type="button" data-screen="student" aria-pressed="true">Student</button>
+    <button type="button" data-screen="office" aria-pressed="false">University office</button>
+    <button type="button" data-screen="org" aria-pressed="false">External org</button>
+    <button type="button" data-screen="mod" aria-pressed="false">Admin / moderator</button>
+  </div>
+
+  <section class="sheet active" id="student">
+    <div class="box top"><span class="logo">LOGO</span><div class="searchbar">search…</div><div class="me">ST</div></div>
+    <div class="layout">
+      <div class="side"><div class="it on">Discover</div><div class="it">My responses</div><div class="it">Saved</div><div class="it">Profile</div></div>
+      <div>
+        <div class="head"><div><h2>Find an opportunity</h2><div class="note">tagline here</div></div><span class="btn">My responses</span></div>
+        <div class="filters"><span>keyword ▭</span><span>type ▾</span><span>field ▾</span><span class="btn fill" style="margin:0">apply</span></div>
+        <div class="cols">
+          <div>
+            <div class="box card"><div class="imgph"></div><div><h3>Opportunity title</h3><div class="note">source · posted when</div><div class="line w90"></div><div class="line w70"></div><span class="pill">Capstone</span><span class="pill">tag</span><div style="margin-top:8px"><span class="btn fill">Details</span><span class="btn">Save</span></div></div></div>
+            <div class="box card"><div class="imgph"></div><div><h3>Opportunity title</h3><div class="note">source · posted when</div><div class="line w90"></div><div class="line w50"></div><span class="pill">Internship</span><span class="pill">tag</span><div style="margin-top:8px"><span class="btn fill">Details</span><span class="btn">Save</span></div></div></div>
+          </div>
+          <div><div class="box"><h3>My activity</h3><div class="line w70"></div><span class="pill">n active</span><div class="line w50"></div><span class="pill">n saved</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet" id="office">
+    <div class="box top"><span class="logo">LOGO</span><div class="searchbar">search…</div><div class="me">UO</div></div>
+    <div class="layout">
+      <div class="side"><div class="it on">Overview</div><div class="it">Opportunities</div><div class="it">Responses</div><div class="it">Profile</div></div>
+      <div>
+        <div class="head"><div><h2>Office overview</h2><div class="note">tagline here</div></div><span class="btn fill">+ Create</span></div>
+        <div class="stats"><div class="box stat"><span class="note">published</span><b>##</b></div><div class="box stat"><span class="note">new responses</span><b>##</b></div><div class="box stat"><span class="note">drafts</span><b>##</b></div></div>
+        <div class="box"><h3>Recent opportunities</h3>
+          <table><tr><th>Title</th><th>Type</th><th>Resp.</th><th>Status</th><th></th></tr>
+          <tr><td><div class="line w90"></div></td><td>type</td><td>#</td><td><span class="pill">Published</span></td><td><span class="btn">Manage</span></td></tr>
+          <tr><td><div class="line w70"></div></td><td>type</td><td>#</td><td><span class="pill">Published</span></td><td><span class="btn">Manage</span></td></tr>
+          <tr><td><div class="line w50"></div></td><td>type</td><td>–</td><td><span class="pill">Draft</span></td><td><span class="btn">Edit</span></td></tr></table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet" id="org">
+    <div class="box top"><span class="logo">LOGO</span><div class="searchbar">search…</div><div class="me">EO</div></div>
+    <div class="layout">
+      <div class="side"><div class="it on">Dashboard</div><div class="it">Opportunities</div><div class="it">Responses</div><div class="it">Org profile</div></div>
+      <div>
+        <div class="head"><div><h2>Organization dashboard</h2><div class="note">tagline here</div></div><span class="btn fill">+ Post</span></div>
+        <div class="stats"><div class="box stat"><span class="note">active listings</span><b>##</b></div><div class="box stat"><span class="note">responses</span><b>##</b></div><div class="box stat"><span class="note">profile</span><b style="font-size:15px">status</b></div></div>
+        <div class="cols">
+          <div class="box"><h3>Active opportunities</h3><div class="line w90"></div><span class="pill">## responses</span><div class="line w70"></div><span class="pill">## responses</span><div class="line w50"></div><span class="pill">## responses</span></div>
+          <div class="box"><h3>Needs attention</h3><div class="line w70"></div><span class="pill">## new</span><div class="line w50"></div><span class="pill">status</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet" id="mod">
+    <div class="box top"><span class="logo">LOGO</span><div class="searchbar">search…</div><div class="me">AD</div></div>
+    <div class="layout">
+      <div class="side"><div class="it on">Review queue</div><div class="it">Organizations</div><div class="it">Accounts</div><div class="it">Reports</div></div>
+      <div>
+        <div class="head"><div><h2>Review queue</h2><div class="note">tagline here</div></div><span class="btn">Settings</span></div>
+        <div class="stats"><div class="box stat"><span class="note">awaiting</span><b>##</b></div><div class="box stat"><span class="note">reported</span><b>##</b></div><div class="box stat"><span class="note">to verify</span><b>##</b></div></div>
+        <div class="box"><h3>Needs review</h3>
+          <table><tr><th>Item</th><th>From</th><th>Reason</th><th>When</th><th></th></tr>
+          <tr><td><div class="line w90"></div></td><td><div class="line w70"></div></td><td><span class="pill">new org</span></td><td>today</td><td><span class="btn">Review</span><span class="btn">⋯</span></td></tr>
+          <tr><td><div class="line w70"></div></td><td><div class="line w70"></div></td><td><span class="pill">reported</span></td><td>–</td><td><span class="btn">Review</span><span class="btn">⋯</span></td></tr>
+          <tr><td><div class="line w50"></div></td><td><div class="line w50"></div></td><td><span class="pill">verify</span></td><td>–</td><td><span class="btn">Review</span><span class="btn">⋯</span></td></tr></table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <p class="legend">Boxes with an ✕ = images · gray bars = text · ## = numbers</p>
+</div>
+<script>
+  const tabs = document.querySelectorAll("[data-screen]");
+  const sheets = document.querySelectorAll(".sheet");
+  tabs.forEach(b => b.addEventListener("click", () => {
+    tabs.forEach(t => t.setAttribute("aria-pressed", String(t === b)));
+    sheets.forEach(s => s.classList.toggle("active", s.id === b.dataset.screen));
+  }));
+</script>
+</body>
+</html>
