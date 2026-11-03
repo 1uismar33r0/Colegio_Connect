@@ -30,6 +30,7 @@ import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.entity.UserStatus;
 import com.colegioconnect.accounts.repository.EmailCodeRepository;
 import com.colegioconnect.accounts.repository.UserRepository;
+import com.colegioconnect.audit.AuditEventRepository;
 import com.colegioconnect.organizations.entity.Role;
 import com.colegioconnect.organizations.entity.RoleAssignment;
 import com.colegioconnect.organizations.entity.ApprovalStatus;
@@ -47,6 +48,7 @@ class AuthorizationIntegrationTest {
     private static final String PASSWORD = "a long test password";
 
     @Autowired private MockMvc mockMvc;
+    @Autowired private AuditEventRepository auditEventRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private RoleAssignmentRepository roleAssignmentRepository;
     @Autowired private OrganizationRepository organizationRepository;
@@ -56,6 +58,7 @@ class AuthorizationIntegrationTest {
 
     @BeforeEach
     void cleanDatabase() {
+        auditEventRepository.deleteAll();
         roleAssignmentRepository.deleteAll();
         organizationRepository.deleteAll();
         emailCodeRepository.deleteAll();
