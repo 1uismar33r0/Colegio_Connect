@@ -22,6 +22,28 @@ From `frontend`:
 | `npm.cmd test` | passed; 3 tests across 2 files |
 | `npm.cmd run build` | passed |
 | `npm.cmd run lint` | passed |
+| `npm.cmd run typecheck` | passed |
+
+## Empty 201 registration regression — 2026-11-03
+
+Real browser integration showed that Spring registration returns a successful
+`201 Created` response with an empty body and no JSON content type. The generic
+API client previously called `response.json()` and rejected the successful
+registration with `Unexpected end of JSON input`.
+
+Commit `c3c2fea` originally proved the fix in the isolated integration branch.
+Only the focused response-parser change and its unit regression test were
+transferred to this PR branch; Playwright dependencies, screenshots, and the
+combined integration stack were not copied.
+
+Fresh verification after the transfer:
+
+| Command | Result |
+| --- | --- |
+| `npm.cmd test` | passed; 4 tests across 2 files |
+| `npm.cmd run lint` | passed |
+| `npm.cmd run typecheck` | passed |
+| `npm.cmd run build` | passed |
 
 ## Limits and follow-up
 

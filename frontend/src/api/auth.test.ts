@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { initializeCsrf, login, logout } from './auth'
+import { initializeCsrf, login, logout, register } from './auth'
 
 describe('authentication API client', () => {
   afterEach(() => {
@@ -50,5 +50,12 @@ describe('authentication API client', () => {
     expect(logoutOptions).toMatchObject({ method: 'POST', credentials: 'include' })
     expect(logoutOptions).toBeDefined()
     expect(((logoutOptions as RequestInit).headers as Headers).get('X-XSRF-TOKEN')).toBe('logout-token')
+  })
+
+  it('accepts an empty 201 response from registration', async () => {
+    document.cookie = 'XSRF-TOKEN=registration-token; Path=/'
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 201 })))
+
+    await expect(register({ email: 'student@upr.edu', password: 'password123' })).resolves.toBeUndefined()
   })
 })
