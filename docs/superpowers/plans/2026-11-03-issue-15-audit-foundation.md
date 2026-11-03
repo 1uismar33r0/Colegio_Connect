@@ -44,11 +44,11 @@
 - Produces: `void AuditService.record(UUID actorId, AuditAction action, AuditTargetType targetType, UUID targetId)`.
 - Produces: append-only `AuditEvent` getters for query mapping.
 
-- [ ] Write integration tests for committed persistence, rollback removal, and mandatory transaction rejection.
-- [ ] Run the focused test and confirm RED because the audit types/service do not exist.
-- [ ] Add V5, enums, entity, repository, and the minimal `Propagation.MANDATORY` service.
-- [ ] Run the focused test and confirm GREEN.
-- [ ] Commit as `feat(audit): introduce transactional audit foundation`.
+- [x] Write integration tests for committed persistence, rollback removal, and mandatory transaction rejection.
+- [x] Run the focused test and confirm RED because the audit types/service do not exist.
+- [x] Add V5, enums, entity, repository, and the minimal `Propagation.MANDATORY` service.
+- [x] Run the focused test and confirm GREEN.
+- [x] Commit as `feat(audit): introduce transactional audit foundation`.
 
 ### Task 2: Moderator-only paginated read endpoint
 
@@ -63,11 +63,11 @@
 - Produces: `AuditPageResponse AuditQueryService.findRecent(int page, int size)` with `1 <= size <= 100` and `page >= 0`.
 - Produces: `GET /api/admin/audit-events?page=0&size=20`.
 
-- [ ] Write MockMvc tests for moderator success, non-moderator 403, suspended moderator 403, response data minimization, and invalid pagination 400.
-- [ ] Run the focused test and confirm RED because the endpoint does not exist.
-- [ ] Implement response records, bounded query service, controller, OpenAPI summary, and persisted policy annotation.
-- [ ] Run the focused test and confirm GREEN.
-- [ ] Commit as `feat(audit): expose protected audit history`.
+- [x] Write MockMvc tests for moderator success, non-moderator 403, suspended moderator 403, response data minimization, and invalid pagination 400.
+- [x] Run the focused test and confirm RED because the endpoint does not exist.
+- [x] Implement response records, bounded query service, controller, and persisted policy annotation.
+- [x] Run the focused test and confirm GREEN.
+- [x] Commit as `feat(audit): add protected paginated audit query`.
 
 ### Task 3: Verification and evidence
 
@@ -78,8 +78,8 @@
 **Interfaces:**
 - Documents: transaction contract, taxonomy, privacy exclusions, API contract, dependency chain, commands, SHAs, and remaining integration work.
 
-- [ ] Run focused audit tests.
-- [ ] Run `mvn clean verify` and record exact counts.
-- [ ] Inspect staged files, `git diff --check`, and scan changes for secret-like data.
+- [x] Run focused audit tests.
+- [x] Run `mvn clean verify` and record exact counts.
+- [x] Inspect staged files, `git diff --check`, and scan changes for secret-like data.
 - [ ] Commit as `docs(audit): record policy and verification evidence`.
 - [ ] Push the branch and open a PR stacked on `gabriel/issue-9-authorization-foundation`; do not merge.
