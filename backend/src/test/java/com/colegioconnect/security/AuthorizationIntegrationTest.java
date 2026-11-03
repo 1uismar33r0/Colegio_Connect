@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -143,6 +144,64 @@ class AuthorizationIntegrationTest {
         assertThat(authorizationPolicy.canAssignRoles(authenticationFor(user))).isTrue();
     }
 
+    @Test
+    void revokingRoleImmediatelyRemovesPermissionFromExistingAuthentication() {
+        User user = verifiedActiveUser();
+        RoleAssignment assignment = roleAssignmentRepository.save(
+                new RoleAssignment(user, Role.ADMIN_MODERATOR, null));
+        Authentication authentication = authenticationFor(user);
+
+        assertThat(authorizationPolicy.canModerate(authentication)).isTrue();
+
+        roleAssignmentRepository.delete(assignment);
+        roleAssignmentRepository.flush();
+
+        assertThat(authorizationPolicy.canModerate(authentication)).isFalse();
+    }
+
+    @Test
+    void suspensionImmediatelyDeniesEverySharedPolicyCheck() {
+        User user = verifiedActiveUser();
+        Organization organization = approvedExternalOrganization("Suspended member company");
+        roleAssignmentRepository.save(new RoleAssignment(user, Role.EXTERNAL_COMPANY, organization));
+        roleAssignmentRepository.save(new RoleAssignment(user, Role.ADMIN_MODERATOR, null));
+        Authentication authentication = authenticationFor(user);
+
+        user.setStatus(UserStatus.SUSPENDED);
+        userRepository.saveAndFlush(user);
+
+        assertThat(authorizationPolicy.isOwner(authentication, user.getId())).isFalse();
+        assertThat(authorizationPolicy.isOrganizationMember(authentication, organization.getId())).isFalse();
+        assertThat(authorizationPolicy.canPublishForOrganization(authentication, organization.getId())).isFalse();
+        assertThat(authorizationPolicy.canModerate(authentication)).isFalse();
+        assertThat(authorizationPolicy.canAssignRoles(authentication)).isFalse();
+    }
+
+    @Test
+    void organizationAssignmentDoesNotAuthorizeAnotherOrganization() {
+        User user = verifiedActiveUser();
+        Organization assigned = approvedExternalOrganization("Assigned company");
+        Organization other = approvedExternalOrganization("Other company");
+        roleAssignmentRepository.save(new RoleAssignment(user, Role.EXTERNAL_COMPANY, assigned));
+        Authentication authentication = authenticationFor(user);
+
+        assertThat(authorizationPolicy.isOrganizationMember(authentication, other.getId())).isFalse();
+        assertThat(authorizationPolicy.canPublishForOrganization(authentication, other.getId())).isFalse();
+    }
+
+    @Test
+    void unknownUserAndOrganizationRecordsFailClosed() {
+        Authentication unknownUser = UsernamePasswordAuthenticationToken.authenticated(
+                UUID.randomUUID().toString(), null, Set.of());
+        UUID unknownOrganization = UUID.randomUUID();
+
+        assertThat(authorizationPolicy.isActive(unknownUser)).isFalse();
+        assertThat(authorizationPolicy.hasRole(unknownUser, Role.ADMIN_MODERATOR)).isFalse();
+        assertThat(authorizationPolicy.isOwner(unknownUser, UUID.randomUUID())).isFalse();
+        assertThat(authorizationPolicy.isOrganizationMember(unknownUser, unknownOrganization)).isFalse();
+        assertThat(authorizationPolicy.canPublishForOrganization(unknownUser, unknownOrganization)).isFalse();
+    }
+
     private User verifiedActiveUser() {
         User user = new User(EMAIL, passwordEncoder.encode(PASSWORD), AccountType.UPRM_MEMBER);
         user.setEmailVerified(true);
@@ -157,6 +216,13 @@ class AuthorizationIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
         return (MockHttpSession) result.getRequest().getSession(false);
+    }
+
+    private Organization approvedExternalOrganization(String name) {
+        Organization organization = organizationRepository.save(
+                new Organization(name, OrgType.EXTERNAL_COMPANY));
+        organization.setApprovalStatus(ApprovalStatus.APPROVED);
+        return organizationRepository.save(organization);
     }
 
     private static Authentication authenticationFor(User user) {
