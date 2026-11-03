@@ -1,6 +1,5 @@
 package com.colegioconnect.accounts.controller;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -11,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +24,7 @@ import com.colegioconnect.accounts.dto.UserResponse;
 import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.repository.UserRepository;
 import com.colegioconnect.accounts.service.LoginService;
+import com.colegioconnect.security.RoleAuthorityService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,11 +36,14 @@ public class AuthController {
 
     private final LoginService loginService;
     private final UserRepository userRepository;
+    private final RoleAuthorityService roleAuthorityService;
     private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
-    public AuthController(LoginService loginService, UserRepository userRepository) {
+    public AuthController(LoginService loginService, UserRepository userRepository,
+                          RoleAuthorityService roleAuthorityService) {
         this.loginService = loginService;
         this.userRepository = userRepository;
+        this.roleAuthorityService = roleAuthorityService;
     }
 
     @PostMapping("/login")
@@ -55,7 +59,7 @@ public class AuthController {
 
         // Tell Spring Security who is logged in, and save it in the session
         Authentication authentication = UsernamePasswordAuthenticationToken.authenticated(
-                user.getId().toString(), null, List.of());
+                user.getId().toString(), null, roleAuthorityService.authoritiesFor(user.getId()));
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
@@ -65,6 +69,7 @@ public class AuthController {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("@authorizationPolicy.isActive(authentication)")
     public UserResponse me(Authentication authentication) {
         UUID userId = UUID.fromString(authentication.getName());
         User user = userRepository.findById(userId)
