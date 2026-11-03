@@ -58,8 +58,15 @@ mvn verify
 Tests run: 30, Failures: 0, Errors: 0, Skipped: 0
 ```
 
-A final combined run is required after the review commits are layered into the
-temporary integration worktree.
+After layering the review tests and documentation onto the temporary
+PR #98 + PR #96 integration worktree, the final clean run was:
+
+```text
+mvn clean verify
+Tests run: 35, Failures: 0, Errors: 0, Skipped: 0
+```
+
+The temporary validation branch was not pushed and does not replace either PR.
 
 ## GitHub evidence and remaining acceptance
 
