@@ -41,7 +41,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
   const response = await fetch(path, { ...init, credentials: 'include', headers })
   if (!response.ok) throw new ApiError(await problemFrom(response))
-  if (response.status === 204) return undefined as T
+  if (response.status === 204 || !(response.headers.get('content-type') || '').includes('json')) return undefined as T
   return response.json() as Promise<T>
 }
 
