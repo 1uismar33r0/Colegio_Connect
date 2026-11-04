@@ -1,5 +1,6 @@
 package com.colegioconnect.accounts;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -122,6 +123,24 @@ class AuthIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson(EMAIL, PASSWORD)))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void loginRotatesAnExistingSessionId() throws Exception {
+        createUser(true, UserStatus.ACTIVE);
+        MockHttpSession existingSession = new MockHttpSession();
+        String originalSessionId = existingSession.getId();
+
+        MvcResult result = mockMvc.perform(post("/api/auth/login")
+                        .with(csrf())
+                        .session(existingSession)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson(EMAIL, PASSWORD)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertThat(result.getRequest().getSession(false)).isNotNull();
+        assertThat(result.getRequest().getSession(false).getId()).isNotEqualTo(originalSessionId);
     }
 
     // ---- Helpers ----
