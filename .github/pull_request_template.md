@@ -13,7 +13,7 @@ Related to #
 ## Definition of Done
 
 - [ ] Another team member reviewed the change
-- [ ] Documentation updated where needed
+- [ ] Relevant documentation/evidence updated under [AGENTS.md](../AGENTS.md), or explain why no update is needed
 - [ ] OpenAPI updated if the API contract changed (or not applicable)
 - [ ] No secrets or populated local environment files included
 

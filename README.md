@@ -4,7 +4,11 @@ Colegio Connect is a three-developer university capstone project. The planned pl
 
 ## Development status
 
-The backend (Spring Boot) and Docker development environment have been initialized. The frontend and CI have not been initialized yet. The full capstone proposal is not stored here. The architecture below reflects the agreed project plan and should be checked against the proposal when it becomes available.
+As rechecked on November 4, 2026, `main` contains the Spring Boot backend foundation, Docker development environment, CI/Dependabot, and the Flyway identity database baseline from merged PRs #88 and #89. PRs #92 and #93 updated Spring Boot to 4.1.2 and springdoc to 3.2.0. Luis's exploratory HTML wireframes remain separate from `main`; no React application is established there. Authentication and business workflows remain incomplete on `main`.
+
+Start with the [project status and ordered roadmap](docs/project/status.md), [approved proposal and requirement/issue traceability](docs/project/traceability.md), and [verified test evidence](docs/testing/test-evidence.md). The status page records observation dates, exact revisions, contributions and blockers. The architecture below describes the intended system, not completed functionality.
+
+The [development policy](AGENTS.md) makes inspection, proposal alignment, testing, documentation and review part of every task. Historical progress and incidents are linked from the dashboard; the [midterm evidence index](docs/reports/midterm/evidence-index.md) tracks the November 10 report. Hosting remains a [pending decision](docs/decisions/0001-hosting.md); [deployment prerequisites](docs/deployment.md) describe the work still needed.
 
 ## Planned architecture
 
@@ -20,7 +24,7 @@ The backend (Spring Boot) and Docker development environment have been initializ
 | Path | Purpose |
 | --- | --- |
 | `backend/` | Spring Boot application and backend tests (Cristian) |
-| `frontend/` | React application and frontend tests, to be initialized by Luis |
+| `frontend/` | React application and frontend tests; `main` currently contains a placeholder |
 | `docs/` | Shared project and development documentation |
 | `infra/` | Docker and deployment configuration, to be added by Gabriel |
 | `e2e/` | End-to-end tests when the application flows exist |
@@ -64,7 +68,7 @@ To run the backend outside Docker, first start its dependencies from the reposit
 | Command | What it does |
 | --- | --- |
 | `./mvnw spring-boot:run` | Start the API at http://localhost:8080 |
-| `./mvnw test` | Run the tests |
+| `./mvnw verify` | Run the Maven verification suite, including applicable Testcontainers integration tests |
 
 Useful URLs while the app is running:
 - Health: http://localhost:8080/actuator/health
@@ -72,6 +76,7 @@ Useful URLs while the app is running:
 - Swagger UI: http://localhost:8080/swagger-ui.html
 
 ### Package structure
+
 The backend is organized by module (`accounts`, `listings`, ...). Each module
 creates its own layers when needed: `controller/`, `service/`, `repository/`,
 `entity/`, `dto/`. Shared code goes in `common/`.

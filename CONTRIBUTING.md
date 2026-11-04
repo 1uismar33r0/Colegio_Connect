@@ -2,6 +2,8 @@
 
 This is a three-person capstone project. Keep changes small enough for another team member to review, and coordinate changes that cross backend, frontend, and infrastructure ownership.
 
+Follow the shared [development and documentation policy](AGENTS.md): inspect, align with the approved proposal, check issues/dependencies, plan, implement, test, document and review. Update only the records affected by the change. See [project status](docs/project/status.md) for dated implementation and CI integration evidence; the policy defines how to preserve acceptance, progress, incident and test records without redundant reports.
+
 ## Branches and pull requests
 
 1. Start a short-lived branch from the latest `main`. Use a descriptive name such as `chore/issue-1-repository-foundation`.

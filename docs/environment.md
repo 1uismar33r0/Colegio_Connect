@@ -31,5 +31,13 @@ Ports bind to `127.0.0.1` so development services are not exposed to the local n
 - In Docker, Compose supplies `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, and `SPRING_DATASOURCE_PASSWORD` to the backend.
 - To run Spring Boot directly on the host, set those same variables. Use `jdbc:postgresql://localhost:5432/<POSTGRES_DB>` as the URL and reuse the local username and password from `.env`.
 - Compose also supplies `SPRING_MAIL_HOST=mailpit` and `SPRING_MAIL_PORT=1025`. Outside Docker, the backend uses `localhost:1025` (Mailpit on the host).
-- Flyway is enabled and will apply Cristian's migrations from `backend/src/main/resources/db/migration` when they are added in issue #6. This infrastructure change intentionally does not define the application schema.
+- Flyway is enabled and applies the versioned migrations in `backend/src/main/resources/db/migration`. The merged identity baseline begins with `V1__identity_baseline.sql`; do not modify an applied migration. Add a new versioned migration for later schema changes.
 - `app.mail.from` sets the sender address for emails (default `no-reply@colegioconnect.local`).
+
+## Verification and related documentation
+
+The following setup facts were rechecked against GitHub on November 4, 2026. PR #89 (CI) and PR #88 (Flyway identity baseline and PostgreSQL 18.6 Testcontainers) merged into `main` on October 30, followed by the Spring Boot 4.1.2 and springdoc 3.2.0 dependency updates in PRs #92 and #93. The merged CI workflow runs `./mvnw --batch-mode --no-transfer-progress verify`, validates Compose, and builds the backend image. Docker must therefore be available for the applicable Testcontainers integration tests and Compose checks.
+
+The local host must actually select Java 25; changing the Maven project version does not install a JDK. Docker's Java 25 build is an alternative when the engine is available. Port overrides documented above can avoid conflicts with existing services. Choose the local database password before first initialization; changing `.env` later does not reset an existing PostgreSQL volume's credentials.
+
+The October 26 baseline observations remain historical records in [test evidence](testing/test-evidence.md) and [project status](project/status.md); they are not evidence that the current branch has been retested. Hosted configuration, private networking, secrets, and recovery remain prerequisites in [deployment.md](deployment.md). Follow [AGENTS.md](../AGENTS.md) when changing setup or recording new verification.
