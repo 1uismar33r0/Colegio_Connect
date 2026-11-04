@@ -94,3 +94,18 @@ Codes expire in 10 minutes, can be used once, and are blocked after 5 wrong atte
 Passwords must be 15 to 64 characters (NIST 800-63B-4).
 
 In development, verification emails go to Mailpit: http://localhost:8025
+
+
+### Login (issue #8)
+
+| Endpoint | What it does | Success |
+| --- | --- | --- |
+| `GET /api/auth/csrf` | Sets the `XSRF-TOKEN` cookie. Call it once when the app loads | 204 |
+| `POST /api/auth/login` | Starts a session (HttpOnly, Secure, SameSite=Lax cookie) | 200 |
+| `GET /api/auth/me` | Returns the logged-in user | 200 |
+| `POST /api/auth/logout` | Ends the session | 204 |
+
+Every `POST` must send the `XSRF-TOKEN` cookie value in the `X-XSRF-TOKEN` header.
+After 5 wrong passwords, the account is locked for 15 minutes.
+Suspended accounts and unverified emails cannot log in.
+All other endpoints require a logged-in user (401 otherwise).

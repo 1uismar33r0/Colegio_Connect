@@ -31,6 +31,8 @@ import com.colegioconnect.accounts.repository.EmailCodeRepository;
 import com.colegioconnect.accounts.repository.UserRepository;
 import com.colegioconnect.notifications.EmailService;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
@@ -130,7 +132,7 @@ class RegistrationIntegrationTest {
     }
 
     private void postJson(String url, String json, ResultMatcher expectedStatus) throws Exception {
-        mockMvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
+        mockMvc.perform(post(url).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(expectedStatus);
     }
 
