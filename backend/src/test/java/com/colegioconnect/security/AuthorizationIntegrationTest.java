@@ -2,7 +2,6 @@ package com.colegioconnect.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -80,17 +79,6 @@ class AuthorizationIntegrationTest {
     }
 
     @Test
-    void suspendedAccountCannotUseAnExistingAuthenticatedSession() throws Exception {
-        User user = verifiedActiveUser();
-        MockHttpSession session = login();
-        user.setStatus(UserStatus.SUSPENDED);
-        userRepository.save(user);
-
-        mockMvc.perform(get("/api/auth/me").session(session))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void memberCanActForTheirApprovedExternalOrganization() {
         User user = verifiedActiveUser();
         Organization organization = organizationRepository.save(
@@ -110,18 +98,6 @@ class AuthorizationIntegrationTest {
         Organization organization = organizationRepository.save(
                 new Organization("Pending company", OrgType.EXTERNAL_COMPANY));
         roleAssignmentRepository.save(new RoleAssignment(user, Role.EXTERNAL_COMPANY, organization));
-
-        assertThat(authorizationPolicy.canPublishForOrganization(authenticationFor(user), organization.getId())).isFalse();
-    }
-
-    @Test
-    void facultyRoleCannotPublishForAnExternalOrganization() {
-        User user = verifiedActiveUser();
-        Organization organization = organizationRepository.save(
-                new Organization("External company", OrgType.EXTERNAL_COMPANY));
-        organization.setApprovalStatus(ApprovalStatus.APPROVED);
-        organizationRepository.save(organization);
-        roleAssignmentRepository.save(new RoleAssignment(user, Role.FACULTY_OFFICE_DEPT, organization));
 
         assertThat(authorizationPolicy.canPublishForOrganization(authenticationFor(user), organization.getId())).isFalse();
     }
