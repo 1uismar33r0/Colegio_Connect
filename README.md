@@ -4,7 +4,7 @@ Colegio Connect is a three-developer university capstone project. The planned pl
 
 ## Development status
 
-As observed on October 26, 2026, the Spring Boot backend foundation and Docker development environment are on `main`. CI/Dependabot is implemented with passing branch checks in open PR #89; the identity database is in open PR #88. Luis has exploratory HTML wireframes, but no React application is established on `main`. Authentication and business workflows remain incomplete.
+As rechecked on November 4, 2026, `main` contains the Spring Boot backend foundation, Docker development environment, CI/Dependabot, and the Flyway identity database baseline from merged PRs #88 and #89. PRs #92 and #93 updated Spring Boot to 4.1.2 and springdoc to 3.2.0. Luis's exploratory HTML wireframes remain separate from `main`; no React application is established there. Authentication and business workflows remain incomplete on `main`.
 
 Start with the [project status and ordered roadmap](docs/project/status.md), [approved proposal and requirement/issue traceability](docs/project/traceability.md), and [verified test evidence](docs/testing/test-evidence.md). The status page records observation dates, exact revisions, contributions and blockers. The architecture below describes the intended system, not completed functionality.
 
@@ -24,7 +24,7 @@ The [development policy](AGENTS.md) makes inspection, proposal alignment, testin
 | Path | Purpose |
 | --- | --- |
 | `backend/` | Spring Boot application and backend tests (Cristian) |
-| `frontend/` | React application and frontend tests, to be initialized by Luis |
+| `frontend/` | React application and frontend tests; `main` currently contains a placeholder |
 | `docs/` | Shared project and development documentation |
 | `infra/` | Docker and deployment configuration, to be added by Gabriel |
 | `e2e/` | End-to-end tests when the application flows exist |
@@ -68,7 +68,7 @@ To run the backend outside Docker, first start its dependencies from the reposit
 | Command | What it does |
 | --- | --- |
 | `./mvnw spring-boot:run` | Start the API at http://localhost:8080 |
-| `./mvnw test` | Run the tests |
+| `./mvnw verify` | Run the Maven verification suite, including applicable Testcontainers integration tests |
 
 Useful URLs while the app is running:
 - Health: http://localhost:8080/actuator/health
@@ -80,3 +80,17 @@ Useful URLs while the app is running:
 The backend is organized by module (`accounts`, `listings`, ...). Each module
 creates its own layers when needed: `controller/`, `service/`, `repository/`,
 `entity/`, `dto/`. Shared code goes in `common/`.
+
+
+### Registration (issue #7)
+
+| Endpoint | What it does | Success |
+| --- | --- | --- |
+| `POST /api/auth/register` | Creates an account with a `@upr.edu` email and sends a 6-digit code | 201 |
+| `POST /api/auth/verify` | Verifies the email with the code | 204 |
+| `POST /api/auth/resend` | Sends a new code (max 1 per minute, 5 per hour) | 202 |
+
+Codes expire in 10 minutes, can be used once, and are blocked after 5 wrong attempts.
+Passwords must be 15 to 64 characters (NIST 800-63B-4).
+
+In development, verification emails go to Mailpit: http://localhost:8025

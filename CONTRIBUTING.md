@@ -20,7 +20,15 @@ Follow the shared [development and documentation policy](AGENTS.md): inspect, al
 - OpenAPI documentation is updated when an API contract changes.
 - No secrets or populated local environment files are committed.
 
-CI workflows and required GitHub checks are still to be added. A pull request should state clearly when a check is not yet available.
+## Continuous integration
+
+Every pull request targeting `main` runs the backend Maven verification with Java 25, validates the Docker Compose configuration, and builds the backend Docker image before merge. The workflow runs again after integration on pushes to `main`; ordinary feature-branch pushes do not create a duplicate run alongside the pull request check. When a pull request receives a newer commit, its obsolete in-progress run is canceled, while `main` runs are not canceled. Maven's standard `verify` lifecycle discovers the existing backend tests and any compatible tests added later.
+
+Open the pull request's **Checks** tab or the repository's **Actions** tab to see each run and its job logs. A failed check means a build, test, Compose validation, or image build needs investigation; open the failed job to find the failing step before updating the branch.
+
+The stable `CI Gate` check succeeds only when both the backend and container jobs succeed. A push to `main` also stores the built Docker image TAR as a downloadable GitHub Actions artifact for seven days using the upload action's default compression; CI does not publish images to a registry.
+
+Frontend checks and npm Dependabot updates will be added after Issue #13 establishes the frontend package manager, lockfile, and scripts. The OpenAPI artifact requested by Issue #5 also remains separate work. Branch protection is intentionally not configured yet: the team will select `CI Gate` as the required check after this workflow has been reviewed and verified on GitHub.
 
 ## Working across areas
 
