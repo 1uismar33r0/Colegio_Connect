@@ -54,3 +54,24 @@ The temporary integration PR targets `main` solely to invoke the existing CI
 workflow. It must not be merged. Its GitHub Actions result is the official CI
 evidence for this stacked set; normal review and the dependency-aware merge
 order remain unchanged.
+
+## CI failure and fixture-isolation correction
+
+The first official run, [41927324073](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/41927324073),
+passed Container but failed Backend. It exposed a real test-isolation bug that
+the local class order had masked: `NegativeAuthorizationHarnessIntegrationTest`
+created a role assignment, then `AuthIntegrationTest.cleanDatabase` attempted
+to delete its user without first deleting role assignments.
+
+The correction is PR #102 head `695fe3abbc5951777a09d34ca4727ffebb296b8b`:
+test-only cleanup now deletes role assignments before users. The updated
+validation merge head `52a790a48313d8d7d068b6d4d1aa5cb3e01ac867` includes
+that exact commit plus all five original feature PR heads. A clean local
+rerun at that head produced:
+
+```text
+SUREFIRE tests=47 failures=0 errors=0 skipped=0
+MVN_EXIT=0
+```
+
+The updated validation branch is pushed to request a fresh official CI run.
