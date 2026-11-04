@@ -26,6 +26,7 @@ import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.entity.UserStatus;
 import com.colegioconnect.accounts.repository.EmailCodeRepository;
 import com.colegioconnect.accounts.repository.UserRepository;
+import com.colegioconnect.organizations.repository.RoleAssignmentRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,10 +40,12 @@ class AuthIntegrationTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private UserRepository userRepository;
     @Autowired private EmailCodeRepository emailCodeRepository;
+    @Autowired private RoleAssignmentRepository roleAssignmentRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void cleanDatabase() {
+        roleAssignmentRepository.deleteAll();
         emailCodeRepository.deleteAll();
         userRepository.deleteAll();
     }
