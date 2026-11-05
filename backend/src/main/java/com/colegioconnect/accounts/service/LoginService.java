@@ -3,16 +3,21 @@ package com.colegioconnect.accounts.service;
 import java.time.Duration;
 import java.time.Instant;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.colegioconnect.accounts.dto.LoginRequest;
 import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.entity.UserStatus;
 import com.colegioconnect.accounts.repository.UserRepository;
+import com.colegioconnect.organizations.repository.RoleAssignmentRepository;
 
 @Service
 public class LoginService {
@@ -24,11 +29,13 @@ public class LoginService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleAssignmentRepository roleAssignmentRepository;
     private final String dummyHash;
 
-    public LoginService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public LoginService(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleAssignmentRepository roleAssignmentRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.roleAssignmentRepository = roleAssignmentRepository;
         
         // this will avoid timing attacks by ensuring that the password check takes
         // a similar amount of time for both existing and non-existing users
@@ -58,7 +65,7 @@ public class LoginService {
             if (user.getFailedLoginAttempts() >= MAX_FAILED_LOGINS) {
                 user.lockUntil(Instant.now().plus(LOCK_DURATION));
             }
-            
+
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, INVALID_LOGIN);
         }
 
@@ -72,6 +79,17 @@ public class LoginService {
 
         user.resetFailedLogins();
         return user;
+    }
+
+    // Spring Security expects "ROLE_" + name, so hasRole('STUDENT') matches ROLE_STUDENT
+    @Transactional(readOnly = true)
+    public List<GrantedAuthority> authoritiesFor(User user) {
+        return roleAssignmentRepository.findByUserId(user.getId())
+                .stream()
+                .map(assignment -> assignment.getRole())
+                .distinct()
+                .map(role -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + role.name()))
+                .toList();
     }
 
     private String normalize(String email) {

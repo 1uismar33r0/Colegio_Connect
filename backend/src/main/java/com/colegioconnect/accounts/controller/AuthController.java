@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
@@ -53,9 +54,12 @@ public class AuthController {
             httpRequest.changeSessionId();
         }
 
-        // Tell Spring Security who is logged in, and save it in the session
+        // Load the user's roles as ROLE_* authorities so @PreAuthorize can check them
+        List<GrantedAuthority> authorities = loginService.authoritiesFor(user);
+
         Authentication authentication = UsernamePasswordAuthenticationToken.authenticated(
-                user.getId().toString(), null, List.of());
+                user.getId().toString(), null, authorities);
+        
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);

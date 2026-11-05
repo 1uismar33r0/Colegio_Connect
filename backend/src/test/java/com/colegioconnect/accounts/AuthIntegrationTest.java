@@ -5,6 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,10 +16,14 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.security.core.context.SecurityContext;
+
 
 import com.colegioconnect.TestcontainersConfiguration;
 import com.colegioconnect.accounts.entity.AccountType;
@@ -25,6 +31,10 @@ import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.entity.UserStatus;
 import com.colegioconnect.accounts.repository.EmailCodeRepository;
 import com.colegioconnect.accounts.repository.UserRepository;
+import com.colegioconnect.organizations.entity.RoleAssignment;
+import com.colegioconnect.organizations.repository.OrganizationRepository;
+import com.colegioconnect.organizations.repository.RoleAssignmentRepository;
+import com.colegioconnect.organizations.entity.Role;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,9 +49,13 @@ class AuthIntegrationTest {
     @Autowired private UserRepository userRepository;
     @Autowired private EmailCodeRepository emailCodeRepository;
     @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private RoleAssignmentRepository roleAssignmentRepository;
+    @Autowired private OrganizationRepository organizationRepository;
 
     @BeforeEach
     void cleanDatabase() {
+        roleAssignmentRepository.deleteAll();
+        organizationRepository.deleteAll();
         emailCodeRepository.deleteAll();
         userRepository.deleteAll();
     }
@@ -124,13 +138,29 @@ class AuthIntegrationTest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    void loginLoadsTheUserRoles() throws Exception {
+        User user = createUser(true, UserStatus.ACTIVE);
+        roleAssignmentRepository.save(new RoleAssignment(user, Role.STUDENT, null));
+
+        MockHttpSession session = login(EMAIL, PASSWORD, status().isOk());
+
+        // The login saves the SecurityContext in the session under this key
+        SecurityContext context = (SecurityContext) session.getAttribute(
+                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+
+        assertThat(context.getAuthentication().getAuthorities())
+                .extracting(GrantedAuthority::getAuthority)
+                .containsExactly("ROLE_STUDENT");
+    }
+
     // ---- Helpers ----
 
-    private void createUser(boolean emailVerified, UserStatus status) {
+    private User createUser(boolean emailVerified, UserStatus status) {
         User user = new User(EMAIL, passwordEncoder.encode(PASSWORD), AccountType.UPRM_MEMBER);
         user.setEmailVerified(emailVerified);
         user.setStatus(status);
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
     private MockHttpSession login(String email, String password, ResultMatcher expectedStatus) throws Exception {

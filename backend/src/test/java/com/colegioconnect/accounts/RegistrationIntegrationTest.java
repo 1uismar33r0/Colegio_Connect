@@ -30,6 +30,8 @@ import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.repository.EmailCodeRepository;
 import com.colegioconnect.accounts.repository.UserRepository;
 import com.colegioconnect.notifications.EmailService;
+import com.colegioconnect.organizations.repository.OrganizationRepository;
+import com.colegioconnect.organizations.repository.RoleAssignmentRepository;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
@@ -45,11 +47,15 @@ class RegistrationIntegrationTest {
     @Autowired private UserRepository userRepository;
     @Autowired private EmailCodeRepository emailCodeRepository;
     @Autowired private PasswordEncoder passwordEncoder;
+        @Autowired private RoleAssignmentRepository roleAssignmentRepository;
+    @Autowired private OrganizationRepository organizationRepository;
 
     @MockitoBean private EmailService emailService; // no real emails in tests
-
+    
     @BeforeEach
     void cleanDatabase() {
+        roleAssignmentRepository.deleteAll();
+        organizationRepository.deleteAll();
         emailCodeRepository.deleteAll();
         userRepository.deleteAll();
     }
