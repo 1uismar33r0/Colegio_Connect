@@ -47,3 +47,10 @@ export async function logout(): Promise<void> {
   })
   if (!response.ok) throw toApiError(response, null)
 }
+
+/** Seeds the XSRF-TOKEN cookie. Raw fetch because springdoc wrongly lists the
+ *  injected CsrfToken as a required query param (backend fix: @Parameter(hidden = true)). */
+export async function initCsrf(): Promise<void> {
+  const response = await fetch('/api/auth/csrf', { credentials: 'include' })
+  if (!response.ok) throw toApiError(response, null)
+}
