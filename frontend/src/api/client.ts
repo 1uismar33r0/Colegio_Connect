@@ -25,8 +25,14 @@ const csrfMiddleware: Middleware = {
   },
 }
 
-export const api = createClient<paths>({ baseUrl: '', credentials: 'include' })
-api.use(csrfMiddleware)
+/** Exported for tests, which need an absolute baseUrl outside the browser. */
+export function createApiClient(baseUrl = '') {
+  const client = createClient<paths>({ baseUrl, credentials: 'include' })
+  client.use(csrfMiddleware)
+  return client
+}
+
+export const api = createApiClient()
 
 /** Returns data on success, throws ApiError on any non-2xx response. */
 export async function unwrap<T>(
