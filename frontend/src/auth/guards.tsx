@@ -1,4 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router'
+import { ErrorMessage } from '../components/ErrorMessage'
 import { Loading } from '../components/Loading'
 import { hasAnyRole, type Role } from './roles'
 import { useAuth } from './useAuth'
@@ -7,16 +8,18 @@ import { useAuth } from './useAuth'
 // remain the real enforcement; never rely on these guards for security.
 
 export function RequireAuth() {
-  const { status, error } = useAuth()
+  const { status, refresh } = useAuth()
   const location = useLocation()
 
   if (status === 'loading') return <Loading label="Checking your session…" />
   if (status === 'error') {
+    // Plain-language message only; technical details stay out of the UI.
     return (
-      <p role="alert">
-        We couldn't reach Colegio Connect. Please try again later.
-        {error && ` (${error.message})`}
-      </p>
+      <ErrorMessage
+        title="We couldn't reach Colegio Connect"
+        message="Check your connection and try again."
+        onRetry={() => void refresh()}
+      />
     )
   }
   if (status === 'anonymous') {

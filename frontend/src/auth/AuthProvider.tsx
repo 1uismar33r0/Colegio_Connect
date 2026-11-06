@@ -35,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // For event handlers (e.g. after login in #14).
   const refresh = useCallback(async () => {
+    setState({ ...ANONYMOUS, status: 'loading' })
     setState(await loadSession())
   }, [])
 

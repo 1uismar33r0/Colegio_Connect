@@ -1,6 +1,11 @@
-import { NavLink, Outlet } from 'react-router'
+import { useEffect, useRef } from 'react'
+import { NavLink, Outlet, useLocation, useMatches } from 'react-router'
 import { useAuth } from '../auth/useAuth'
 import { hasAnyRole, type Role } from '../auth/roles'
+
+export type RouteHandle = { title?: string }
+
+const APP_NAME = 'Colegio Connect'
 
 const AREAS: { to: string; label: string; role: Role }[] = [
   { to: '/student', label: 'Student', role: 'STUDENT' },
@@ -13,10 +18,37 @@ export function AppLayout() {
   const { status, roles, logout } = useAuth()
   const visibleAreas = AREAS.filter((a) => hasAnyRole(roles, [a.role]))
 
+  // Page title: the deepest route that declares handle.title wins.
+  const matches = useMatches()
+  const pageTitle = [...matches]
+    .reverse()
+    .map((m) => (m.handle as RouteHandle | undefined)?.title)
+    .find(Boolean)
+  useEffect(() => {
+    document.title = pageTitle ? `${pageTitle} · ${APP_NAME}` : APP_NAME
+  }, [pageTitle])
+
+  // After client-side navigation, move focus to <main> so screen readers
+  // announce the new page instead of staying on the clicked link.
+  const mainRef = useRef<HTMLElement>(null)
+  const { pathname } = useLocation()
+  const previousPath = useRef(pathname)
+  useEffect(() => {
+    if (previousPath.current !== pathname) {
+      previousPath.current = pathname
+      mainRef.current?.focus()
+    }
+  }, [pathname])
+
   return (
     <>
-      <header>
-        <NavLink to="/">Colegio Connect</NavLink>
+      <a className="skip-link" href="#main">
+        Skip to main content
+      </a>
+      <header className="app-header">
+        <NavLink to="/" className="brand">
+          {APP_NAME}
+        </NavLink>
         <nav aria-label="Primary">
           <ul>
             {status === 'authenticated' && (
@@ -31,17 +63,22 @@ export function AppLayout() {
             ))}
           </ul>
         </nav>
-        {status === 'authenticated' ? (
-          <button type="button" onClick={() => void logout()}>
-            Sign out
-          </button>
-        ) : (
-          <NavLink to="/login">Sign in</NavLink>
-        )}
+        <div className="session">
+          {status === 'authenticated' ? (
+            <button type="button" onClick={() => void logout()}>
+              Sign out
+            </button>
+          ) : (
+            <NavLink to="/login">Sign in</NavLink>
+          )}
+        </div>
       </header>
-      <main id="main">
+      <main id="main" ref={mainRef} tabIndex={-1} className="container">
         <Outlet />
       </main>
+      <footer className="app-footer">
+        <p>{APP_NAME} · University of Puerto Rico at Mayagüez</p>
+      </footer>
     </>
   )
 }

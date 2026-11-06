@@ -1,6 +1,7 @@
 export function Loading({ label = 'Loading…' }: { label?: string }) {
   return (
-    <div role="status" aria-live="polite">
+    <div className="loading" role="status" aria-live="polite">
+      <span className="spinner" aria-hidden="true" />
       <p>{label}</p>
     </div>
   )
