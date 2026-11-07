@@ -1,6 +1,6 @@
 # Issue #2 CI trigger coverage
 
-**Status:** CI verified on draft [PR #107](https://github.com/1uismar33r0/Colegio_Connect/pull/107) targeting `main`. **Branch:** `gabriel/issue-2-ci-trigger-coverage`. **Trigger implementation:** `242046d`. **Main-based verified checkpoint:** `2eb4b03`. **Main baseline:** PR #106 merged as `a128824` on 2026-11-07.
+**Status:** CI verified on ready-for-review [PR #107](https://github.com/1uismar33r0/Colegio_Connect/pull/107) targeting `main`. **Branch:** `gabriel/issue-2-ci-trigger-coverage`. **Trigger implementation:** `242046d`. **Latest verified checkpoint:** `678c43e`. **Main baseline:** PR #106 merged as `a128824` on 2026-11-07.
 
 ## Purpose and proposal relationship
 
@@ -24,7 +24,7 @@ on:
 - **How it works:** the empty `push` mapping intentionally has no branch filter. The container image is still saved and uploaded only when the ref is `refs/heads/main`.
 - **Team support:** Luis sees frontend failures on his branch; Massini sees backend, database, and container failures on his branch.
 - **How it is tested:** push a named feature-branch commit and confirm all four jobs use that exact SHA.
-- **Demonstrated result:** feature-branch push run [42325266625](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42325266625) passed all four jobs at `2eb4b03` while PR #107 targeted `main`.
+- **Demonstrated result:** feature-branch push run [42325561434](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42325561434) passed all four jobs at `678c43e` while PR #107 targeted `main`.
 
 ### Pull-request trigger
 
@@ -33,7 +33,7 @@ on:
 - **How it works:** the empty `pull_request` mapping uses GitHub's normal PR activity types without a base-branch filter.
 - **Team support:** Luis and Massini can review a shared green or failing result for the proposed merge, not only the contributor's branch state.
 - **How it is tested:** open or synchronize a PR and confirm the workflow checks the PR's current head in the proposed merge context.
-- **Demonstrated result:** PR run [42325273706](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42325273706) passed all four jobs at `2eb4b03` with PR #107 based on `main`.
+- **Demonstrated result:** PR run [42325565946](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42325565946) passed all four jobs at `678c43e` with PR #107 based on `main`.
 
 ### Manual dispatch
 
@@ -77,8 +77,8 @@ The workflow itself cannot block a merge. The repository owner must configure Gi
 | Evidence | Revision | Actual result | Limitation |
 | --- | --- | --- | --- |
 | PR #106 run [42276697893](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42276697893) | `bcea2f4` | Backend: 19 tests; Frontend: 22 tests in 5 files; Container and CI Gate passed | Verifies the four inherited jobs before the trigger commit |
-| Main-based feature push [42325266625](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42325266625) | `2eb4b03` | Backend, Frontend, Container, and CI Gate passed | Main-only image save/upload correctly skipped on the feature branch |
-| Main-based PR [42325273706](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42325273706) | `2eb4b03` | Backend: 19 tests; Frontend: 22 tests in 5 files; Container and CI Gate passed | Verifies the proposed merge context against `main`; not branch-protection evidence |
+| Main-based feature push [42325561434](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42325561434) | `678c43e` | Backend, Frontend, Container, and CI Gate passed | Main-only image save/upload correctly skipped on the feature branch |
+| Main-based PR [42325565946](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42325565946) | `678c43e` | Backend: 19 tests; Frontend: 22 tests in 5 files; Container and CI Gate passed | Verifies the proposed merge context against `main`; not branch-protection evidence |
 | Feature push [42319769681](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42319769681) | `da47445` | Backend, Frontend, Container, and CI Gate passed | Predates PR #107's base change to `main` |
 | Stacked PR [42319774193](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42319774193) | `da47445` | Backend: 19 tests; Frontend: 22 tests in 5 files; Container and CI Gate passed | PR base was the PR #106 branch |
 | Local structural checks | `2eb4b03` | All 15 trigger/job/gate/permission/concurrency invariants, documentation links, scope, whitespace, and credential-pattern checks passed | Static validation supplements GitHub execution |
