@@ -153,6 +153,21 @@ class AuthIntegrationTest {
                 .extracting(GrantedAuthority::getAuthority)
                 .containsExactly("ROLE_STUDENT");
     }
+    
+    @Test
+    void userSuspendedAfterLoginIsBlocked() throws Exception {
+        createUser(true, UserStatus.ACTIVE);
+        MockHttpSession session = login(EMAIL, PASSWORD, status().isOk());
+
+        // A moderator suspends the account while the session is still open
+        User user = userRepository.findByEmail(EMAIL).orElseThrow();
+        user.setStatus(UserStatus.SUSPENDED);
+        userRepository.save(user);
+
+        mockMvc.perform(get("/api/auth/me").session(session))
+                .andExpect(status().isForbidden());
+    }
+    
 
     // ---- Helpers ----
 
