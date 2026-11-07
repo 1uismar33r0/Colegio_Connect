@@ -998,9 +998,9 @@ Sources: [canonical #44](https://github.com/1uismar33r0/Colegio_Connect/issues/4
 
 Milestone: **M3 - Responses and moderation**. Original issue references: I16. Proposal mapping: **O5; I16; infrastructure enabler; Figure 1**.
 
-Engineering state: **Not started**. Acceptance note: criteria/DoD still pending. Location: No feature implementation located on main; domain package placeholders are not implementation.
+Engineering state: **Verified on branch**. Acceptance note: two isolated local three-trial rehearsals passed below five minutes with matching data signatures, and PR CI passed; hosted recovery, backup restoration into an empty volume, and teammate review remain pending. Location: `gabriel/issue-44-recovery`, PR #114; `scripts/gabriel/issue-44-recovery.ps1` and `docs/gabriel/reliability/issue-44-recovery-rehearsal.md`.
 
-Evidence / blockers (apply to every AC below): **TE-00** in [test evidence](../testing/test-evidence.md). Implement the listed tasks and exercise every acceptance clause; prerequisite access/data/UI workflows and CI integration remain incomplete.
+Evidence / blockers (apply to every AC below): **TE-10** in [test evidence](../testing/test-evidence.md). Local restart timing, backend reconnection, persistent-volume data integrity, cleanup isolation, and PR CI are verified on the branch. This does not demonstrate hosted recovery, backup restoration, host/storage failure, or real-browser Secure-cookie behavior. PR #114 still requires another team member's review before integration; Issue #44 remains open.
 
 Exact source description shared by both issues:
 
