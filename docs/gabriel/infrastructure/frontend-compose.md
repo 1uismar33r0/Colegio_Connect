@@ -124,10 +124,11 @@ The test used synthetic local database credentials. It did not modify the canoni
 
 - Branch: `gabriel/issue-3-frontend-compose`.
 - Issue: [#3 - Docker development environment with PostgreSQL](https://github.com/1uismar33r0/Colegio_Connect/issues/3).
-- Pull request: review request to be linked after it is created.
+- Pull request: [#113 - Add frontend Compose service](https://github.com/1uismar33r0/Colegio_Connect/pull/113), with Luis requested as reviewer.
+- Initial PR CI: [run 42333630640](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42333630640) passed Backend, Container, Frontend, and CI Gate on head `fd79dde`.
 - Required reviewer: Luis, because this infrastructure runs his frontend and must preserve his development contract.
 
-The PR must not be merged automatically or used to close Issue #3. Luis's review and passing CI remain required.
+The PR must not be merged automatically or used to close Issue #3. Luis's review remains required, and each later head must keep CI green.
 
 ## Documentation integration
 

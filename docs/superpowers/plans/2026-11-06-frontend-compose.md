@@ -163,22 +163,22 @@ Commit the design, plan, infrastructure record, and evidence updates as `docs(do
 - Consumes: Tasks 1-3 commits and test outputs.
 - Produces: one focused reviewable PR referencing Issue #3 and Luis's request.
 
-- [ ] **Step 1: Run final verification from a clean review point**
+- [x] **Step 1: Run final verification from a clean review point**
 
 Re-run Compose model validation, frontend static checks, runtime checks when the engine is available, `git diff --check`, and inspect the complete branch diff against `origin/main`.
 
-- [ ] **Step 2: Review scope and history**
+- [x] **Step 2: Review scope and history**
 
 Confirm no React/Spring source changes, no volume deletion, no unrelated files, and coherent commits.
 
-- [ ] **Step 3: Push without force**
+- [x] **Step 3: Push without force**
 
 Push `gabriel/issue-3-frontend-compose` and set its upstream.
 
-- [ ] **Step 4: Open one focused PR**
+- [x] **Step 4: Open one focused PR**
 
 Reference Issue #3, request Luis's review, list actual checks and limitations, and mark the PR draft if runtime verification was unavailable or incomplete. Do not merge or close Issue #3.
 
-- [ ] **Step 5: Inspect PR and CI state**
+- [x] **Step 5: Inspect PR and CI state**
 
 Record the PR number, URL, head SHA, review state, and actual Actions results without treating an open PR as merged acceptance.
