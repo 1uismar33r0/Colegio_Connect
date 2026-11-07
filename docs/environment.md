@@ -1,6 +1,6 @@
 # Environment configuration
 
-Docker Compose provides the shared backend, PostgreSQL 18, and Mailpit development environment. Copy `.env.example` to the ignored `.env` file and replace the sample database password before starting it. Never commit `.env`.
+Docker Compose provides the shared Vite frontend, Spring Boot backend, PostgreSQL 18, and Mailpit development environment. Copy `.env.example` to the ignored `.env` file and replace the sample database password before starting it. Never commit `.env`.
 
 ## Team rules
 
@@ -19,6 +19,7 @@ Docker Compose provides the shared backend, PostgreSQL 18, and Mailpit developme
 | `POSTGRES_PASSWORD` | Yes | Local-only database password; replace the example value |
 | `POSTGRES_PORT` | No | Host PostgreSQL port; defaults to `5432` |
 | `BACKEND_PORT` | No | Host backend port; defaults to `8080` |
+| `FRONTEND_PORT` | No | Host Vite development port; defaults to `5173` |
 | `MAILPIT_SMTP_PORT` | No | Host SMTP port; defaults to `1025` |
 | `MAILPIT_UI_PORT` | No | Host Mailpit UI port; defaults to `8025` |
 
@@ -33,6 +34,22 @@ Ports bind to `127.0.0.1` so development services are not exposed to the local n
 - Compose also supplies `SPRING_MAIL_HOST=mailpit` and `SPRING_MAIL_PORT=1025`. Outside Docker, the backend uses `localhost:1025` (Mailpit on the host).
 - Flyway is enabled and applies the versioned migrations in `backend/src/main/resources/db/migration`. The merged identity baseline begins with `V1__identity_baseline.sql`; do not modify an applied migration. Add a new versioned migration for later schema changes.
 - `app.mail.from` sets the sender address for emails (default `no-reply@colegioconnect.local`).
+
+## Frontend
+
+- Docker uses Node 24 and `npm ci` with `frontend/package-lock.json` to build the reproducible development image.
+- The container starts the existing Vite `dev` script on port 5173. This is not a Vite production build or production server.
+- Compose sets `VITE_API_TARGET=http://backend:8080`. Browser requests to relative `/api` paths reach Vite on the frontend origin, and Vite forwards them to the backend service on the Compose network.
+- The default browser URL is `http://localhost:5173`. Set `FRONTEND_PORT` in `.env` to avoid a host-port conflict.
+- Source is copied into the image with no bind mount, so rebuild the frontend image after changing source.
+
+Start or rebuild the complete development stack with:
+
+```powershell
+docker compose up --build
+```
+
+See [Gabriel's frontend Compose record](gabriel/infrastructure/frontend-compose.md) for each configuration section, current verification, and runtime limitations.
 
 ## Verification and related documentation
 
