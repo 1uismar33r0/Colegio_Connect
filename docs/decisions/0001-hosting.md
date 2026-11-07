@@ -1,14 +1,30 @@
 # ADR 0001 — Hosting selection after resource measurements
 
-**Status: PROPOSED / PENDING APPROVAL.** Updated 2026-10-26. Owner: Gabriel; reviewers: Cristian and Luis; budget/account owner: not assigned. Related [Issue #4](https://github.com/1uismar33r0/Colegio_Connect/issues/4), aliases and exact acceptance in [traceability](../project/traceability.md).
+**Status: PROPOSED / PENDING APPROVAL.** Updated 2026-11-06; provider research refreshed 2026-11-04. Owner: Gabriel; reviewers: Cristian and Luis; budget/account owner: not assigned. Related [Issue #4](https://github.com/1uismar33r0/Colegio_Connect/issues/4), aliases and exact acceptance in [traceability](../project/traceability.md).
 
 No provider is selected or approved. No recurring payment is authorized. Gabriel reports no provider resources provisioned; this task did not inventory provider accounts. The earlier **$44/month Render recommendation is superseded by a measurement-led decision process**, not by approval of a cheaper configuration.
+
+## November 4 provider refresh and recommendation
+
+**Research result, not an approved deployment decision.** The approved 30-page proposal was rechecked with SHA-256 `88038171ef23ffbd42bcbe38cd0ec5177240e42ab010fb6fbed96107b1b8f98c`. Its near-zero budget, provider-independent email, PostgreSQL 18 baseline, HTTPS/privacy boundary, 25-VU / 5,000-listing workload, and I16 recovery target remain governing constraints. Issue #4 additionally requires an HTTPS deployment and documented CPU/memory.
+
+Keep **Render paid web service plus paid Render Postgres** and **Railway application plus private PostgreSQL** as the two candidates for measured comparison. Neither is approved or provisioned. Render is the provisional first comparison candidate because its documentation describes managed Postgres, private networking, paid-database point-in-time recovery, Docker-compatible web services, and managed TLS. Railway remains a viable comparison because its PostgreSQL service is private by default and exposes service connection variables, but the default single-node service requires an explicit decision about backups, recovery, pooling, and availability.
+
+Do **not** select Fly Managed Postgres for the current proposal: its official Managed Postgres documentation identifies PostgreSQL 16, while the project migration uses PostgreSQL 18 `uuidv7()`, and its Basic managed-database floor is $38/month before storage and application compute. Self-managed Fly Postgres is not a substitute unless the team explicitly accepts ownership of backups, upgrades, recovery, and PostgreSQL 18 verification.
+
+| Candidate | Current official evidence | Decision status |
+| --- | --- | --- |
+| Render paid web service + paid Postgres | Paid Postgres has point-in-time recovery; free web services sleep after 15 minutes and free Postgres expires after 30 days. [Pricing](https://render.com/pricing), [service types](https://render.com/docs/service-types), [FAQ](https://render.com/docs/faq). | Compare after measurements; free tiers do not meet dependable semester persistence/recovery. |
+| Railway application + private PostgreSQL | PostgreSQL is private by default and provides service connection variables; major upgrades provide preflight, backup, and revert. [PostgreSQL](https://docs.railway.com/databases/postgresql), [cost control](https://docs.railway.com/pricing/cost-control). | Compare after confirming PostgreSQL 18, backup/PITR, team access, and connection limits. |
+| Fly Managed Postgres | Basic starts at $38/month plus $0.28/GB storage and official docs identify PostgreSQL 16. [Pricing](https://fly.io/pricing-update/), [Managed Postgres](https://fly.io/docs/mpg/). | Excluded unless the team/advisor approves an exception. |
+
+Before selection, record source SHA and cold-start/idle CPU/RAM/connection/storage measurements; full monthly cost including storage, egress, backups, team access, email and tax; provider/account/billing owner; region; PostgreSQL 18 confirmation; TLS/private-network/secrets configuration; transactional email owner; recovery point/restore ownership; and a timed synthetic-data recovery rehearsal. The local React/authentication preview is not deployed acceptance evidence.
 
 ## Context and requirements
 
 The approved proposal requires a near-zero budget (pp.11,19), Java 25/Spring Boot and PostgreSQL 18 (p.13), HTTPS/privacy, CI verification, and recovery within five minutes with no data loss (I16). Its final workload is at least 5,000 listings, 1,000 users, 50 organizations and 25 concurrent virtual users. The team has not measured the resources needed to meet those targets.
 
-The existing `backend/Dockerfile` packages Java 25 and runs as a non-root user. PR #88's migration uses `uuidv7()`, so the intended PostgreSQL 18 environment must be verified rather than silently replaced with an older major version. PR #89 builds/tests the backend but is not merged and does not deploy it. See [deployment prerequisites](../deployment.md).
+The existing `backend/Dockerfile` packages Java 25 and runs as a non-root user. PR #88's migration uses `uuidv7()`, so the intended PostgreSQL 18 environment must be verified rather than silently replaced with an older major version. PR #89's CI is merged and builds/tests the backend and container, but it does not deploy them. See [deployment prerequisites](../deployment.md).
 
 ## Candidates and cost assumptions
 

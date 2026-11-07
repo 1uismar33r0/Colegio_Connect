@@ -1,23 +1,23 @@
 # Deployment prerequisites and verification plan
 
-**Updated / observed: 2026-10-26. Status: Blocked for hosted acceptance.** No hosted application was verified. Gabriel reports no provider resources provisioned; A1 did not inspect provider accounts or provision anything. This is a prerequisite checklist for [Issue #4](https://github.com/1uismar33r0/Colegio_Connect/issues/4), not an operational runbook for an existing deployment.
+**Updated / observed: 2026-11-04. Status: Blocked for hosted acceptance.** No hosted application was verified and no provider resources were provisioned. This is a prerequisite checklist for [Issue #4](https://github.com/1uismar33r0/Colegio_Connect/issues/4), not an operational runbook for an existing deployment.
 
-The provider/budget decision remains [PROPOSED / PENDING APPROVAL](decisions/0001-hosting.md). Existing local setup is in [environment.md](environment.md); current PR dependencies are in [project status](project/status.md).
+The provider/budget decision remains [PROPOSED / PENDING APPROVAL](decisions/0001-hosting.md). The current research refresh retains Render and Railway for measured comparison and excludes Fly Managed Postgres unless PostgreSQL 18 compatibility and a cost exception are approved. Existing local setup is in [environment.md](environment.md); current PR dependencies are in [project status](project/status.md).
 
 ## Reusable implementation and unresolved dependencies
 
 - `backend/Dockerfile`: Java 25 multi-stage build with a non-root runtime user; context `backend/`. Image packaging skips tests, so successful Maven CI must precede deployment.
 - `compose.yaml`: local PostgreSQL 18.6 and Mailpit services, health ordering, loopback ports and persistent database volume. It is a development stack, not an approved hosted topology. Mailpit is not a production email service.
-- `backend/src/main/resources/application.properties`: Actuator health with details hidden and Flyway enabled. Main has no migrations; PR #88 adds V1 and JPA validation. Startup success on zero migrations does not validate that V1.
-- PR #89 supplies Backend, Container and CI Gate but remains open. No deployment workflow/provider integration exists on main. Its main-only image artifact is also unverified until an actual main push executes it.
+- `backend/src/main/resources/application.properties`: Actuator health with details hidden and Flyway enabled. Main contains the merged V1 identity baseline plus V2 email-code and V3 login-lockout migrations. Later schema work must use new versioned migrations and be revalidated against PostgreSQL 18.
+- CI is present on main after PR #89, and PR #95 merged login/session work. Main push run [41935703633](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/41935703633) built and uploaded `colegio-connect-image-651dea4d71c2a3abb0ba975a5ac5af17c6c0ada6`; that seven-day artifact is packaging evidence, not a deployment pipeline or authorization for provider credentials. Open frontend, authorization, audit, and validation PRs remain separate integration dependencies.
 - Security-sensitive product endpoints and real-user data must wait for the agreed authentication, authorization and privacy checks. An early synthetic-data infrastructure demonstration must explicitly describe its limited scope.
 
 ## Required before provisioning or release
 
 | Prerequisite | Owner | Evidence needed |
 | --- | --- | --- |
-| Review/integrate #89; verify main CI | Gabriel; Cristian/Luis review | Passing run tied to main SHA, image artifact, failures/cancellations cannot pass gate |
-| Review/integrate #88 | Cristian; Gabriel support | Fresh PostgreSQL 18 migration/JPA CI, schema/role contract review |
+| Preserve main CI and image-artifact evidence | Gabriel; Cristian/Luis review | Current evidence: run `41935703633` at `651dea4`; revalidate the tested SHA before release and prove failures/cancellations cannot pass the gate |
+| Validate future schema changes | Cristian; Gabriel support | Fresh PostgreSQL 18 migration/JPA CI and schema/role contract review for every new migration |
 | Repository/deployment controls | Luis + Gabriel | Effective branch rules and available environment protection; secrets inaccessible to PR jobs |
 | Measurements and provider decision | Gabriel + budget/account owner | Idle/startup/load RAM/CPU, connection use, approved region/service sizes, costs/limits, account/billing/recovery owner |
 | Runtime configuration and email | Gabriel + Cristian | Secret names, private network configuration, database version, email provider/sender requirements and delivery tests |
@@ -33,7 +33,7 @@ The provider/budget decision remains [PROPOSED / PENDING APPROVAL](decisions/000
 | `SPRING_MAIL_HOST`, `SPRING_MAIL_PORT` | Compose points to Mailpit | Actual mail integration/provider, credentials and sender; current variables alone do not implement email |
 | `SERVER_PORT` / provider port setting | Spring Boot defaults to 8080 | Verify provider listener routing; do not assume its generic `PORT` variable is consumed automatically |
 | Provider deployment credential/service identifier | No configuration implemented | Least privilege, owner, branch-restricted environment, expiry/rotation; choose names only with provider decision |
-| Frontend API base URL / allowed origins / cookie settings | No React/auth implementation yet | Agree exact names and values with frontend/API contract; do not invent runtime settings as if supported |
+| Frontend API base URL / allowed origins / cookie settings | PR #106 proposes `VITE_API_TARGET`; login/session support is merged, but the frontend and authorization contracts remain unmerged | Agree exact hosted values with the frontend/API contract; do not invent runtime settings as if supported |
 
 `POSTGRES_*` and host-port values in `.env.example` describe local Compose. Do not copy local passwords or Mailpit settings to hosting. Record only names and locations of secrets, never values or credential-bearing URLs.
 
