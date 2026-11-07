@@ -302,7 +302,11 @@ function Invoke-FreshLogin {
         throw 'Login response did not identify the expected student.'
     }
 
-    $meResponse = Invoke-WebRequest -Uri "$BackendBaseUrl/api/auth/me" -Method Get -WebSession $csrf.Session -TimeoutSec 5
+    $sessionCookie = @($csrf.Session.Cookies.GetAllCookies() | Where-Object { $_.Name -eq 'JSESSIONID' }) | Select-Object -Last 1
+    if ($null -eq $sessionCookie) {
+        throw 'Login did not issue a JSESSIONID cookie.'
+    }
+    $meResponse = Invoke-WebRequest -Uri "$BackendBaseUrl/api/auth/me" -Method Get -Headers @{ Cookie = "JSESSIONID=$($sessionCookie.Value)" } -TimeoutSec 5
     $me = (Convert-ResponseContent $meResponse) | ConvertFrom-Json
     if ($me.id -ne $ExpectedUserId -or $me.email -ne $Email -or $me.accountType -ne 'UPRM_MEMBER') {
         throw 'Authenticated session did not identify the expected student.'
