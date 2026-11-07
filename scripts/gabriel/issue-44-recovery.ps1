@@ -13,25 +13,60 @@ $PollMilliseconds = 1000
 $AllowedServices = @('postgres', 'mailpit', 'backend')
 $VolumeName = "${ProjectName}_postgres_data"
 $NetworkName = "${ProjectName}_default"
-$ComposeArguments = @('compose', '-p', $ProjectName)
+$RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+$ComposeFile = Join-Path $RepositoryRoot 'compose.yaml'
+$ComposeArguments = @('compose', '--file', $ComposeFile, '--project-directory', $RepositoryRoot, '-p', $ProjectName)
 
 function Invoke-Docker {
     param(
         [Parameter(Mandatory)]
         [string[]]$Arguments,
-        [switch]$AllowFailure
+        [switch]$AllowFailure,
+        [ValidateRange(1, 600)]
+        [int]$TimeoutSeconds = 30
     )
 
-    $output = @(& docker @Arguments 2>&1)
-    $exitCode = $LASTEXITCODE
-    $text = ($output | ForEach-Object { $_.ToString() }) -join "`n"
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = 'docker'
+    $startInfo.UseShellExecute = $false
+    $startInfo.CreateNoWindow = $true
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    foreach ($argument in $Arguments) {
+        [void]$startInfo.ArgumentList.Add($argument)
+    }
+
+    $process = [System.Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    if (-not $process.Start()) {
+        throw 'Docker process did not start.'
+    }
+    $standardOutput = $process.StandardOutput.ReadToEndAsync()
+    $standardError = $process.StandardError.ReadToEndAsync()
+    $completed = $process.WaitForExit($TimeoutSeconds * 1000)
+    if (-not $completed) {
+        try {
+            $process.Kill($true)
+        } catch {
+        }
+        $process.WaitForExit()
+    }
+
+    $text = @($standardOutput.GetAwaiter().GetResult(), $standardError.GetAwaiter().GetResult()) |
+        Where-Object { $_ } |
+        ForEach-Object { $_.Trim() } |
+        Join-String -Separator "`n"
+    $exitCode = if ($completed) { $process.ExitCode } else { 124 }
+    $process.Dispose()
     if (-not $AllowFailure -and $exitCode -ne 0) {
-        throw "Docker command failed with exit code $exitCode.`n$text"
+        $reason = if ($completed) { "failed with exit code $exitCode" } else { "timed out after $TimeoutSeconds seconds" }
+        throw "Docker command $reason.`n$text"
     }
 
     [pscustomobject]@{
         ExitCode = $exitCode
         Output = $text.Trim()
+        TimedOut = -not $completed
     }
 }
 
@@ -39,10 +74,12 @@ function Invoke-Compose {
     param(
         [Parameter(Mandatory)]
         [string[]]$Arguments,
-        [switch]$AllowFailure
+        [switch]$AllowFailure,
+        [ValidateRange(1, 600)]
+        [int]$TimeoutSeconds = 30
     )
 
-    Invoke-Docker -Arguments ($ComposeArguments + $Arguments) -AllowFailure:$AllowFailure
+    Invoke-Docker -Arguments ($ComposeArguments + $Arguments) -AllowFailure:$AllowFailure -TimeoutSeconds $TimeoutSeconds
 }
 
 function Get-FreeLoopbackPort {
@@ -135,6 +172,30 @@ function Assert-ComposeConfiguration {
 
     if (-not $config.volumes.PSObject.Properties.Name.Contains('postgres_data')) {
         throw 'Resolved Compose configuration is missing postgres_data.'
+    }
+    $volumeConfig = $config.volumes.postgres_data
+    if ([string]$volumeConfig.name -ne $VolumeName) {
+        throw "Resolved PostgreSQL volume is not $VolumeName."
+    }
+    if ($volumeConfig.PSObject.Properties.Name.Contains('external') -and [bool]$volumeConfig.external) {
+        throw 'Resolved PostgreSQL volume must not be external.'
+    }
+    $postgresMount = @($config.services.postgres.volumes) | Where-Object {
+        $_.type -eq 'volume' -and $_.source -eq 'postgres_data' -and $_.target -eq '/var/lib/postgresql'
+    }
+    if ($postgresMount.Count -ne 1) {
+        throw 'PostgreSQL must mount only the project postgres_data volume at /var/lib/postgresql.'
+    }
+
+    if (-not $config.networks.PSObject.Properties.Name.Contains('default')) {
+        throw 'Resolved Compose configuration is missing the default network.'
+    }
+    $networkConfig = $config.networks.default
+    if ([string]$networkConfig.name -ne $NetworkName) {
+        throw "Resolved default network is not $NetworkName."
+    }
+    if ($networkConfig.PSObject.Properties.Name.Contains('external') -and [bool]$networkConfig.external) {
+        throw 'Resolved default network must not be external.'
     }
 
     [pscustomobject]@{
@@ -235,7 +296,7 @@ function Invoke-PsqlScalar {
         [switch]$AllowFailure
     )
 
-    $result = Invoke-Compose -Arguments @('exec', '-T', 'postgres', 'psql', '-X', '-U', $env:POSTGRES_USER, '-d', $env:POSTGRES_DB, '-Atq', '-c', $Sql) -AllowFailure:$AllowFailure
+    $result = Invoke-Compose -Arguments @('exec', '-T', '-e', 'PGCONNECT_TIMEOUT=5', '-e', 'PGOPTIONS=-c statement_timeout=5000', 'postgres', 'psql', '-X', '-U', $env:POSTGRES_USER, '-d', $env:POSTGRES_DB, '-Atq', '-c', $Sql) -AllowFailure:$AllowFailure -TimeoutSeconds 10
     if ($AllowFailure -and $result.ExitCode -ne 0) {
         return $null
     }
@@ -342,10 +403,16 @@ function Invoke-RecoveryTrial {
         $Baseline
     )
 
-    $beforeStart = Get-PostmasterStartTime
-    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-    $restart = Invoke-Compose -Arguments @('restart', 'postgres') -AllowFailure
     $errors = [System.Collections.Generic.List[string]]::new()
+    $beforeStart = $null
+    try {
+        $beforeStart = Get-PostmasterStartTime
+    } catch {
+        $errors.Add("Pre-restart database probe: $($_.Exception.Message)")
+    }
+
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $restart = Invoke-Compose -Arguments @('restart', 'postgres') -AllowFailure -TimeoutSeconds 290
     if ($restart.ExitCode -ne 0) {
         $errors.Add("PostgreSQL restart command failed with exit code $($restart.ExitCode).")
     }
@@ -360,7 +427,7 @@ function Invoke-RecoveryTrial {
         if ($null -eq $databaseSeconds) {
             try {
                 $candidateStart = Get-PostmasterStartTime -AllowFailure
-                if ($candidateStart -and [decimal]$candidateStart -ne [decimal]$beforeStart) {
+                if ($candidateStart) {
                     $afterStart = $candidateStart
                     $databaseSeconds = [math]::Round($stopwatch.Elapsed.TotalSeconds, 3)
                 }
@@ -405,7 +472,7 @@ function Invoke-RecoveryTrial {
         $errors.Add("Data integrity probe: $($_.Exception.Message)")
     }
 
-    $startChanged = $null -ne $afterStart -and [decimal]$afterStart -ne [decimal]$beforeStart
+    $startChanged = $null -ne $beforeStart -and $null -ne $afterStart -and [decimal]$afterStart -ne [decimal]$beforeStart
     $integrity = $null -ne $signature -and $signature.Count -eq $Baseline.Count -and $signature.Checksum -eq $Baseline.Checksum
     $passed = $restart.ExitCode -eq 0 -and $null -ne $databaseSeconds -and $databaseSeconds -lt $RecoveryTargetSeconds -and
         $null -ne $loginSeconds -and $loginSeconds -lt $RecoveryTargetSeconds -and $startChanged -and $health -and $integrity
@@ -421,6 +488,49 @@ function Invoke-RecoveryTrial {
         Verdict = if ($passed) { 'PASS' } else { 'FAIL' }
         Errors = @($errors)
     }
+}
+
+function Invoke-AllRecoveryTrials {
+    param(
+        [Parameter(Mandatory)]
+        [string]$BackendBaseUrl,
+        [Parameter(Mandatory)]
+        [string]$Email,
+        [Parameter(Mandatory)]
+        [string]$Password,
+        [Parameter(Mandatory)]
+        [string]$UserId,
+        [Parameter(Mandatory)]
+        $Baseline
+    )
+
+    $trialResults = [System.Collections.Generic.List[object]]::new()
+    foreach ($trial in 1..$TrialCount) {
+        try {
+            $trialResult = Invoke-RecoveryTrial -Trial $trial -BackendBaseUrl $BackendBaseUrl -Email $Email -Password $Password -UserId $UserId -Baseline $Baseline
+        } catch {
+            $trialResult = [pscustomobject]@{
+                Trial = $trial
+                DatabaseRecoverySeconds = $null
+                FreshLoginSeconds = $null
+                PostgresStartChanged = $false
+                BackendHealth = 'NOT_UP'
+                RecordCount = $null
+                ChecksumMatches = $false
+                Verdict = 'FAIL'
+                Errors = @("Unexpected trial error: $($_.Exception.Message)")
+            }
+        }
+        $trialResults.Add($trialResult)
+        [Console]::Out.WriteLine(([pscustomobject]@{ Event = 'TrialResult'; Result = $trialResult } | ConvertTo-Json -Compress -Depth 6))
+    }
+
+    $trialResults.ToArray()
+}
+
+function Start-IsolatedServices {
+    $script:resourcesCreated = $true
+    Invoke-Compose -Arguments @('up', '-d', '--build', '--wait', '--wait-timeout', '300', 'postgres', 'mailpit', 'backend') -TimeoutSeconds 300 | Out-Null
 }
 
 function Assert-IsolatedResourceLabels {
@@ -445,7 +555,7 @@ function Assert-IsolatedResourceLabels {
 
 function Remove-IsolatedResources {
     Assert-IsolatedResourceLabels
-    $down = Invoke-Compose -Arguments @('down', '--volumes', '--remove-orphans') -AllowFailure
+    $down = Invoke-Compose -Arguments @('down', '--volumes', '--remove-orphans') -AllowFailure -TimeoutSeconds 60
     if ($down.ExitCode -ne 0) {
         throw "Isolated Compose cleanup failed with exit code $($down.ExitCode)."
     }
@@ -531,8 +641,7 @@ try {
         return
     }
 
-    $up = Invoke-Compose -Arguments @('up', '-d', '--build', '--wait', '--wait-timeout', '300', 'postgres', 'mailpit', 'backend')
-    $resourcesCreated = $true
+    Start-IsolatedServices
 
     $backendBaseUrl = "http://127.0.0.1:$($env:BACKEND_PORT)"
     $mailpitBaseUrl = "http://127.0.0.1:$($env:MAILPIT_UI_PORT)"
@@ -552,8 +661,8 @@ try {
     Invoke-FreshLogin -BackendBaseUrl $backendBaseUrl -Email $studentEmail -Password $studentPassword -ExpectedUserId $userId | Out-Null
     $baseline = Get-DataSignature -UserId $userId
 
-    foreach ($trial in 1..$TrialCount) {
-        $results.Add((Invoke-RecoveryTrial -Trial $trial -BackendBaseUrl $backendBaseUrl -Email $studentEmail -Password $studentPassword -UserId $userId -Baseline $baseline))
+    foreach ($trialResult in @(Invoke-AllRecoveryTrials -BackendBaseUrl $backendBaseUrl -Email $studentEmail -Password $studentPassword -UserId $userId -Baseline $baseline)) {
+        $results.Add($trialResult)
     }
 
     [pscustomobject]@{

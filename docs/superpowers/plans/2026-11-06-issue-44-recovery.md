@@ -128,7 +128,7 @@ Add a dated Issue #44 development-log entry, a new test-evidence record, and a m
 
 Require `git diff --check`, resolving relative links, no published credentials/cookies/codes, consistent trial numbers across records, and no `docs/gabriel/README.md` overlap with PR #107.
 
-- [ ] **Step 5: Commit the evidence increment**
+- [x] **Step 5: Commit the evidence increment**
 
 Commit as `docs(recovery): record three restart trials`.
 
@@ -141,11 +141,11 @@ Commit as `docs(recovery): record three restart trials`.
 - Consumes: Tasks 1-3 commits and evidence.
 - Produces: one open focused PR referencing Issue #44, with teammate review requested and actual CI status.
 
-- [ ] **Step 1: Re-run non-destructive static checks**
+- [x] **Step 1: Re-run non-destructive static checks**
 
 Re-run script parsing/safety assertions, Compose rendering, documentation links/secret scan, backend tests as appropriate, and inspect the full diff against `origin/main`.
 
-- [ ] **Step 2: Obtain fresh whole-branch review**
+- [x] **Step 2: Obtain fresh whole-branch review**
 
 Review timer origin, fresh-session login, database-backed probe, count/checksum stability, three-trial immutability, cleanup targeting, evidence accuracy, and application-source non-modification. Fix Critical/Important findings with test-first evidence.
 

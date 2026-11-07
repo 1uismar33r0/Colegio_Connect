@@ -134,7 +134,7 @@ The first section fixes the isolated project name, three-trial count, 300-second
 
 ### Docker and Compose boundary
 
-`Invoke-Docker` and `Invoke-Compose` execute commands, capture exit codes, and fail closed unless a probe explicitly allows failure. Collision checks refuse any pre-existing container, network, or volume with the rehearsal identity. Configuration validation requires PostgreSQL, Mailpit, and backend services; loopback-only published ports; `postgres:5432` as the backend datasource; healthy backend dependencies; and the project-scoped database volume.
+`Invoke-Docker` and `Invoke-Compose` execute commands through a bounded native process, capture exit codes, terminate a command that exceeds its declared deadline, and fail closed unless a probe explicitly allows failure. The script pins the repository's `compose.yaml` and project directory so ambient `COMPOSE_FILE` overrides cannot redirect the rehearsal. Collision checks refuse any pre-existing container, network, or volume with the rehearsal identity. Configuration validation requires PostgreSQL, Mailpit, and backend services; loopback-only published ports; `postgres:5432` as the backend datasource; healthy backend dependencies; the non-external project-scoped volume mounted at `/var/lib/postgresql`; and the non-external project-scoped default network.
 
 ### Registration, verification, and session flow
 
@@ -144,15 +144,15 @@ The backend sets `JSESSIONID` as `Secure`. PowerShell does not automatically sen
 
 ### Database signature
 
-`Invoke-PsqlScalar` runs bounded, noninteractive queries inside only the isolated PostgreSQL service. `Get-DataSignature` combines the synthetic user's stable user fields and related email-code fields in a fixed order, then returns a row count and MD5 integrity signature. The MD5 value is an equality checksum, not a password-security mechanism. `failed_login_attempts` and `locked_until` remain excluded because successful authentication may reset them legitimately.
+`Invoke-PsqlScalar` runs bounded, noninteractive queries inside only the isolated PostgreSQL service with connection, statement, and Docker-process deadlines. `Get-DataSignature` combines the synthetic user's stable user fields and related email-code fields in a fixed order, then returns a row count and MD5 integrity signature. The MD5 value is an equality checksum, not a password-security mechanism. `failed_login_attempts` and `locked_until` remain excluded because successful authentication may reset them legitimately.
 
 ### Trial timing and verdict
 
-`Invoke-RecoveryTrial` reads the old PostgreSQL start time, starts one stopwatch immediately before `docker compose restart postgres`, and never restarts the backend. It polls both database and authentication behavior from that same origin. Database recovery requires a successful query from a different PostgreSQL start time. Each login attempt creates a new cookie session and CSRF token. After recovery it checks actuator health and compares the count and checksum with the original baseline. Any missing condition makes that recorded trial fail.
+`Invoke-RecoveryTrial` reads the old PostgreSQL start time, starts one stopwatch immediately before `docker compose restart postgres`, and never restarts the backend. It polls both database and authentication behavior from that same origin. Database recovery requires a successful query from a different PostgreSQL start time. Each login attempt creates a new cookie session and CSRF token. After recovery it checks actuator health and compares the count and checksum with the original baseline. Any missing condition makes that recorded trial fail. The three-trial coordinator catches unexpected per-trial failures, immediately emits each sanitized trial result, and continues until exactly three results exist; a later failure therefore cannot erase an earlier result.
 
 ### Cleanup and preservation
 
-Cleanup inspects Compose project and service labels before issuing the project-qualified `down --volumes --remove-orphans`. It then requires the isolated containers, network, and volume to be absent and every pre-existing container ID and volume name to remain. It separately requires the original `colegio-connect-dev` project to remain running and its PostgreSQL volume to remain present.
+Cleanup eligibility is established before Compose startup, so a partial `up` failure still enters cleanup. Cleanup inspects Compose project and service labels before issuing the project-qualified `down --volumes --remove-orphans`. It then requires the isolated containers, network, and volume to be absent and every pre-existing container ID and volume name to remain. It separately requires the original `colegio-connect-dev` project to remain running and its PostgreSQL volume to remain present.
 
 ## Actual results
 
