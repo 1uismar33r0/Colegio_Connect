@@ -40,25 +40,25 @@
 - Consumes: `compose.yaml`, `.env.example`, registration/authentication endpoints, Mailpit API, PostgreSQL schema, Docker labels.
 - Produces: one command that prints a sanitized baseline and exactly three structured trial results, returning nonzero when setup, a trial, integrity, or cleanup fails.
 
-- [ ] **Step 1: Run the missing-script test and verify RED**
+- [x] **Step 1: Run the missing-script test and verify RED**
 
 Run PowerShell syntax parsing and required-function/constant assertions against `scripts/gabriel/issue-44-recovery.ps1`.
 
 Expected: FAIL because the script does not exist.
 
-- [ ] **Step 2: Implement the minimal orchestrator**
+- [x] **Step 2: Implement the minimal orchestrator**
 
 Use focused functions for Docker invocation, free-port selection, Compose rendering, CSRF session creation, bounded HTTP requests, Mailpit code retrieval, `psql` scalar queries, baseline/count/checksum collection, fresh login verification, one restart trial, and resource identity/cleanup checks. The main flow must run setup, baseline, trials 1-3, sanitized result output, and cleanup in `finally`.
 
-- [ ] **Step 3: Run syntax and static safety assertions and verify GREEN**
+- [x] **Step 3: Run syntax and static safety assertions and verify GREEN**
 
 Require successful PowerShell parsing; fixed isolated project name; explicit three-trial loop; 300-second ceiling; one-second poll interval; `restart postgres`; no unqualified `down`; `down --volumes` only after label checks; no hard-coded student/database passwords, cookies, CSRF tokens, or verification codes.
 
-- [ ] **Step 4: Validate the rendered isolated Compose configuration without startup**
+- [x] **Step 4: Validate the rendered isolated Compose configuration without startup**
 
 Use the script's validation path or equivalent PowerShell assertions to require free loopback ports, backend datasource `postgres:5432`, service health dependencies, and project-scoped `postgres_data`, while comparing the live `colegio-connect-dev` container IDs and volume before/after.
 
-- [ ] **Step 5: Commit the implementation checkpoint**
+- [x] **Step 5: Commit the implementation checkpoint**
 
 Commit the script plus approved pre-test design/plan as `test(recovery): add isolated restart rehearsal`.
 
@@ -71,31 +71,31 @@ Commit the script plus approved pre-test design/plan as `test(recovery): add iso
 - Consumes: Task 1 script and the existing local Docker engine.
 - Produces: one immutable observed baseline and exactly three trial rows, plus sanitized failure details and resource-preservation evidence.
 
-- [ ] **Step 1: Snapshot pre-existing Docker resources**
+- [x] **Step 1: Snapshot pre-existing Docker resources**
 
 Record the `colegio-connect-dev` project, its four container IDs/states, its PostgreSQL volume identity, and the full pre-existing container/volume sets.
 
-- [ ] **Step 2: Execute the script once**
+- [x] **Step 2: Execute the script once**
 
 Run the script from the repository root. Do not rerun a failed trial as a replacement. Capture complete sanitized stdout/stderr and exit code in the plan workspace.
 
-- [ ] **Step 3: Verify the baseline**
+- [x] **Step 3: Verify the baseline**
 
 Require successful API registration and verification through Mailpit; fresh login and `/me` for one student UUID; database-backed source path; one stable row count/checksum pair.
 
-- [ ] **Step 4: Verify exactly three trial results**
+- [x] **Step 4: Verify exactly three trial results**
 
 For each trial require database recovery seconds, fresh-login seconds, changed PostgreSQL start time, backend `UP`, matching count/checksum, and explicit PASS/FAIL. Confirm each measurement is below 300 seconds only when the trial says PASS.
 
-- [ ] **Step 5: Verify cleanup and resource preservation**
+- [x] **Step 5: Verify cleanup and resource preservation**
 
 Require zero remaining isolated containers/networks/volumes, unchanged pre-existing resource sets, and the original `colegio-connect-dev` containers still running with its database volume present.
 
-- [ ] **Step 6: Fix only reproduced defects with RED-GREEN evidence**
+- [x] **Step 6: Fix only reproduced defects with RED-GREEN evidence**
 
 If execution exposes a script defect, preserve the failed output, add the smallest static or integration assertion that reproduces it, correct the script, and rerun the experiment only when the original run did not complete three valid trials. Never replace a completed failed trial.
 
-- [ ] **Step 7: Commit any required script correction**
+- [x] **Step 7: Commit any required script correction**
 
 Use a focused `fix(recovery): ...` commit only if Step 6 changed the script.
 
@@ -112,19 +112,19 @@ Use a focused `fix(recovery): ...` commit only if Step 6 changed the script.
 - Consumes: Task 2 sanitized output, tested commit SHA, Docker/PowerShell versions, and source inspection.
 - Produces: one authoritative local recovery record with individual trial measurements, commands, environment, behavior explanation, limitations, and evidence links.
 
-- [ ] **Step 1: Replace every `Not run` result cell with observed evidence**
+- [x] **Step 1: Replace every `Not run` result cell with observed evidence**
 
 Record each database/login duration, PostgreSQL start change, backend health, count/checksum comparison, and verdict. Preserve all failed trials and explain any database-to-login delay using established logs; label unproven causes as hypotheses.
 
-- [ ] **Step 2: Explain every important script section**
+- [x] **Step 2: Explain every important script section**
 
 Document inputs, output, reason, API/CSRF/Mailpit flow, stable checksum fields and exclusions, timer origin, poll interval/timeouts, error behavior, resource ownership, and cleanup.
 
-- [ ] **Step 3: Update shared evidence records**
+- [x] **Step 3: Update shared evidence records**
 
 Add a dated Issue #44 development-log entry, a new test-evidence record, and a midterm-index link. State local scope and leave backup restore/full I16/issue closure incomplete.
 
-- [ ] **Step 4: Run documentation and secret checks**
+- [x] **Step 4: Run documentation and secret checks**
 
 Require `git diff --check`, resolving relative links, no published credentials/cookies/codes, consistent trial numbers across records, and no `docs/gabriel/README.md` overlap with PR #107.
 

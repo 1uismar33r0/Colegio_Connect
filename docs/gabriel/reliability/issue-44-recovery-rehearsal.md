@@ -2,7 +2,7 @@
 
 ## Status
 
-**Design approved; implementation and measurements not yet run.** This record must not claim a result until the script has executed all three trials.
+**Local rehearsal passed on 2026-11-07.** All three recorded trials met the local five-minute target, authenticated the same synthetic student, and matched the original database count and checksum. Hosted backup restoration, disaster recovery, teammate review, and final I16 acceptance remain incomplete.
 
 ## Objective
 
@@ -96,13 +96,90 @@ Each trial passes only when all conditions are true:
 
 Any timeout, unchanged PostgreSQL start time, authentication failure, unhealthy backend, count mismatch, or checksum mismatch makes that trial fail. A failed trial remains in the evidence table and is never replaced with a favorable rerun.
 
-## Planned result table
+## Test environment
+
+- Repository baseline: verified `main` revision `e5cc181b3ebcf7b5cb1050547c1d82922068c064`.
+- Tested script revision: `1f2d5b1` on `gabriel/issue-44-recovery`.
+- Host orchestration: PowerShell 7.6.9 on Windows.
+- Containers: Docker Desktop engine and client 29.5.2; Docker Compose 5.1.3.
+- Images and services: PostgreSQL 18.6, Mailpit 1.31.5, and the existing Spring Boot backend image built from the tested branch.
+- Isolated Compose project: `colegio-connect-issue-44-recovery`.
+- Poll interval: 1,000 milliseconds.
+- Per-trial ceiling: 300 seconds from immediately before the restart command.
+
+The script selected unused loopback ports at runtime, generated credentials in memory, and created a new `colegio-connect-issue-44-recovery_postgres_data` volume. It did not publish the synthetic email, password, verification code, cookies, or CSRF token.
+
+## Commands used
+
+From the repository root:
+
+```powershell
+git rev-parse HEAD
+& scripts/gabriel/issue-44-recovery.ps1 -ValidateOnly
+& scripts/gabriel/issue-44-recovery.ps1
+docker ps -a --filter 'label=com.docker.compose.project=colegio-connect-issue-44-recovery'
+docker volume ls --filter 'label=com.docker.compose.project=colegio-connect-issue-44-recovery'
+docker network ls --filter 'label=com.docker.compose.project=colegio-connect-issue-44-recovery'
+docker ps --filter 'label=com.docker.compose.project=colegio-connect-dev'
+docker volume inspect colegio-connect-dev_postgres_data
+```
+
+Validation mode rendered and inspected the resolved Compose configuration without starting services. The normal command performed setup, baseline creation, exactly three trials, sanitized JSON output, cleanup, and preservation checks.
+
+## Script walkthrough
+
+### Constants and generated inputs
+
+The first section fixes the isolated project name, three-trial count, 300-second target, one-second poll interval, allowed service names, and expected resource names. It generates a database password, student password, synthetic UPRM email, and four free loopback ports at runtime. Existing process environment values are restored in `finally`.
+
+### Docker and Compose boundary
+
+`Invoke-Docker` and `Invoke-Compose` execute commands, capture exit codes, and fail closed unless a probe explicitly allows failure. Collision checks refuse any pre-existing container, network, or volume with the rehearsal identity. Configuration validation requires PostgreSQL, Mailpit, and backend services; loopback-only published ports; `postgres:5432` as the backend datasource; healthy backend dependencies; and the project-scoped database volume.
+
+### Registration, verification, and session flow
+
+The HTTP helpers create a new cookie session, obtain a CSRF token, and echo it for POST requests. Mailpit polling selects only the message addressed to the synthetic account and extracts the code without printing it. The script registers and verifies the account, then performs a fresh login and `/api/auth/me` request for the expected ID, email, and account type.
+
+The backend sets `JSESSIONID` as `Secure`. PowerShell does not automatically send that cookie to a plain-HTTP loopback URL, so the probe explicitly replays the newly issued session cookie only for `/api/auth/me`. This preserves a fresh backend-created session without changing Spring Boot configuration or application source.
+
+### Database signature
+
+`Invoke-PsqlScalar` runs bounded, noninteractive queries inside only the isolated PostgreSQL service. `Get-DataSignature` combines the synthetic user's stable user fields and related email-code fields in a fixed order, then returns a row count and MD5 integrity signature. The MD5 value is an equality checksum, not a password-security mechanism. `failed_login_attempts` and `locked_until` remain excluded because successful authentication may reset them legitimately.
+
+### Trial timing and verdict
+
+`Invoke-RecoveryTrial` reads the old PostgreSQL start time, starts one stopwatch immediately before `docker compose restart postgres`, and never restarts the backend. It polls both database and authentication behavior from that same origin. Database recovery requires a successful query from a different PostgreSQL start time. Each login attempt creates a new cookie session and CSRF token. After recovery it checks actuator health and compares the count and checksum with the original baseline. Any missing condition makes that recorded trial fail.
+
+### Cleanup and preservation
+
+Cleanup inspects Compose project and service labels before issuing the project-qualified `down --volumes --remove-orphans`. It then requires the isolated containers, network, and volume to be absent and every pre-existing container ID and volume name to remain. It separately requires the original `colegio-connect-dev` project to remain running and its PostgreSQL volume to remain present.
+
+## Actual results
+
+The baseline contained two selected records: one verified student row and one used verification-code row. Its deterministic checksum was `eae1891050f25773acc0cb30cb5bddae`. The same baseline was reused for every trial.
 
 | Trial | Database recovery seconds | Fresh-login seconds | PostgreSQL start changed | Backend health | Count/checksum match | Verdict |
 | --- | ---: | ---: | --- | --- | --- | --- |
-| 1 | Not run | Not run | Not run | Not run | Not run | Not run |
-| 2 | Not run | Not run | Not run | Not run | Not run | Not run |
-| 3 | Not run | Not run | Not run | Not run | Not run | Not run |
+| 1 | 1.013 | 1.094 | Yes | UP | 2 records; checksum matched | PASS |
+| 2 | 0.954 | 1.029 | Yes | UP | 2 records; checksum matched | PASS |
+| 3 | 0.981 | 1.057 | Yes | UP | 2 records; checksum matched | PASS |
+
+Every database and login measurement was below 300 seconds. Fresh sign-in followed database readiness by 0.081, 0.075, and 0.076 seconds respectively. Those small gaps are observed request-processing differences; the experiment does not isolate their internal causes.
+
+Post-run inspection found no container, network, or volume labeled for the isolated project. The original four `colegio-connect-dev` containers retained their pre-run IDs and remained running, and `colegio-connect-dev_postgres_data` retained its Compose project label.
+
+## Observed pre-trial failure
+
+The first runtime attempt stopped before Trial 1: registration, verification, and login succeeded, but `/api/auth/me` returned HTTP 401 because PowerShell did not automatically replay the backend's `Secure` session cookie over HTTP. The disposable project was removed and the development project remained intact. This was not counted as a trial and no failed trial was replaced. After the cookie probe was corrected and committed as `1f2d5b1`, the next experiment produced the three immutable results above.
+
+## GitHub evidence
+
+- Canonical issue: [Issue #44](https://github.com/1uismar33r0/Colegio_Connect/issues/44), left open.
+- Branch: `gabriel/issue-44-recovery`.
+- Implementation checkpoint: `7c09313`.
+- Verified cookie-probe correction: `1f2d5b1`.
+- Test record: [TE-10](../../testing/test-evidence.md#te-10).
+- Pull request and teammate review: not yet created at the time of this measurement record; add the live reference after publication.
 
 ## Safety precautions
 
@@ -117,4 +194,4 @@ Any timeout, unchanged PostgreSQL start time, authentication failure, unhealthy 
 
 ## Limitations
 
-This experiment uses one synthetic verified student and a local Docker volume. It tests process/container restart and backend reconnection, not host loss, storage corruption, point-in-time recovery, hosted snapshots, or restore into an empty volume. Backup restoration remains a separate Issue #44 follow-up, so this rehearsal alone cannot close the issue or establish final I16 acceptance.
+This experiment uses one synthetic verified student and a local Docker volume. It tests process/container restart and backend reconnection, not host loss, storage corruption, point-in-time recovery, hosted snapshots, or restore into an empty volume. The fixture covers identity and verification data, not a representative full production dataset. Backup restoration, hosted-environment testing, teammate review, and applicable CI remain separate Issue #44 work, so this rehearsal alone cannot close the issue or establish final I16 acceptance.

@@ -1,6 +1,6 @@
 # Development log
 
-Reconstructed and last updated **2026-10-26** using the [status checkpoint](../project/status.md), live GitHub PRs/comments/reviews, fetched commits, the approved proposal, and specifically labeled local historical records. Event dates below are UTC where GitHub supplies them; an observation date is not a development date. No hours or unobserved work are inferred.
+Reconstructed and last updated **2026-11-07** using the [status checkpoint](../project/status.md), live GitHub PRs/comments/reviews, fetched commits, the approved proposal, and specifically labeled local historical records. Event dates below are UTC where GitHub supplies them; an observation date is not a development date. No hours or unobserved work are inferred.
 
 | Event date | Developer / Issue | Change and reference | Verification evidence | Remaining work |
 | --- | --- | --- | --- | --- |
@@ -18,6 +18,7 @@ Reconstructed and last updated **2026-10-26** using the [status checkpoint](../p
 | 2026-10-25 23:01Z; Gabriel reply 2026-10-26 | Luis and Gabriel; #2/#6 | Luis identifies missing CI on #88; [Gabriel replies](https://github.com/1uismar33r0/Colegio_Connect/pull/88#issuecomment-6408234838) that #89 passed checks and awaits review/merge | Both comments re-read live; current #88/#89 still open | Review and integration remain required; comment did not change issue state |
 | 2026-10-26 | Gabriel, assisted by Codex; A1, #1/#60 documentation support | Verified PDF retained; status, traceability, progress, incident/test records, hosting/deployment prerequisites, midterm index and permanent policy added on `docs/a1-verified-project-baseline` | [A1 execution/verification record](../superpowers/plans/2026-10-26-a1-documentation-baseline.md) | Team review and merge; later owners update affected evidence as implementation proceeds |
 | 2026-10-30; observed 2026-11-04 | Cristian, Gabriel, Dependabot; #2/#5/#6 | PR #89 CI merged (`76918a8`), PR #88 Flyway identity baseline merged (`ff504e1`), followed by dependency updates PR #92 (`afc10c6`, Spring Boot 4.1.2) and PR #93 (`ad5fc2a`, springdoc 3.2.0) | Live PR records rechecked November 4: Backend, Container, and CI Gate succeeded for each merged PR; closed Issue #6 records empty-DB migration/Hibernate validation | Preserve V1; add versioned migrations for changes. Issue #5 still needs OpenAPI CI artifact evidence. |
+| 2026-11-07 | Gabriel; #44 / I16 local rehearsal | Added a PowerShell recovery orchestrator on `gabriel/issue-44-recovery` from baseline `e5cc181`; registered and verified one synthetic student, restarted only an isolated PostgreSQL service three times, and checked fresh backend login plus persistent record signatures | [TE-10](../testing/test-evidence.md#te-10): database recovery 1.013 / 0.954 / 0.981 s; login recovery 1.094 / 1.029 / 1.057 s; all three kept 2 records and the original checksum; development containers and volume remained intact | Teammate review and CI; hosted recovery and backup restore into an empty volume remain required. This local rehearsal does not complete I16 or close #44. |
 
 ## Adding an entry
 
