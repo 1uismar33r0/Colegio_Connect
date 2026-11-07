@@ -2,7 +2,7 @@
 
 ## Status
 
-**Local rehearsal passed on 2026-11-07.** All three recorded trials met the local five-minute target, authenticated the same synthetic student, and matched the original database count and checksum. Hosted backup restoration, disaster recovery, teammate review, and final I16 acceptance remain incomplete.
+**Two local rehearsals passed on 2026-11-07.** The earlier three-trial run and a separate three-trial verification of the finalized PR #114 script both met the local five-minute target, authenticated their respective synthetic student, and matched each run's original database count and checksum. Hosted backup restoration, disaster recovery, teammate review, and final I16 acceptance remain incomplete.
 
 ## Objective
 
@@ -42,7 +42,7 @@ The script snapshots all pre-existing container IDs and volume names. Cleanup ta
 
 ## Existing API flow used for the baseline
 
-The script follows the backend's real browser security flow:
+The script follows the backend's CSRF and cookie-based authentication flow, with the local Secure-cookie probe limitation documented below:
 
 1. Start a new cookie session.
 2. `GET /api/auth/csrf` and read the `XSRF-TOKEN` cookie.
@@ -99,7 +99,8 @@ Any timeout, unchanged PostgreSQL start time, authentication failure, unhealthy 
 ## Test environment
 
 - Repository baseline: verified `main` revision `e5cc181b3ebcf7b5cb1050547c1d82922068c064`.
-- Tested script revision: `1f2d5b1` on `gabriel/issue-44-recovery`.
+- Earlier measured script revision: `1f2d5b1` on `gabriel/issue-44-recovery`.
+- Finalized-script verification revision: `c259a70`; the script's last functional change was failure-path hardening in `fcc633f`.
 - Host orchestration: PowerShell 7.6.9 on Windows.
 - Containers: Docker Desktop engine and client 29.5.2; Docker Compose 5.1.3.
 - Images and services: PostgreSQL 18.6, Mailpit 1.31.5, and the existing Spring Boot backend image built from the tested branch.
@@ -142,6 +143,8 @@ The HTTP helpers create a new cookie session, obtain a CSRF token, and echo it f
 
 The backend sets `JSESSIONID` as `Secure`. PowerShell does not automatically send that cookie to a plain-HTTP loopback URL, so the probe explicitly replays the newly issued session cookie only for `/api/auth/me`. This preserves a fresh backend-created session without changing Spring Boot configuration or application source.
 
+This manual forwarding verifies backend authentication, session creation, database lookup, and the authenticated `/api/auth/me` response. It does **not** verify how a real browser accepts or sends a Secure cookie over local HTTP. Browser cookie behavior requires a separate browser-based HTTPS or appropriately configured local-environment test.
+
 ### Database signature
 
 `Invoke-PsqlScalar` runs bounded, noninteractive queries inside only the isolated PostgreSQL service with connection, statement, and Docker-process deadlines. `Get-DataSignature` combines the synthetic user's stable user fields and related email-code fields in a fixed order, then returns a row count and MD5 integrity signature. The MD5 value is an equality checksum, not a password-security mechanism. `failed_login_attempts` and `locked_until` remain excluded because successful authentication may reset them legitimately.
@@ -156,6 +159,8 @@ Cleanup eligibility is established before Compose startup, so a partial `up` fai
 
 ## Actual results
 
+### Earlier run — script revision `1f2d5b1`
+
 The baseline contained two selected records: one verified student row and one used verification-code row. Its deterministic checksum was `eae1891050f25773acc0cb30cb5bddae`. The same baseline was reused for every trial.
 
 | Trial | Database recovery seconds | Fresh-login seconds | PostgreSQL start changed | Backend health | Count/checksum match | Verdict |
@@ -168,6 +173,22 @@ Every database and login measurement was below 300 seconds. Fresh sign-in follow
 
 Post-run inspection found no container, network, or volume labeled for the isolated project. The original four `colegio-connect-dev` containers retained their pre-run IDs and remained running, and `colegio-connect-dev_postgres_data` retained its Compose project label.
 
+### Finalized-script verification — revision `c259a70`
+
+This second run used new synthetic credentials, a new synthetic student, new loopback ports, and a newly created disposable PostgreSQL volume. The baseline again contained one verified student row and one used verification-code row. Its distinct deterministic checksum was `237fe030f4f5596c4b9e1c573042f188`.
+
+| Trial | Database recovery seconds | Fresh-login seconds | PostgreSQL start changed | Backend health | Count/checksum match | Verdict |
+| --- | ---: | ---: | --- | --- | --- | --- |
+| 1 | 1.025 | 1.105 | Yes | UP | 2 records; checksum matched | PASS |
+| 2 | 0.981 | 1.054 | Yes | UP | 2 records; checksum matched | PASS |
+| 3 | 1.038 | 1.111 | Yes | UP | 2 records; checksum matched | PASS |
+
+Fresh authentication followed database readiness by 0.080, 0.073, and 0.073 seconds. No trial recorded an error or timeout. Each PostgreSQL start time changed, each health probe returned `UP`, and the same final-run baseline checksum survived all three restarts.
+
+The final script emitted each result immediately and then emitted the complete three-trial summary. Controlled checks also reconfirmed that it pins the repository Compose file and isolated volume, enables cleanup before partial startup can fail, preserves three ordered results when a simulated middle trial fails, and terminates a bounded Docker command without stopping its target container.
+
+Post-run inspection again found no isolated container, network, or volume. The original development containers retained IDs `8530db457ac5`, `f10ea7e36f63`, `2a4bbce1895e`, and `aac930bc226b`; all remained running, and `colegio-connect-dev_postgres_data` remained present with its original Compose label.
+
 ## Observed pre-trial failure
 
 The first runtime attempt stopped before Trial 1: registration, verification, and login succeeded, but `/api/auth/me` returned HTTP 401 because PowerShell did not automatically replay the backend's `Secure` session cookie over HTTP. The disposable project was removed and the development project remained intact. This was not counted as a trial and no failed trial was replaced. After the cookie probe was corrected and committed as `1f2d5b1`, the next experiment produced the three immutable results above.
@@ -179,6 +200,7 @@ The first runtime attempt stopped before Trial 1: registration, verification, an
 - Implementation checkpoint: `7c09313`.
 - Verified cookie-probe correction: `1f2d5b1`.
 - Failure-path hardening: `fcc633f`.
+- Finalized-script verification revision: `c259a70`.
 - Test record: [TE-10](../../testing/test-evidence.md#te-10).
 - Review handoff: [PR #114](https://github.com/1uismar33r0/Colegio_Connect/pull/114), open against `main`; Cristian (`Massinl`) and Luis (`1uismar33r0`) were requested as reviewers. No merge or Issue #44 closure was performed.
 

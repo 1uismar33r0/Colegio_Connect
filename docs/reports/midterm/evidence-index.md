@@ -39,9 +39,9 @@ The following is a proposed organization within 15–20 pages; headings/page all
 
 Luis should obtain the actual proposal evaluation/review from Moodle, email or the advisor and retain the source/date. Record each real comment in the following fields: comment ID; exact comment or faithful linked excerpt; source/date; responsible developer; response; changed issue/file/figure; verification; unresolved item; reviewer confirmation. Until obtained, report explicitly that review-response preparation is blocked on receiving the feedback, not that there were no comments.
 
-## Legitimate preliminary measurements to collect
+## Preliminary measurement status
 
-These are planned experiments, not completed tests. Use synthetic data and record date, exact SHA/image, host CPU/RAM/OS, tool/version, procedure, repetitions/sample count, raw result location, and limitations.
+This table contains both planned experiments and completed preliminary measurements. Each row states its current status and limitations. For every future measurement, use synthetic data and record the date, exact SHA/image, host CPU/RAM/OS, tool/version, procedure, repetitions/sample count, evidence location, and limitations.
 
 | Measurement | What it can support | What it cannot establish | Owner / dependency |
 | --- | --- | --- | --- |
