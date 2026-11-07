@@ -104,6 +104,7 @@ Set `FRONTEND_PORT` and the other documented port variables in `.env` when a def
 | Service state | Inspect the four containers. | **Pass:** backend, PostgreSQL, and Mailpit were healthy; frontend was running. |
 | Volume isolation | Compare the isolated and canonical volume names and Compose labels. | **Pass:** `colegio-connect-frontend-compose-test_postgres_data` belonged to the isolated project and differed from `colegio-connect_postgres_data`. |
 | Scoped cleanup | `docker compose ... down --remove-orphans` without `--volumes` | **Pass:** four isolated containers and their network were removed; zero of eight unrelated containers disappeared; all 11 volumes, including isolated and canonical database volumes, remained. |
+| Final cached-image rerun | Repeat `up -d --no-build --wait`, HTTP/proxy/health assertions, and scoped cleanup. | **Pass:** services reached the wait condition in 12.646 seconds; frontend/backend/Mailpit returned 200, proxied CSRF returned 204 with one cookie, and all unrelated containers and volumes remained. |
 
 ### Runtime results and limitations
 
@@ -117,7 +118,7 @@ The isolated project used these noncanonical host ports:
 - Mailpit UI: 18025.
 - Mailpit SMTP: 11025.
 
-The test used synthetic local database credentials. It did not modify the canonical development project. Cleanup intentionally retained the disposable database volume because the instruction prohibited volume removal; a later explicitly authorized cleanup may remove that isolated volume. The 31.363-second measurement includes image-build work and is not a standalone cold-start-to-health benchmark. The npm audit warning belongs to Luis's existing locked dependency tree and was not changed in this infrastructure task.
+The test used synthetic local database credentials. It did not modify the canonical development project. Cleanup intentionally retained the disposable database volume because the instruction prohibited volume removal; a later explicitly authorized cleanup may remove that isolated volume. The 31.363-second measurement includes image-build work and is not a standalone cold-start-to-health benchmark. The 12.646-second final rerun reused built images and the retained isolated database volume, so it is a warm verification rather than a clean-machine measurement. The npm audit warning belongs to Luis's existing locked dependency tree and was not changed in this infrastructure task.
 
 ## GitHub and review evidence
 
