@@ -19,13 +19,12 @@
 | Frontend setup documentation | The merged `frontend/README.md` is still generic Vite template documentation and does not explain the Colegio Connect proxy, API generation, or local backend integration. | **Luis:** replace it with frontend-owned setup instructions. | No. Gabriel can link the finished instructions from infrastructure documentation. |
 | Issue #2 enforcement | Passing CI exists, but branch protection/rulesets are not verified. The private repository returned a plan/visibility restriction for rulesets, and Gabriel has WRITE rather than ADMIN permission. | **Luis/repository owner:** decide on plan/visibility, then require pull requests, one approval, resolved conversations, and `CI Gate`; block direct/force pushes and deletion as supported. | No. Gabriel can supply the checklist and verify evidence after the owner changes settings. |
 | Authorization implementation | Massini's `feat/issue-9-authorization` and Gabriel's preserved PR #98 overlap. Gabriel no longer independently implements backend features. | **Team, led by Massini:** select the backend path and explicitly transfer any useful tests/security evidence from #98. Preserve the open work until that decision. | No application implementation. Gabriel can review security evidence after the team selects the code path. |
-| Draft PR #107 | PR #106 merged as `a128824`, and #107 was safely retargeted from `Issue#13-frontend-setup` to `main`. Its previous green runs predate the base change, and no teammate review exists. | **Gabriel:** push the documentation checkpoint and verify both new event runs. **Luis or Massini:** review #107. | Partially. Gabriel owns verification but not independent review or merge approval. |
+| Draft PR #107 | PR #106 merged as `a128824`, and #107 was safely retargeted from `Issue#13-frontend-setup` to `main`. Push and PR runs passed at main-based checkpoint `2eb4b03`, but no teammate review exists. | **Luis or Massini:** review #107. **User:** decide whether to merge after reviewing the result. | No further code change. Gabriel can respond to verified CI review findings but does not own independent approval or merge authorization. |
 
 ## Integration order
 
-1. Verify PR #107's new exact head through both push and pull-request events against `main`.
-2. Luis or Massini reviews PR #107; the user decides whether to merge it.
-3. Massini and Luis agree on the role and OpenAPI contracts; Gabriel verifies CI integration without implementing their code.
-4. The repository owner enables enforceable review and required-check rules when the repository plan/visibility supports them.
+1. Luis or Massini reviews PR #107; the user decides whether to merge it.
+2. Massini and Luis agree on the role and OpenAPI contracts; Gabriel verifies CI integration without implementing their code.
+3. The repository owner enables enforceable review and required-check rules when the repository plan/visibility supports them.
 
-Issue #2 remains open until another member's review and enforceable failing-check behavior are demonstrated. Historical push and pull-request execution is verified, but the `main`-based PR needs a fresh exact-revision run. These results do not establish full Indicator I13 acceptance.
+Issue #2 remains open until another member's review and enforceable failing-check behavior are demonstrated. Push and pull-request execution against the `main`-based PR is verified at `2eb4b03`; these results do not establish full Indicator I13 acceptance.
