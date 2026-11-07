@@ -4,16 +4,21 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthorizationPolicy authz) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
                 // Open: registration, verification, login and the CSRF token
@@ -24,8 +29,14 @@ public class SecurityConfig {
                 // Open: health check, API docs and error pages
                 .requestMatchers("/actuator/health", "/v3/api-docs/**",
                         "/swagger-ui.html", "/swagger-ui/**", "/error").permitAll()
-                // Everything else needs a logged-in user
-                .anyRequest().authenticated())
+                // Everything else needs a logged-in user whose account is still active
+                .anyRequest().access((authentication, context) -> {
+                    Authentication user = authentication.get();
+                    boolean loggedIn = user != null
+                            && user.isAuthenticated()
+                            && !(user instanceof AnonymousAuthenticationToken);
+                    return new AuthorizationDecision(loggedIn && authz.isActive(user));
+                }))
             .csrf(csrf -> csrf.spa())
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())

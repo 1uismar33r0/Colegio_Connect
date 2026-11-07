@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
@@ -28,6 +29,8 @@ import com.colegioconnect.accounts.service.LoginService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+
+import io.swagger.v3.oas.annotations.Parameter;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -53,9 +56,12 @@ public class AuthController {
             httpRequest.changeSessionId();
         }
 
-        // Tell Spring Security who is logged in, and save it in the session
+        // Load the user's roles as ROLE_* authorities so @PreAuthorize can check them
+        List<GrantedAuthority> authorities = loginService.authoritiesFor(user);
+
         Authentication authentication = UsernamePasswordAuthenticationToken.authenticated(
-                user.getId().toString(), null, List.of());
+                user.getId().toString(), null, authorities);
+        
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
@@ -65,7 +71,7 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public UserResponse me(Authentication authentication) {
+    public UserResponse me(@Parameter(hidden = true) Authentication authentication) {
         UUID userId = UUID.fromString(authentication.getName());
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
@@ -74,7 +80,7 @@ public class AuthController {
 
     @GetMapping("/csrf")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void csrf(CsrfToken csrfToken) {
+    public void csrf(@Parameter(hidden = true) CsrfToken csrfToken) {
         // Reading the token makes Spring send the XSRF-TOKEN cookie to the browser
         csrfToken.getToken();
     }
