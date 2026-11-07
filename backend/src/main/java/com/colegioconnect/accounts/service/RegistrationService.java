@@ -19,7 +19,7 @@ import com.colegioconnect.accounts.entity.EmailCode;
 import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.repository.EmailCodeRepository;
 import com.colegioconnect.accounts.repository.UserRepository;
-import com.colegioconnect.notifications.EmailService;
+import com.colegioconnect.notifications.NotificationService;
 
 @Service
 public class RegistrationService {
@@ -36,17 +36,17 @@ public class RegistrationService {
     private final UserRepository userRepository;
     private final EmailCodeRepository emailCodeRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+    private final NotificationService notificationService;
     private final SecureRandom random = new SecureRandom();
 
     public RegistrationService(UserRepository userRepository,
                                EmailCodeRepository emailCodeRepository,
                                PasswordEncoder passwordEncoder,
-                               EmailService emailService) {
+                               NotificationService notificationService) {
         this.userRepository = userRepository;
         this.emailCodeRepository = emailCodeRepository;
         this.passwordEncoder = passwordEncoder;
-        this.emailService = emailService;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -132,9 +132,7 @@ public class RegistrationService {
         String codeHash = passwordEncoder.encode(code);
         emailCodeRepository.save(new EmailCode(user, codeHash, Instant.now().plus(CODE_LIFETIME)));
 
-        emailService.send(user.getEmail(),
-                "Your Colegio Connect verification code",
-                "Your verification code is " + code + ". It expires in 10 minutes.");
+        notificationService.sendVerificationCode(user.getEmail(), code, CODE_LIFETIME);
     }
 
     private String normalize(String email) {

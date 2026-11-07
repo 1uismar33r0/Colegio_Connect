@@ -1,8 +1,6 @@
 package com.colegioconnect.accounts;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -13,15 +11,12 @@ import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 
@@ -30,11 +25,12 @@ import com.colegioconnect.accounts.entity.EmailCode;
 import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.repository.EmailCodeRepository;
 import com.colegioconnect.accounts.repository.UserRepository;
-import com.colegioconnect.notifications.EmailService;
+import com.colegioconnect.notifications.EmailMessage;
+import com.colegioconnect.notifications.FakeEmailSender;
 import com.colegioconnect.organizations.repository.OrganizationRepository;
 import com.colegioconnect.organizations.repository.RoleAssignmentRepository;
 
-@SpringBootTest
+@SpringBootTest(properties = "app.mail.provider=fake") // use FakeEmailSender for tests
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 class RegistrationIntegrationTest {
@@ -48,8 +44,7 @@ class RegistrationIntegrationTest {
     @Autowired private RoleAssignmentRepository roleAssignmentRepository;
     @Autowired private OrganizationRepository organizationRepository;
     @Autowired private PasswordEncoder passwordEncoder;
-
-    @MockitoBean private EmailService emailService; // no real emails in tests
+    @Autowired private FakeEmailSender emailSender;
 
     @BeforeEach
     void cleanDatabase() {
@@ -57,6 +52,7 @@ class RegistrationIntegrationTest {
         organizationRepository.deleteAll();
         emailCodeRepository.deleteAll();
         userRepository.deleteAll();
+        emailSender.clear();
     }
 
     @Test
@@ -64,6 +60,17 @@ class RegistrationIntegrationTest {
         postJson("/api/auth/register", registerJson("someone@gmail.com"), status().isBadRequest());
 
         assertThat(userRepository.existsByEmail("someone@gmail.com")).isFalse();
+    }
+
+    @Test
+    void registeringSendsVerificationEmail() throws Exception {
+        postJson("/api/auth/register", registerJson(EMAIL), status().isCreated());
+
+        assertThat(emailSender.getSentMessages()).singleElement().satisfies(message -> {
+            assertThat(message.to()).isEqualTo(EMAIL);
+            assertThat(message.subject()).containsIgnoringCase("verification code");
+            assertThat(message.body()).containsPattern("\\d{6}").contains("10 minutes");
+        });
     }
 
     @Test
@@ -128,10 +135,10 @@ class RegistrationIntegrationTest {
     private String registerAndGetCode() throws Exception {
         postJson("/api/auth/register", registerJson(EMAIL), status().isCreated());
 
-        ArgumentCaptor<String> body = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(emailService).send(eq(EMAIL), anyString(), body.capture());
+        EmailMessage message = emailSender.getSentMessages().getLast();
+        assertThat(message.to()).isEqualTo(EMAIL);
 
-        Matcher matcher = Pattern.compile("\\d{6}").matcher(body.getValue());
+        Matcher matcher = Pattern.compile("\\d{6}").matcher(message.body());
         assertThat(matcher.find()).isTrue();
         return matcher.group();
     }
