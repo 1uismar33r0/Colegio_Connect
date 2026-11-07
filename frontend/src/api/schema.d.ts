@@ -130,11 +130,6 @@ export interface components {
             /** @enum {string} */
             accountType?: "UPRM_MEMBER" | "EXTERNAL_ORGANIZATION";
         };
-        CsrfToken: {
-            token?: string;
-            headerName?: string;
-            parameterName?: string;
-        };
     };
     responses: never;
     parameters: never;
@@ -256,9 +251,7 @@ export interface operations {
     };
     csrf: {
         parameters: {
-            query: {
-                csrfToken: components["schemas"]["CsrfToken"];
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;

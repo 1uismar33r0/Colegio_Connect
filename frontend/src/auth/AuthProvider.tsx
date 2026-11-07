@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     await apiLogout()
     setState(ANONYMOUS)
-    await initCsrf() // the new session needs a fresh token
+    // await initCsrf() // the new session needs a fresh token, not needed because apiLogout() already does this
   }, [])
 
   const value = useMemo(() => ({ ...state, refresh, logout }), [state, refresh, logout])
