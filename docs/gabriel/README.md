@@ -16,7 +16,7 @@ A green build or an open pull request is not issue acceptance. The project must 
 
 | Area | Record | Current scope |
 | --- | --- | --- |
-| CI/CD | [Issue #2 CI trigger coverage](ci-cd/issue-2-ci-trigger-coverage.md) | All-branch push, all-PR, and manual GitHub Actions triggers stacked on Luis's PR #106 |
+| CI/CD | [Issue #2 CI trigger coverage](ci-cd/issue-2-ci-trigger-coverage.md) | All-branch push, all-PR, and manual GitHub Actions triggers in PR #107, now targeting `main` after PR #106 merged |
 | Integration | [Team dependencies](integration/team-dependencies.md) | Verified frontend/backend contract and repository-owner blockers |
 
 ## Related canonical records
