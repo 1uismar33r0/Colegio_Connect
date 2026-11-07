@@ -1,6 +1,6 @@
 ﻿# Test and verification evidence
 
-Snapshot date: **2026-10-26**. Baseline main SHA: `1714e5e0f000f9ad4a2ff6a00bf71c2e14fc5b18`. Scope is A1 documentation and evidence reconciliation. No application test, load test, scan, database mutation, deployment, or acceptance session was run as part of this documentation change. Historical reports and observed hosted CI are identified separately.
+Snapshot date: **2026-10-26**. Additional frontend Compose branch evidence observed **2026-11-06** at base main `e5cc181b3ebcf7b5cb1050547c1d82922068c064`. The original scope is A1 documentation and evidence reconciliation; later evidence sections identify their own branch, environment, and limitations. Historical reports and observed hosted CI are identified separately.
 
 Results use **Pass**, **Fail**, **Blocked**, or **Not run**. A Pass applies only to the stated procedure and expected result. It does not accept the corresponding feature or proposal indicator. Engineering/acceptance states and all 67 exact issue criteria are maintained in [traceability.md](../project/traceability.md). There is no evidence that any complete I1–I17 target has been accepted.
 
@@ -112,6 +112,20 @@ Results use **Pass**, **Fail**, **Blocked**, or **Not run**. A Pass applies only
 - **Actual:** `docs/colegio-connect-wireframes.html` exists; `frontend/.gitkeep` remains. No React/TypeScript app/package/build or evidence of team/advisor review is present in inspected sources.
 - **Source:** [wireframe HTML at branch SHA](https://github.com/1uismar33r0/Colegio_Connect/blob/b456f772ac7a307f165a0379be025af3d8d2b00d/docs/colegio-connect-wireframes.html).
 - **Result:** **Pass** for inventory. **Limitations:** app-build and review acceptance tests are **Not run**; exploratory HTML does not demonstrate WCAG compliance or production behavior.
+
+<a id="te-09"></a>
+
+### TE-09 — Frontend Compose configuration checkpoint
+
+- **Date / SHA:** 2026-11-06; synchronized base `e5cc181b3ebcf7b5cb1050547c1d82922068c064`; infrastructure commit `39a8527102a709dcd1e943a98a90337782f3a19a` on `gabriel/issue-3-frontend-compose`.
+- **Environment:** Windows PowerShell; Docker client/server 29.5.2; Docker Compose 5.1.3; npm 11.13.0. Isolated project `colegio-connect-frontend-compose-test` with frontend 15173, backend 18080, PostgreSQL 55432, Mailpit UI 18025, and SMTP 11025.
+- **Procedure:** first require a missing `services.frontend` from the rendered Compose JSON and observe failure; add the Node 24 Dockerfile, `.dockerignore`, service, proxy target, and port variable; assert the rendered service model and unchanged existing services/volume; run frontend lint, tracked-source formatting, typecheck, unit tests, and compile; build the frontend image; run all four services with `up -d --build --wait`; request frontend, backend health, Mailpit, and CSRF endpoints; inspect service health and volume labels; remove only isolated containers/network without `--volumes` and compare unrelated resources.
+- **Expected:** Compose retains backend, PostgreSQL, Mailpit, and `postgres_data`; frontend uses Node 24, locked npm installation, port 5173, loopback host binding, a healthy backend dependency, and `VITE_API_TARGET=http://backend:8080`; frontend checks pass.
+- **Actual:** missing-service check failed as expected before implementation. The rendered-model assertions passed afterward. ESLint and typecheck passed; 5 test files and 22 tests passed in 2.79 seconds; Vite transformed 116 modules and reported a 244 ms production compile. The standard full-tree format command failed because the Windows checkout has CRLF working-tree files and a local ignored test artifact; an equivalent tracked-source check using automatic line-ending handling passed. No React or Spring source was changed.
+- **Runtime result:** initial automated Docker Desktop launch failed, then the user opened Docker Desktop and client/server 29.5.2 became available. Frontend image build passed in 49.988 seconds. The full `up --build --wait` command passed in 31.363 seconds, including backend build and health waits. Frontend returned HTTP 200 in 138.348 ms; backend health returned HTTP 200 with `UP` in 10.969 ms; Mailpit returned HTTP 200. Direct and Vite-proxied `/api/auth/csrf` both returned HTTP 204, and the proxy response produced one CSRF cookie. Backend, PostgreSQL, and Mailpit were healthy; frontend was running. npm reported 11 moderate dependency vulnerabilities during locked installation.
+- **Safety result:** the isolated volume `colegio-connect-frontend-compose-test_postgres_data` differed from `colegio-connect_postgres_data`. Cleanup removed four isolated containers and their network without `--volumes`; zero of eight unrelated containers disappeared, and all 11 volumes remained, including both database volumes.
+- **Source:** [frontend Compose record](../gabriel/infrastructure/frontend-compose.md), branch commit `39a8527`; PR link to be added after creation.
+- **Result:** **Pass** for static configuration, frontend regression checks, isolated image build, service startup/health, HTTP, API proxy, and volume isolation. The 31.363-second result includes build work and is not a pure startup benchmark. This is branch evidence, not merged Issue #3 acceptance and not I13 or I16 acceptance.
 
 ## Indicator evidence plan
 
