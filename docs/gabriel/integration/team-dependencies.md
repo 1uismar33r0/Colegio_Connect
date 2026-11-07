@@ -7,7 +7,7 @@
 - The merged Java 25 backend/container CI foundation from PR #89.
 - A stable `CI Gate` aggregation check.
 - Main-branch container image packaging evidence from run [41935703633](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/41935703633).
-- The trigger-only Issue #2 change at `242046d`, stacked on PR #106 without modifying Luis's branch.
+- The trigger-only Issue #2 change in draft PR #107, stacked on PR #106 without modifying Luis's branch; push and PR CI passed at `6852a0c`.
 - Infrastructure and integration review evidence without taking ownership of frontend or backend application code.
 
 ## Current dependencies and owners
@@ -19,7 +19,7 @@
 | Frontend setup documentation | PR #106's `frontend/README.md` is still generic Vite template documentation and does not explain the Colegio Connect proxy, API generation, or local backend integration. | **Luis:** replace it with frontend-owned setup instructions. | No. Gabriel can link the finished instructions from infrastructure documentation. |
 | Issue #2 enforcement | Passing CI exists, but branch protection/rulesets are not verified. The private repository returned a plan/visibility restriction for rulesets, and Gabriel has WRITE rather than ADMIN permission. | **Luis/repository owner:** decide on plan/visibility, then require pull requests, one approval, resolved conversations, and `CI Gate`; block direct/force pushes and deletion as supported. | No. Gabriel can supply the checklist and verify evidence after the owner changes settings. |
 | Authorization implementation | Massini's `feat/issue-9-authorization` and Gabriel's preserved PR #98 overlap. Gabriel no longer independently implements backend features. | **Team, led by Massini:** select the backend path and explicitly transfer any useful tests/security evidence from #98. Preserve the open work until that decision. | No application implementation. Gabriel can review security evidence after the team selects the code path. |
-| This CI trigger branch | PR #106 remains open, so the branch is intentionally based on `bcea2f4` rather than `main`. | **Luis:** finish/review #106. **Gabriel:** keep the CI PR draft/dependent, then retarget or rebase after #106 merges and rerun exact-revision checks. | Partially. Gabriel owns the trigger delta but not the dependency merge. |
+| Draft PR #107 | PR #106 remains open, so PR #107 is intentionally based on `bcea2f4` rather than `main`. Both event runs passed at `6852a0c`, but no teammate review exists. | **Luis:** finish/review #106. **Gabriel:** keep #107 draft/dependent, then retarget or rebase after #106 merges and rerun exact-revision checks. **Luis or Massini:** review #107. | Partially. Gabriel owns the trigger delta but not the dependency merge or independent review. |
 
 ## Integration order
 
@@ -28,4 +28,4 @@
 3. Massini and Luis agree on the role and OpenAPI contracts; Gabriel verifies CI integration without implementing their code.
 4. The repository owner enables enforceable review and required-check rules when the repository plan/visibility supports them.
 
-Issue #2 remains open until trigger execution, another member's review, and enforceable failing-check behavior are demonstrated. These dependencies do not establish full Indicator I13 acceptance.
+Issue #2 remains open until another member's review and enforceable failing-check behavior are demonstrated. Push and pull-request trigger execution is verified at `6852a0c`; these results do not establish full Indicator I13 acceptance.

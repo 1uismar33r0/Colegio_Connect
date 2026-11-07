@@ -1,6 +1,6 @@
 # Issue #2 CI trigger coverage
 
-**Status:** Implemented on branch, verification in progress. **Branch:** `gabriel/issue-2-ci-trigger-coverage`. **Implementation commit:** `242046d`. **Dependency:** open [PR #106](https://github.com/1uismar33r0/Colegio_Connect/pull/106) at `bcea2f4`.
+**Status:** CI verified on dependent draft [PR #107](https://github.com/1uismar33r0/Colegio_Connect/pull/107). **Branch:** `gabriel/issue-2-ci-trigger-coverage`. **Implementation commit:** `242046d`; verified checkpoint: `6852a0c`. **Dependency:** open [PR #106](https://github.com/1uismar33r0/Colegio_Connect/pull/106) at `bcea2f4`.
 
 ## What GitHub Actions does
 
@@ -49,15 +49,17 @@ No backend or frontend application source changed. The Backend, Container, Front
 | Evidence | Revision | Actual result | Limitation |
 | --- | --- | --- | --- |
 | PR #106 CI run [42276697893](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42276697893) | `bcea2f4` | Backend: 19 tests; Frontend: 22 tests in 5 files; Container and CI Gate passed | Verifies the inherited jobs before this trigger-only commit |
+| Feature-branch push run [42319237423](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42319237423) | `6852a0c` | Backend, Frontend, Container, and CI Gate passed | Confirms `push: {}` on a non-`main` branch; main-only image upload correctly skipped |
+| Stacked PR run [42319380659](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42319380659) | `6852a0c` | Backend: 19 tests; Frontend: 22 tests in 5 files; Container and CI Gate passed | Confirms `pull_request: {}` with PR #107 based on the non-`main` PR #106 branch |
 | Historical #103 push run [41928707063](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/41928707063) | `0538e54` | Backend, Frontend, Container, and CI Gate passed on a feature-branch push | Older frontend stack; trigger precedent only |
 | Historical #103 PR run [41928749008](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/41928749008) | `0538e54` | The same four jobs passed on a stacked pull request | Older frontend stack; trigger precedent only |
-| Local trigger invariant check | `242046d` | Required trigger, job, gate, permission, and concurrency lines present | Static validation is not hosted execution |
+| Local trigger invariant check | `6852a0c` | All 15 required trigger, job, gate, permission, and concurrency lines present | Static validation supplements, but does not replace, hosted execution |
 
-The exact `242046d` revision still needs both a push-triggered run and a pull-request-triggered run. `actionlint` was not installed in the local environment; GitHub workflow parsing and hosted jobs remain required evidence.
+GitHub parsed the workflow and completed both event paths successfully. Local `actionlint` was unavailable, local Java was 17 rather than the required 25, and the local Docker daemon was unavailable; the hosted runs supplied Java 25 and Docker. This evidence verifies the trigger behavior and jobs at `6852a0c`, not branch-protection enforcement or full I13 acceptance.
 
 ## Remaining blockers
 
 - PR #106 must merge before this branch can be retargeted safely to `main`; until then this is a dependent stack.
-- A teammate must review this change, and its exact push and PR runs must pass.
+- A teammate must review PR #107. The exact push and PR runs pass, but review is still absent.
 - The private repository does not currently provide verified branch-protection enforcement. The repository owner must resolve the plan/visibility limitation and require `CI Gate` before Issue #2 can meet its second acceptance criterion.
 - The OpenAPI check proves generated types match a committed snapshot, not that the snapshot matches the current running backend. Backend OpenAPI export remains a separate integration requirement.
