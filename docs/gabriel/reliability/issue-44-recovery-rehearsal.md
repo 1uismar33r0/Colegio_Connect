@@ -178,8 +178,9 @@ The first runtime attempt stopped before Trial 1: registration, verification, an
 - Branch: `gabriel/issue-44-recovery`.
 - Implementation checkpoint: `7c09313`.
 - Verified cookie-probe correction: `1f2d5b1`.
+- Failure-path hardening: `fcc633f`.
 - Test record: [TE-10](../../testing/test-evidence.md#te-10).
-- Pull request and teammate review: not yet created at the time of this measurement record; add the live reference after publication.
+- Review handoff: [PR #114](https://github.com/1uismar33r0/Colegio_Connect/pull/114), open against `main`; Cristian (`Massinl`) and Luis (`1uismar33r0`) were requested as reviewers. No merge or Issue #44 closure was performed.
 
 ## Safety precautions
 

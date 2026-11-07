@@ -149,7 +149,7 @@ Re-run script parsing/safety assertions, Compose rendering, documentation links/
 
 Review timer origin, fresh-session login, database-backed probe, count/checksum stability, three-trial immutability, cleanup targeting, evidence accuracy, and application-source non-modification. Fix Critical/Important findings with test-first evidence.
 
-- [ ] **Step 3: Push without force and open one PR**
+- [x] **Step 3: Push without force and open one PR**
 
 Push `gabriel/issue-44-recovery`, open a focused PR against `main`, reference but do not close Issue #44, and request teammate review. Never merge automatically.
 
