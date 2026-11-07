@@ -61,4 +61,3 @@ The exact `242046d` revision still needs both a push-triggered run and a pull-re
 - A teammate must review this change, and its exact push and PR runs must pass.
 - The private repository does not currently provide verified branch-protection enforcement. The repository owner must resolve the plan/visibility limitation and require `CI Gate` before Issue #2 can meet its second acceptance criterion.
 - The OpenAPI check proves generated types match a committed snapshot, not that the snapshot matches the current running backend. Backend OpenAPI export remains a separate integration requirement.
-

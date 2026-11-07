@@ -27,4 +27,3 @@ A green build or an open pull request is not issue acceptance. The project must 
 - [Test evidence](../testing/test-evidence.md)
 - [Midterm evidence index](../reports/midterm/evidence-index.md)
 - [Hosting decision](../decisions/0001-hosting.md)
-
