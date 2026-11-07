@@ -30,6 +30,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
+import io.swagger.v3.oas.annotations.Parameter;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -69,7 +71,7 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public UserResponse me(Authentication authentication) {
+    public UserResponse me(@Parameter(hidden = true) Authentication authentication) {
         UUID userId = UUID.fromString(authentication.getName());
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
@@ -78,7 +80,7 @@ public class AuthController {
 
     @GetMapping("/csrf")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void csrf(CsrfToken csrfToken) {
+    public void csrf(@Parameter(hidden = true) CsrfToken csrfToken) {
         // Reading the token makes Spring send the XSRF-TOKEN cookie to the browser
         csrfToken.getToken();
     }

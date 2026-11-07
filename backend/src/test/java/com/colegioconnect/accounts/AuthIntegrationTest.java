@@ -167,6 +167,13 @@ class AuthIntegrationTest {
         mockMvc.perform(get("/api/auth/me").session(session))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void csrfEndpointHasNoParametersInOpenApi() throws Exception {
+        mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.paths['/api/auth/csrf'].get.parameters").doesNotExist());
+    }
     
 
     // ---- Helpers ----
