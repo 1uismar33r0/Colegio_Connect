@@ -198,9 +198,11 @@ Current main already contained the four initial Issue #12 behaviors: unauthentic
 
 The two consumer classes contain 14 named denial or restriction cases across authentication, session, CSRF, role, account-status, organization, and approval behavior. They include the initial Issue #12 categories, but they do not establish final proposal indicator I6. Unapproved-company publishing, ownership, consent, moderation, non-team sponsorship acceptance, state-no-change assertions for business writes, and privacy-response scanning require endpoints and models that do not exist on the inspected baseline.
 
+No test in PR #118 grants a role, authenticates the user, revokes that role, and retries access with the same session or principal. This is an intentional recorded gap, not a passing claim. At the inspected baseline, login copies roles into session authorities, while the global request policy rechecks only current account activity. No role-management endpoint or system-wide contract defines whether deleting an assignment must invalidate every existing session immediately, so Issue #12 does not invent that expectation. PR #119 defines the narrower audit-history contract: its read policy checks a persisted global `MODERATOR` assignment on every request, and its focused integration test performs the exact grant-login-delete-reuse-session sequence and expects HTTP 403.
+
 ## F. GitHub evidence
 
-Evidence observed on 2026-11-07 in `America/La_Paz`; GitHub UTC timestamps may fall on 2026-11-08.
+Evidence observed through 2026-11-08 in `America/La_Paz`; GitHub UTC timestamps may fall on 2026-11-08.
 
 | Field | Evidence |
 | --- | --- |
@@ -225,11 +227,14 @@ OpenAPI was not changed because this task adds test infrastructure and documenta
 
 ### Changes to Recheck When Other PRs Merge
 
+Compatibility method: the exact heads listed below were inspected directly in fetched source and Git history. PR #100's historical stack was exercised only through CI-only PR #101. PRs #115, #116, #117, #99, #102, and #98 were not combined with PR #118 in a disposable merge worktree; the table does not claim otherwise. PR #119 was independently implemented and tested from the same `main` baseline in its own isolated worktree, not merge-tested with PR #118.
+
 | Dependency and inspected SHA | Owner / provisional state | Contract or files to recheck | Current impact and follow-up |
 | --- | --- | --- | --- |
 | PR #115, `3eb0a11974d23fe06ffe16b650d3069e7450e844` | Luis; open, green CI, no formal review at observation | `RegistrationService`, notification provider, `RegistrationIntegrationTest` | No login or authorization contract change found. Re-run the full backend suite after merge because application context and registration fixtures change. |
 | PR #116, `7e50c29f133201dfabd68278ee6ad9b84ed56f21` | Luis; open, green CI, review comments pending | Frontend auth pages, validation, traceability, test evidence | No backend security code change found. Recheck documentation evidence IDs and auth-flow wording if it merges before this branch. |
 | PR #117, `e9a3951844e8081342861a37a90739c7674fb2c9` | Gabriel; open, green CI, no teammate review | `docs/gabriel/engineering-contributions.md` | Do not duplicate or overwrite it. After both PRs settle, add one index link from that contribution document to this topic document. |
+| PR #119, initial review head `669d3bb317cba9d900a5fc567c785a42fa701dbf` | Gabriel; open, Massini review requested, CI running at observation | Persisted moderator check, `audit_log` foreign key, audit-test cleanup, and same-session revocation behavior | Its source and local Java 25 evidence were inspected. It supplies the exact role-revocation test only for audit-history reading. If it merges, add `auditEventRepository.deleteAll()` before users in shared harness cleanup when audit rows are created by a denial scenario. |
 | PR #99, `2e57200f37a461f9f74fcf79b26c56fab1060770` | Gabriel; open, stacked on superseded PR #98, provisional | Audit entity/repository and V5 `audit_log.actor_id` foreign key | Not imported. If a later authoritative audit implementation records rows during denial cases, delete audit rows before users in harness cleanup and add failed-action/no-audit assertions. |
 | PR #102, `695fe3abbc5951777a09d34ca4727ffebb296b8b` | Gabriel; open against the old login branch, no direct CI or review | `AuthIntegrationTest` cleanup ordering | Current main already deletes role assignments before organizations. The reconciled harness retains that dependency order; no future action unless new foreign keys are introduced. |
 | PR #98, `a4d7afd741a4ae6024241c3e7caad37b8da21c96` | Gabriel; open, superseded production approach | Role identifiers, V4 migration, old authorization helpers | Do not merge into this harness. Preserve as historical Gabriel authorship only; Massini's merged model remains the baseline. |
