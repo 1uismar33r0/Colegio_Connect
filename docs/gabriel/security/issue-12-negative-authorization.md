@@ -40,6 +40,7 @@ The final implementation branch is `gabriel/issue-12-negative-auth-reconciliatio
 | Role assignment and UUID principal helpers | Compatible and reusable | Retained against Massini's merged `AuthorizationPolicy`. |
 | MockMvc login and session helpers | Compatible and reusable | Retained with CSRF and the real `/api/auth/login` endpoint. |
 | Foreign-key-safe cleanup | Compatible and reusable | Retained in role-assignment, organization, email-code, user order. |
+| PR #102 fixture-isolation fix `695fe3abbc5951777a09d34ca4727ffebb296b8b` | Already present in authoritative behavior | The old login branch needed role assignments deleted before organizations. Current main already follows that order, and the reconciled harness preserves it without cherry-picking PR #102. |
 | Standalone PR #100 four-case test class | Redundant on current main | Not copied; equivalent assertions already exist in authoritative merged tests. |
 | `FACULTY_OFFICE_DEPT`, `EXTERNAL_COMPANY`, and `canPublishForOrganization` references | Superseded or incompatible | Not imported; those contracts are absent from the merged model. |
 | PR #98 production authorization and V4 role migration | Superseded | Massini's merged PR #111 remains authoritative. |
@@ -209,12 +210,12 @@ Evidence observed on 2026-11-07 in `America/La_Paz`; GitHub UTC timestamps may f
 | Authoritative production baseline | Merged PR #111, merged PR #112, main `e5cc181b3ebcf7b5cb1050547c1d82922068c064`. |
 | Final implementation branch | `gabriel/issue-12-negative-auth-reconciliation`, based directly on the authoritative main SHA. |
 | Harness implementation commit | `92fadc467db5a85dcea5c03fc3456e6d38936999`. |
-| Documentation commit | Pending until this evidence document is committed. |
-| Reconciliation PR | Pending publication; record the actual PR URL and head SHA after opening it. |
+| Documentation commit | `9ca3b84853e5d5771f85786f9ded99aea774f1bd`. |
+| Reconciliation PR | [PR #118](https://github.com/1uismar33r0/Colegio_Connect/pull/118), opened against main at initial head `9ca3b84853e5d5771f85786f9ded99aea774f1bd`; this evidence-only follow-up records the live PR number. |
 | Local test environment | Windows, Temurin Java `25.0.5+8`, Spring Boot `4.1.2`, Docker Desktop `29.5.2`, PostgreSQL `18.6` Testcontainers. |
 | Focused result | `AuthIntegrationTest`: 12 passed; `AuthorizationPolicyIntegrationTest`: 8 passed; total 20, zero failures/errors/skips. |
 | Full result | `mvnw.cmd clean verify`: 30 passed, zero failures/errors/skips; Maven `BUILD SUCCESS`. |
-| Review status | No teammate review yet for the reconciliation branch. Automated review does not replace the required team security review. |
+| Review status | Massini was requested as the security reviewer on PR #118; no teammate review had been submitted when this record was updated. Automated review does not replace the required team security review. |
 | Merge status | The reconciliation is not merged. PR #100 also remains open and unmerged. |
 
 OpenAPI was not changed because this task adds test infrastructure and documentation only.
@@ -229,6 +230,7 @@ OpenAPI was not changed because this task adds test infrastructure and documenta
 | PR #116, `7e50c29f133201dfabd68278ee6ad9b84ed56f21` | Luis; open, green CI, review comments pending | Frontend auth pages, validation, traceability, test evidence | No backend security code change found. Recheck documentation evidence IDs and auth-flow wording if it merges before this branch. |
 | PR #117, `e9a3951844e8081342861a37a90739c7674fb2c9` | Gabriel; open, green CI, no teammate review | `docs/gabriel/engineering-contributions.md` | Do not duplicate or overwrite it. After both PRs settle, add one index link from that contribution document to this topic document. |
 | PR #99, `2e57200f37a461f9f74fcf79b26c56fab1060770` | Gabriel; open, stacked on superseded PR #98, provisional | Audit entity/repository and V5 `audit_log.actor_id` foreign key | Not imported. If a later authoritative audit implementation records rows during denial cases, delete audit rows before users in harness cleanup and add failed-action/no-audit assertions. |
+| PR #102, `695fe3abbc5951777a09d34ca4727ffebb296b8b` | Gabriel; open against the old login branch, no direct CI or review | `AuthIntegrationTest` cleanup ordering | Current main already deletes role assignments before organizations. The reconciled harness retains that dependency order; no future action unless new foreign keys are introduced. |
 | PR #98, `a4d7afd741a4ae6024241c3e7caad37b8da21c96` | Gabriel; open, superseded production approach | Role identifiers, V4 migration, old authorization helpers | Do not merge into this harness. Preserve as historical Gabriel authorship only; Massini's merged model remains the baseline. |
 | Future publishing/approval, listing, response, moderation, and sponsorship PRs | Cristian/Massini backend with feature-specific owners; not yet stable | New authenticated endpoints, ownership checks, organization approval operations, consent/contact release, audit writes | Add endpoint-level denials only after contracts stabilize. Include database no-change assertions and grow the supported I6 matrix without speculative endpoints. |
 

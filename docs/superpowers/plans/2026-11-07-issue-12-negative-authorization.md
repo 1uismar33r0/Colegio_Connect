@@ -97,7 +97,7 @@ Link the scoped topic document from Issue #12 traceability, add a dated test-evi
 
 Run reference/link searches, `git diff --check`, inspect every claim against source/commit/test output, and confirm all documentation is English.
 
-- [ ] **Step 4: Commit documentation**
+- [x] **Step 4: Commit documentation**
 
 Stage only the intended documentation files and commit with `docs(gabriel): preserve Issue 12 security evidence`.
 
@@ -110,15 +110,15 @@ Stage only the intended documentation files and commit with `docs(gabriel): pres
 - Consumes: clean commits, full test output, and the original request.
 - Produces: a reviewable GitHub PR and final evidence report.
 
-- [ ] **Step 1: Perform a requirement and diff review**
+- [x] **Step 1: Perform a requirement and diff review**
 
 Confirm no production code, migration, frontend, PR #117 document, secret, generated target output, or unrelated file is included. Reconcile every Issue #12 criterion and list remaining future endpoint coverage separately from current acceptance.
 
-- [ ] **Step 2: Run final verification**
+- [x] **Step 2: Run final verification**
 
 Run Java 25 focused tests, Java 25 `clean verify`, documentation checks, `git status`, and `git diff origin/main...HEAD` fresh at the final SHA.
 
-- [ ] **Step 3: Push and open the PR**
+- [x] **Step 3: Push and open the PR**
 
 Push `gabriel/issue-12-negative-auth-reconciliation`, open a documentation-and-test-only PR targeting `main`, link Issue #12 and historical PR #100, explain that no production authorization changed, and request another team member's security review.
 
