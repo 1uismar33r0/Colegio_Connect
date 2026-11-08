@@ -44,6 +44,7 @@ Reconciled commits:
 | `8363dc427c54a8dec40b6601edcd16e65d1454f7` | Current-main reconciliation design and plan. |
 | `132413bb8076371285cdee5a7bd18f6a92871278` | V4 schema, event model, repository, mandatory-transaction service, and transaction tests. |
 | `c0b01a7afc6c8b61eb4ec1cc44259c78658378d8` | Bounded read endpoint, persisted moderator policy, same-session revocation coverage, OpenAPI coverage, and correct 403 mapping for method security. |
+| `669d3bb317cba9d900a5fc567c785a42fa701dbf` | Scoped Gabriel engineering record and linked project evidence; first published PR #119 head. |
 
 ## Real implementation excerpts
 
@@ -164,8 +165,9 @@ Issue #15 supplies a narrower stable contract: audit-history reading must check 
 | Issue #15 | Open, unassigned, no comments; acceptance and Definition of Done remain pending. |
 | Original PR #99 | Open at `2e57200f...`, stacked on PR #98, no formal review or direct checks. |
 | PR #98 dependency | Open at `a4d7afd...`; superseded production authorization and not imported. |
-| Current reconciliation | `gabriel/issue-15-audit-reconciliation`, based directly on main `e5cc181b...`; not merged when this record was written. |
-| Review requirement | Another team member, preferably Cristian/Massini for the role check, must review before integration. Automated/self-review is supplementary only. |
+| Current reconciliation | [PR #119](https://github.com/1uismar33r0/Colegio_Connect/pull/119), `gabriel/issue-15-audit-reconciliation`, based directly on main `e5cc181b...`; open and not merged. |
+| Hosted CI | Run `42447499949` at first published head `669d3bb317cba9d900a5fc567c785a42fa701dbf`: Backend, Frontend, Container, and CI Gate passed. This status update is documentation-only and must retain green checks. |
+| Review requirement | Massini (`Massinl`) is requested on PR #119; no teammate review had been submitted at this observation. Automated/self-review is supplementary only. |
 
 ## Changes to Recheck When Other PRs Merge
 
