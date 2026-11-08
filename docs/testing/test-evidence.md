@@ -187,3 +187,15 @@ foreach ($group in $groups) {
 ```
 
 At the captured snapshot this produces **84 / 42 / 67 / 134**. Recheck before later acceptance because issue bodies and repository state can change. Exact-document comparison must also check all criterion text, not only these counts.
+
+<a id="te-11"></a>
+
+## TE-11 - Issue #12 negative-authorization harness reconciliation
+
+- **Date / SHA:** 2026-11-07; authoritative base `e5cc181b3ebcf7b5cb1050547c1d82922068c064`; harness implementation `92fadc467db5a85dcea5c03fc3456e6d38936999` on `gabriel/issue-12-negative-auth-reconciliation`.
+- **Environment:** Windows; Temurin Java `25.0.5+8`; Spring Boot `4.1.2`; Maven Wrapper; Docker Desktop `29.5.2`; PostgreSQL `18.6` through Testcontainers; synthetic users and organizations only.
+- **Procedure:** compare original PR #100 head `52352763d0f01e1b8bb9f87e1ec843bb357c2c6b` with current main and merged PR #111/#112 contracts; refactor existing authentication and authorization-policy tests to inherit the test-only harness; verify the missing harness fails compilation first; run `mvnw.cmd -Dtest=AuthIntegrationTest,AuthorizationPolicyIntegrationTest test`; run `mvnw.cmd clean verify`; inspect the production-source diff.
+- **Expected:** the two existing consumer classes use reusable user/status/organization/role/session fixtures; all 20 focused tests and the complete backend suite pass; production source, migrations, endpoints, and OpenAPI remain unchanged.
+- **Actual:** RED failed for the missing `NegativeAuthorizationTestHarness` and intended helper symbols. After implementation, `AuthIntegrationTest` passed 12 and `AuthorizationPolicyIntegrationTest` passed 8, with zero failures/errors/skips. Clean verification passed 30 tests with zero failures/errors/skips and Maven `BUILD SUCCESS`. Only three backend test files changed in the implementation commit.
+- **Source:** [Gabriel's Issue #12 engineering record](../gabriel/security/issue-12-negative-authorization.md), [canonical Issue #12](https://github.com/1uismar33r0/Colegio_Connect/issues/12), [original PR #100](https://github.com/1uismar33r0/Colegio_Connect/pull/100), and implementation commit `92fadc467db5a85dcea5c03fc3456e6d38936999`.
+- **Result:** **Pass** for branch-local harness implementation and current supported-case verification. **Limitations:** AC1 requires merge; teammate review and final PR CI are pending. This does not accept final indicator I6: business endpoints for publishing, ownership, consent, moderation, and sponsorship are not yet available on the inspected baseline.
