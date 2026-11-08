@@ -113,6 +113,18 @@ Results use **Pass**, **Fail**, **Blocked**, or **Not run**. A Pass applies only
 - **Source:** [wireframe HTML at branch SHA](https://github.com/1uismar33r0/Colegio_Connect/blob/b456f772ac7a307f165a0379be025af3d8d2b00d/docs/colegio-connect-wireframes.html).
 - **Result:** **Pass** for inventory. **Limitations:** app-build and review acceptance tests are **Not run**; exploratory HTML does not demonstrate WCAG compliance or production behavior.
 
+<a id="te-09"></a>
+
+### TE-09 — Issue #15 audit foundation reconciliation
+
+- **Date / SHA:** 2026-11-08; authoritative base `e5cc181b3ebcf7b5cb1050547c1d82922068c064`; transaction implementation `132413bb8076371285cdee5a7bd18f6a92871278`; protected query implementation `c0b01a7afc6c8b61eb4ec1cc44259c78658378d8`.
+- **Environment:** Windows; Temurin Java `25.0.5+8`; Spring Boot `4.1.2`; Docker Desktop `29.5.2`; PostgreSQL `18.6` through Testcontainers.
+- **Procedure:** establish a clean 30-test baseline; execute TDD RED/GREEN for `AuditServiceIntegrationTest` and `AuditControllerIntegrationTest`; run focused audit/error-handler tests; run `mvnw.cmd clean verify`. Inspect PR #99's full history, PR #98 dependency, every fetched remote branch for audit code, and PR #115 notification logging.
+- **Expected:** controlled actor/action/target/time rows join the caller's transaction; rollback and missing transaction leave no row; only a current persisted moderator can read bounded newest-first pages; same-session suspension/role revocation denies access; response excludes sensitive/free-form data; endpoint appears in OpenAPI.
+- **Actual:** transaction RED failed compilation on missing audit types; endpoint RED produced absent-route/OpenAPI failures. The first endpoint GREEN run exposed method-security denials incorrectly mapped to 500; the narrow 403 mapping corrected the root cause. Final focused run: 13 tests, zero failures/errors/skips. Final pre-documentation clean verification: 41 tests, zero failures/errors/skips; `BUILD SUCCESS`.
+- **Source:** [Issue #15 engineering record](../gabriel/security/issue-15-audit-foundation.md), implementation commits above, and [Issue #15](https://github.com/1uismar33r0/Colegio_Connect/issues/15).
+- **Result:** **Pass** for the branch foundation and current read contract. **Limitations:** PR/team review, hosted CI, and merge remain pending; no owning business action emits an event yet; final I8 and AC1 are not accepted; database-level append-only enforcement and actor-retention policy remain unresolved.
+
 ## Indicator evidence plan
 
 The target column reproduces Table 4 (PDF p.7) with whitespace normalized and indicator IDs normalized from `I. 1` to `I1`. Timing is retained. Each `IND-I<n>` is a planned evidence record. For **every row**, date is the 2026-10-26 planning snapshot, execution SHA/environment are **not selected**, actual result is **no complete target evidence**, and result is **Not run**. Once executed, replace those fields with exact deployed/tested SHA, timestamp, environment and immutable logs. TE-03's three skeleton tests do not satisfy any full indicator.

@@ -481,9 +481,9 @@ Sources: [canonical #15](https://github.com/1uismar33r0/Colegio_Connect/issues/1
 
 Milestone: **M1 - Access foundation**. Original issue references: I8, Figure 2 block D. Proposal mapping: **O3; I8; US2, US4, US11, US15; Figure 2 block D**.
 
-Engineering state: **Not started**. Acceptance note: criteria/DoD still pending. Location: No feature implementation located on main; domain package placeholders are not implementation.
+Engineering state: **Verified on branch**. Acceptance note: foundation tasks are implemented and locally verified; AC1, teammate review, hosted CI, merge, and final I8 action coverage remain pending. Location: `gabriel/issue-15-audit-reconciliation`, implementation commits `132413bb8076371285cdee5a7bd18f6a92871278` and `c0b01a7afc6c8b61eb4ec1cc44259c78658378d8`.
 
-Evidence / blockers (apply to every AC below): **TE-00** in [test evidence](../testing/test-evidence.md). Implement the listed tasks and exercise every acceptance clause; prerequisite access/data/UI workflows and CI integration remain incomplete.
+Evidence / blockers (apply to every AC below): **TE-09** in [test evidence](../testing/test-evidence.md) and Gabriel's [Issue #15 engineering record](../gabriel/security/issue-15-audit-foundation.md). The V4 schema, same-transaction service, bounded moderator endpoint, and foundation tests are present on the branch. No role-change or later business mutation service exists, so AC1 and final I8 remain incomplete.
 
 Exact source description shared by both issues:
 
