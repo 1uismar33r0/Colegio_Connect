@@ -398,7 +398,7 @@ Sources: [canonical #12](https://github.com/1uismar33r0/Colegio_Connect/issues/1
 
 Milestone: **M1 - Access foundation**. Original issue references: I6. Proposal mapping: **O2; I6; US1–US2; Figure 3**.
 
-Engineering state: **Verified on branch**. Acceptance note: the main-based harness is used by more than three existing denial cases and contributor instructions exist; AC1's merge clause, teammate security review, and final PR CI remain pending. Location: [PR #118](https://github.com/1uismar33r0/Colegio_Connect/pull/118), branch `gabriel/issue-12-negative-auth-reconciliation`, implementation commit `92fadc467db5a85dcea5c03fc3456e6d38936999`; test files under `backend/src/test/java/com/colegioconnect/`.
+Engineering state: **Verified on branch**. Acceptance note: the main-based harness is used by more than three existing denial cases, contributor instructions exist, and PR #118 CI passed at head `203a424`; AC1's merge clause and teammate security review remain pending, and later documentation-only heads must retain green CI. Location: [PR #118](https://github.com/1uismar33r0/Colegio_Connect/pull/118), branch `gabriel/issue-12-negative-auth-reconciliation`, implementation commit `92fadc467db5a85dcea5c03fc3456e6d38936999`; test files under `backend/src/test/java/com/colegioconnect/`.
 
 Evidence / blockers (apply to every AC below): **TE-11** in [test evidence](../testing/test-evidence.md#te-11) and Gabriel's [Issue #12 engineering record](../gabriel/security/issue-12-negative-authorization.md). Java 25 focused verification passed 20 tests and full backend verification passed 30. The branch is not merged or teammate-reviewed; final I6 coverage still depends on stable protected business endpoints.
 

@@ -215,6 +215,7 @@ Evidence observed on 2026-11-07 in `America/La_Paz`; GitHub UTC timestamps may f
 | Local test environment | Windows, Temurin Java `25.0.5+8`, Spring Boot `4.1.2`, Docker Desktop `29.5.2`, PostgreSQL `18.6` Testcontainers. |
 | Focused result | `AuthIntegrationTest`: 12 passed; `AuthorizationPolicyIntegrationTest`: 8 passed; total 20, zero failures/errors/skips. |
 | Full result | `mvnw.cmd clean verify`: 30 passed, zero failures/errors/skips; Maven `BUILD SUCCESS`. |
+| Hosted CI | PR #118 run `42445314730` at head `203a4243111ab26ddfde67fb5bd5b559ad5b0f72`: Backend, Frontend, Container, and CI Gate passed. The plan-completion update after that head is documentation-only and must retain green checks. |
 | Review status | Massini was requested as the security reviewer on PR #118; no teammate review had been submitted when this record was updated. Automated review does not replace the required team security review. |
 | Merge status | The reconciliation is not merged. PR #100 also remains open and unmerged. |
 
@@ -236,4 +237,4 @@ OpenAPI was not changed because this task adds test infrastructure and documenta
 
 ## Final reconciliation decision
 
-Recover Gabriel's test-infrastructure contribution, adapted to current main, but do not recover PR #98's production authorization or copy PR #100's now-duplicate test class. The implementation is reviewable as a test-and-documentation-only change. Issue #12 cannot be closed until the harness is merged, CI passes on the final PR head, another team member completes the required security review, and the team confirms the remaining acceptance interpretation. Final I6 acceptance remains future work as protected business endpoints are implemented.
+Recover Gabriel's test-infrastructure contribution, adapted to current main, but do not recover PR #98's production authorization or copy PR #100's now-duplicate test class. The implementation is reviewable as a test-and-documentation-only change. Issue #12 cannot be closed until the harness is merged, CI remains green on the final PR head, another team member completes the required security review, and the team confirms the remaining acceptance interpretation. Final I6 acceptance remains future work as protected business endpoints are implemented.

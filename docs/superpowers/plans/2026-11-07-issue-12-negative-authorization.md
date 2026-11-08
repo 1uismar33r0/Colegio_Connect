@@ -122,6 +122,6 @@ Run Java 25 focused tests, Java 25 `clean verify`, documentation checks, `git st
 
 Push `gabriel/issue-12-negative-auth-reconciliation`, open a documentation-and-test-only PR targeting `main`, link Issue #12 and historical PR #100, explain that no production authorization changed, and request another team member's security review.
 
-- [ ] **Step 4: Verify the live PR**
+- [x] **Step 4: Verify the live PR**
 
 Inspect the actual GitHub file list and commit SHA, wait for CI conclusions, and report review/merge state without merging or closing any existing PR.
