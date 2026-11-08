@@ -448,9 +448,9 @@ Exact source tasks (checkboxes describe the issue snapshot):
 
 Definition of Done: the three common requirements above apply; no additional acceptance is inferred from task checks or merges.
 
-### Issue #14 / alias #51: Frontend: register, verify and login screens
+### Issue #14: Frontend: register, verify and login screens
 
-Sources: [canonical #14](https://github.com/1uismar33r0/Colegio_Connect/issues/14) and [alias #51](https://github.com/1uismar33r0/Colegio_Connect/issues/51); both open. Lead: **Luis**. Support: Cristian (API contract), Gabriel (review), per Table 17 frontend group. GitHub assignees: canonical **unassigned**; alias **unassigned**.
+Sources: [canonical #14](https://github.com/1uismar33r0/Colegio_Connect/issues/14), open. The alias #51 recorded at the 2026-10-26 snapshot no longer resolves on GitHub (checked 2026-11-08), so #14 is the only live source. Lead: **Luis**. Support: Cristian (API contract), Gabriel (review), per Table 17 frontend group. GitHub assignee: **1uismar33r0** (Luis), checked 2026-11-08.
 
 Milestone: **M1 - Access foundation**. Original issue references: US1, I15. Proposal mapping: **O2, O5; I5, I15; US1; Figure 3**.
 

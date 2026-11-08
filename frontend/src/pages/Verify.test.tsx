@@ -35,7 +35,7 @@ function renderVerify(state?: AuthFlowState) {
 
 const fromRegistration: AuthFlowState = {
   email: 'new.student@upr.edu',
-  notice: 'We sent a 6-digit code to new.student@upr.edu. It expires in 10 minutes.',
+  notice: 'We requested a 6-digit code for new.student@upr.edu.',
 }
 
 describe('Verify', () => {
@@ -49,7 +49,7 @@ describe('Verify', () => {
     renderVerify(fromRegistration)
     const user = userEvent.setup()
 
-    expect(screen.getByRole('status')).toHaveTextContent('We sent a 6-digit code')
+    expect(screen.getByRole('status')).toHaveTextContent('We requested a 6-digit code')
     expect(screen.getByLabelText(/^Email/)).toHaveValue('new.student@upr.edu')
     await user.type(screen.getByLabelText(/^Verification code/), '123 456')
     await user.click(screen.getByRole('button', { name: 'Verify email' }))
@@ -98,7 +98,7 @@ describe('Verify', () => {
 
     expect(resend).toHaveBeenCalledWith('new.student@upr.edu')
     expect(await screen.findByRole('status')).toHaveTextContent(
-      'If new.student@upr.edu still needs verifying, we sent it a new code.',
+      'If new.student@upr.edu still needs verifying, we requested a new code for it.',
     )
     const button = screen.getByRole('button', { name: /Resend code \(available in \d+s\)/ })
     expect(button).toHaveAttribute('aria-disabled', 'true')

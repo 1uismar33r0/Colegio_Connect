@@ -31,7 +31,7 @@ export function Register() {
       await register(email, password)
       const state: AuthFlowState = {
         email,
-        notice: `We sent a 6-digit code to ${email}. It expires in 10 minutes.`,
+        notice: `We requested a 6-digit code for ${email}. It should arrive within a few minutes and expires after 10 minutes. If you can't find it, check your spam folder or request a new code.`,
       }
       navigate('/verify', { state })
     })

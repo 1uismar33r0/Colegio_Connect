@@ -81,7 +81,9 @@ export function Verify() {
     try {
       await resend(normalizedEmail)
       // The backend answers the same way for unknown or verified emails, so we do too.
-      setNotice(`If ${normalizedEmail} still needs verifying, we sent it a new code.`)
+      setNotice(
+        `If ${normalizedEmail} still needs verifying, we requested a new code for it. It should arrive within a few minutes.`,
+      )
       setCooldown(RESEND_COOLDOWN_SECONDS)
     } catch (err) {
       const described = describeFailure(err)

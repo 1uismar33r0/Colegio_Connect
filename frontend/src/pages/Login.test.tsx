@@ -62,14 +62,17 @@ describe('Login', () => {
     expect(auth.refresh).toHaveBeenCalledOnce()
   })
 
-  it('goes to the dashboard by default and ignores external return paths', async () => {
-    vi.mocked(login).mockResolvedValue({ id: '1', email: 'a@upr.edu' })
-    renderLogin({ from: '//evil.example' })
+  it.each(['//evil.example', '/\\evil.example'])(
+    'goes to the dashboard instead of the external return path %s',
+    async (from) => {
+      vi.mocked(login).mockResolvedValue({ id: '1', email: 'a@upr.edu' })
+      renderLogin({ from })
 
-    await signIn('a@upr.edu', 'correct-horse')
+      await signIn('a@upr.edu', 'correct-horse')
 
-    expect(await screen.findByRole('heading', { name: 'Dashboard page' })).toBeInTheDocument()
-  })
+      expect(await screen.findByRole('heading', { name: 'Dashboard page' })).toBeInTheDocument()
+    },
+  )
 
   it('shows the notice and email handed over from verification', () => {
     renderLogin({ email: 'a@upr.edu', notice: 'Your email is verified. Sign in to continue.' })
