@@ -7,7 +7,9 @@ import { Forbidden } from './pages/Forbidden'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
 import { NotFound } from './pages/NotFound'
+import { Register } from './pages/Register'
 import { RoleArea } from './pages/RoleArea'
+import { Verify } from './pages/Verify'
 
 const title = (t: string) => ({ title: t }) satisfies RouteHandle
 
@@ -19,6 +21,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Home />, handle: title('Home') },
       { path: 'login', element: <Login />, handle: title('Sign in') },
+      { path: 'register', element: <Register />, handle: title('Create account') },
+      { path: 'verify', element: <Verify />, handle: title('Verify your email') },
       { path: 'forbidden', element: <Forbidden />, handle: title('Access denied') },
       {
         element: <RequireAuth />,

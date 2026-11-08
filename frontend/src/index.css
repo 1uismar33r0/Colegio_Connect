@@ -57,9 +57,16 @@ button {
   cursor: pointer;
 }
 
-button:disabled {
+/* aria-disabled buttons stay focusable, so keyboard focus isn't lost while busy. */
+button:disabled,
+button[aria-disabled='true'] {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+button.secondary {
+  background: var(--color-bg);
+  color: var(--color-primary);
 }
 
 /* ---- Skip link: hidden until focused ---- */
@@ -179,6 +186,28 @@ button:disabled {
 .field-error {
   margin: 0;
   color: var(--color-error);
+}
+
+/* ---- Auth forms (Issue #14) ---- */
+.auth-form {
+  max-width: 28rem;
+}
+
+.auth-form .error-box,
+.notice {
+  margin-bottom: 1rem;
+}
+
+.notice {
+  padding: 1rem;
+  border-left: 4px solid var(--color-primary);
+  background: var(--color-surface); /* primary text on surface: 8.0:1 */
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 /* Respect users who ask the OS for less motion. */

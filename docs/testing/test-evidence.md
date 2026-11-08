@@ -113,6 +113,18 @@ Results use **Pass**, **Fail**, **Blocked**, or **Not run**. A Pass applies only
 - **Source:** [wireframe HTML at branch SHA](https://github.com/1uismar33r0/Colegio_Connect/blob/b456f772ac7a307f165a0379be025af3d8d2b00d/docs/colegio-connect-wireframes.html).
 - **Result:** **Pass** for inventory. **Limitations:** app-build and review acceptance tests are **Not run**; exploratory HTML does not demonstrate WCAG compliance or production behavior.
 
+<a id="te-10"></a>
+
+### TE-10 — Register, verify and login screens (#14)
+
+- **Date / SHA:** 2026-11-07; branch `feat/issue-14-auth-screens`, based on main `e5cc181b3ebcf7b5cb1050547c1d82922068c064`.
+- **Environment:** Windows 11, Node via `frontend/` npm scripts, Vitest 5.1 with jsdom and axe-core 4.14; local Docker Compose stack (backend, PostgreSQL 18.6, Mailpit) for the API check. The running backend image was built 2026-11-04 and was not rebuilt from this revision.
+- **Procedure:** in `frontend/`: `npm run typecheck`, `npm run lint`, `npx prettier --check src`, `npx vitest run`, `npm run build`. API contract check: with curl and a cookie jar against `http://localhost:8080/api/auth`, seed CSRF, then call register (non-UPRM, new, duplicate), login while unverified, resend inside the cooldown, verify with a wrong and a malformed code, read the code for the synthetic `issue14.<timestamp>@upr.edu` account from the Mailpit API, verify, login with a wrong and the right password, and `GET /me`.
+- **Expected:** all checks pass; page tests cover success, client validation, backend field errors, 409, 401/403/429 login responses, unverified redirect, invalid/expired code, resend success/429/cooldown, keyboard-only registration and axe with no violations in initial and error states; live API status codes and `detail` texts match the ones the screens branch on.
+- **Actual:** typecheck, lint, format and build pass; 9 test files / 51 tests pass (25 new across `Register`, `Verify`, `Login` and `validation`). API: 400 non-UPRM, 201 with `Content-Length: 0`, 409 duplicate, 403 "Verify your email before logging in.", 429 "Wait a minute before requesting a new code.", 400 "Invalid or expired code. Request a new one.", 400 field error for code shape, 204 verify, 401 wrong password, 200 login and 200 `/me` for the new account.
+- **Source:** this branch's diff; test files under `frontend/src/pages/*.test.tsx` and `frontend/src/auth/validation.test.ts`.
+- **Result:** **Pass** for the stated procedure. **Limitations:** axe runs in jsdom with `color-contrast` disabled (as in `AppLayout.test.tsx`); contrast, real-browser keyboard behaviour and screen-reader output were not checked in a browser. The API check exercised the same requests the screens send, not the rendered UI driving a browser. Expired-code (10 min) and hourly resend limits were not waited out; the backend returns the same messages, which the screens display. Team review and CI on the PR remain pending.
+
 ## Indicator evidence plan
 
 The target column reproduces Table 4 (PDF p.7) with whitespace normalized and indicator IDs normalized from `I. 1` to `I1`. Timing is retained. Each `IND-I<n>` is a planned evidence record. For **every row**, date is the 2026-10-26 planning snapshot, execution SHA/environment are **not selected**, actual result is **no complete target evidence**, and result is **Not run**. Once executed, replace those fields with exact deployed/tested SHA, timestamp, environment and immutable logs. TE-03's three skeleton tests do not satisfy any full indicator.
