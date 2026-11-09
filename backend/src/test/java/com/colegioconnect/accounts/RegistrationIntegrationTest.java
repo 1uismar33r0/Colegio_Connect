@@ -5,20 +5,28 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mail.MailSendException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.colegioconnect.TestcontainersConfiguration;
 import com.colegioconnect.accounts.entity.EmailCode;
@@ -27,11 +35,13 @@ import com.colegioconnect.accounts.repository.EmailCodeRepository;
 import com.colegioconnect.accounts.repository.UserRepository;
 import com.colegioconnect.notifications.EmailMessage;
 import com.colegioconnect.notifications.FakeEmailSender;
+import com.colegioconnect.notifications.VerificationCodeRequested;
 import com.colegioconnect.organizations.repository.OrganizationRepository;
 import com.colegioconnect.organizations.repository.RoleAssignmentRepository;
 
 @SpringBootTest(properties = "app.mail.provider=fake") // use FakeEmailSender for tests
 @AutoConfigureMockMvc
+@ExtendWith(OutputCaptureExtension.class)
 @Import(TestcontainersConfiguration.class)
 class RegistrationIntegrationTest {
 
@@ -45,6 +55,8 @@ class RegistrationIntegrationTest {
     @Autowired private OrganizationRepository organizationRepository;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private FakeEmailSender emailSender;
+    @Autowired private ApplicationEventPublisher events;
+    @Autowired private PlatformTransactionManager transactionManager;
 
     @BeforeEach
     void cleanDatabase() {
@@ -128,6 +140,44 @@ class RegistrationIntegrationTest {
         registerAndGetCode();
 
         postJson("/api/auth/resend", "{\"email\":\"" + EMAIL + "\"}", status().isTooManyRequests());
+    }
+
+    @Test
+    void registrationSurvivesEmailFailureAndResendRecovers(CapturedOutput output) throws Exception {
+        emailSender.failNext(new MailSendException("Invalid Addresses: " + EMAIL));
+
+        // The email is sent after commit, so a delivery failure does not undo the registration
+        postJson("/api/auth/register", registerJson(EMAIL), status().isCreated());
+
+        User user = userRepository.findByEmail(EMAIL).orElseThrow();
+        assertThat(emailCodeRepository.countByUserAndCreatedAtAfter(user, Instant.EPOCH)).isEqualTo(1);
+        assertThat(emailSender.getSentMessages()).isEmpty();
+        assertThat(output).contains("FAILURE", "s***@upr.edu").doesNotContain(EMAIL);
+
+        // Simulate the 60 second cooldown passing, then resend delivers a new code
+        emailCodeRepository.deleteAll();
+        postJson("/api/auth/resend", "{\"email\":\"" + EMAIL + "\"}", status().isAccepted());
+        assertThat(emailSender.getSentMessages()).singleElement()
+                .satisfies(message -> assertThat(message.to()).isEqualTo(EMAIL));
+    }
+
+    @Test
+    void noEmailIsSentWhenTheTransactionRollsBack() {
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+            events.publishEvent(new VerificationCodeRequested(EMAIL, "123456", Duration.ofMinutes(10)));
+            status.setRollbackOnly();
+        });
+
+        assertThat(emailSender.getSentMessages()).isEmpty();
+    }
+
+    @Test
+    void emailIsSentWhenTheTransactionCommits() {
+        new TransactionTemplate(transactionManager).executeWithoutResult(status ->
+                events.publishEvent(new VerificationCodeRequested(EMAIL, "123456", Duration.ofMinutes(10))));
+
+        assertThat(emailSender.getSentMessages()).singleElement()
+                .satisfies(message -> assertThat(message.body()).contains("123456"));
     }
 
     // ---- Helpers ----

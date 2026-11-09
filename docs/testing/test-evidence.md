@@ -113,6 +113,17 @@ Results use **Pass**, **Fail**, **Blocked**, or **Not run**. A Pass applies only
 - **Source:** [wireframe HTML at branch SHA](https://github.com/1uismar33r0/Colegio_Connect/blob/b456f772ac7a307f165a0379be025af3d8d2b00d/docs/colegio-connect-wireframes.html).
 - **Result:** **Pass** for inventory. **Limitations:** app-build and review acceptance tests are **Not run**; exploratory HTML does not demonstrate WCAG compliance or production behavior.
 
+<a id="te-11"></a>
+
+### TE-11 — Notification review fixes (#11, PR #115)
+
+- **Date / SHA:** 2026-11-09; branch `feat/issue-11-notifications`, follow-up to `3eb0a11` (the commit containing this record).
+- **Environment:** Windows 11, JDK 25.0.4.1, Maven wrapper, Docker 29.9.2 with Testcontainers PostgreSQL 18.6; local Compose stack (backend rebuilt from this branch, PostgreSQL, Mailpit).
+- **Procedure:** `./mvnw -B verify` in `backend/`; list `BOOT-INF/classes/.../notifications/` in the built jar. Live: curl register → code from Mailpit API → verify; stop Mailpit, register a second synthetic `@upr.edu` account, inspect `docker logs` for the delivery line and any full address; start Mailpit, wait 62 s, resend → code from Mailpit → verify.
+- **Expected:** review findings closed: (1) delivery failures log only masked addresses and propagate no provider exception; (2) the fake sender is absent from the packaged jar; (3) email is sent only after commit, a rolled-back transaction sends nothing, and a delivery failure leaves a recoverable account.
+- **Actual:** 41 tests pass (34 before), including MailSendException messages with two addresses (logs show only `s***@upr.edu` / `o***@upr.edu`; thrown `EmailDeliveryException` has no cause and no address), first-line summary of multi-line provider errors, delivery failure → 201 then resend → 202 and delivered, rollback → no email, commit → email, and the default context holding exactly one `SmtpEmailSender`. Jar contains no `FakeEmailSender`. Live: 201/204 with Mailpit up; with Mailpit down register returned 201, one FAILURE line with `to=i***@upr.edu`, 0 occurrences of the full address in backend logs; after restart resend 202, code delivered, verify 204.
+- **Result:** **Pass** for the stated procedure. **Limitations:** delivery remains synchronous within the request after commit, with no retry or outbox; a user whose email failed must wait for the 60 s cooldown. Spring Boot's own `MailHealthIndicator` logs connection stack traces when Mailpit is down; they contained no recipient addresses. Startup failure with `app.mail.provider=fake` is inferred from bean wiring, not run. Team review and CI on the PR remain pending.
+
 ## Indicator evidence plan
 
 The target column reproduces Table 4 (PDF p.7) with whitespace normalized and indicator IDs normalized from `I. 1` to `I1`. Timing is retained. Each `IND-I<n>` is a planned evidence record. For **every row**, date is the 2026-10-26 planning snapshot, execution SHA/environment are **not selected**, actual result is **no complete target evidence**, and result is **Not run**. Once executed, replace those fields with exact deployed/tested SHA, timestamp, environment and immutable logs. TE-03's three skeleton tests do not satisfy any full indicator.

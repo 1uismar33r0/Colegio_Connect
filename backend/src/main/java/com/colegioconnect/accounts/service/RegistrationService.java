@@ -5,6 +5,7 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ import com.colegioconnect.accounts.entity.EmailCode;
 import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.repository.EmailCodeRepository;
 import com.colegioconnect.accounts.repository.UserRepository;
-import com.colegioconnect.notifications.NotificationService;
+import com.colegioconnect.notifications.VerificationCodeRequested;
 
 @Service
 public class RegistrationService {
@@ -36,17 +37,17 @@ public class RegistrationService {
     private final UserRepository userRepository;
     private final EmailCodeRepository emailCodeRepository;
     private final PasswordEncoder passwordEncoder;
-    private final NotificationService notificationService;
+    private final ApplicationEventPublisher events;
     private final SecureRandom random = new SecureRandom();
 
     public RegistrationService(UserRepository userRepository,
                                EmailCodeRepository emailCodeRepository,
                                PasswordEncoder passwordEncoder,
-                               NotificationService notificationService) {
+                               ApplicationEventPublisher events) {
         this.userRepository = userRepository;
         this.emailCodeRepository = emailCodeRepository;
         this.passwordEncoder = passwordEncoder;
-        this.notificationService = notificationService;
+        this.events = events;
     }
 
     @Transactional
@@ -132,7 +133,8 @@ public class RegistrationService {
         String codeHash = passwordEncoder.encode(code);
         emailCodeRepository.save(new EmailCode(user, codeHash, Instant.now().plus(CODE_LIFETIME)));
 
-        notificationService.sendVerificationCode(user.getEmail(), code, CODE_LIFETIME);
+        // Sent by VerificationEmailListener after this transaction commits
+        events.publishEvent(new VerificationCodeRequested(user.getEmail(), code, CODE_LIFETIME));
     }
 
     private String normalize(String email) {
