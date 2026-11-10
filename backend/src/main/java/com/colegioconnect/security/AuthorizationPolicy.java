@@ -42,6 +42,15 @@ public class AuthorizationPolicy {
         return roleAssignmentRepository.existsByUserIdAndRoleAndOrganizationId(userId, role, organizationId);
     }
 
+    // Moderation is a platform role and must be rechecked from persistence on every protected action.
+    public boolean canModerate(Authentication authentication) {
+        if (!isActive(authentication)) {
+            return false;
+        }
+        UUID userId = UUID.fromString(authentication.getName());
+        return roleAssignmentRepository.existsByUserIdAndRoleAndOrganizationIsNull(userId, Role.MODERATOR);
+    }
+
     // An administrator approved this organization
     public boolean isApproved(UUID organizationId) {
         return organizationRepository.findById(organizationId)

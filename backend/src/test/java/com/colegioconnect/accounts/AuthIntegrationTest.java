@@ -8,61 +8,35 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.security.core.context.SecurityContext;
 
 
 import com.colegioconnect.TestcontainersConfiguration;
-import com.colegioconnect.accounts.entity.AccountType;
 import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.entity.UserStatus;
-import com.colegioconnect.accounts.repository.EmailCodeRepository;
-import com.colegioconnect.accounts.repository.UserRepository;
-import com.colegioconnect.organizations.entity.RoleAssignment;
-import com.colegioconnect.organizations.repository.OrganizationRepository;
-import com.colegioconnect.organizations.repository.RoleAssignmentRepository;
 import com.colegioconnect.organizations.entity.Role;
+import com.colegioconnect.security.NegativeAuthorizationTestHarness;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
-class AuthIntegrationTest {
+class AuthIntegrationTest extends NegativeAuthorizationTestHarness {
 
     private static final String EMAIL = "student@upr.edu";
-    private static final String PASSWORD = "a long test password";
+    private static final String PASSWORD = TEST_PASSWORD;
     private static final String WRONG_PASSWORD = "this is the wrong password";
-
-    @Autowired private MockMvc mockMvc;
-    @Autowired private UserRepository userRepository;
-    @Autowired private EmailCodeRepository emailCodeRepository;
-    @Autowired private PasswordEncoder passwordEncoder;
-    @Autowired private RoleAssignmentRepository roleAssignmentRepository;
-    @Autowired private OrganizationRepository organizationRepository;
-
-    @BeforeEach
-    void cleanDatabase() {
-        roleAssignmentRepository.deleteAll();
-        organizationRepository.deleteAll();
-        emailCodeRepository.deleteAll();
-        userRepository.deleteAll();
-    }
 
     @Test
     void verifiedUserCanLoginAndSeeCurrentUser() throws Exception {
-        createUser(true, UserStatus.ACTIVE);
+        activeVerifiedUser(EMAIL);
 
         MockHttpSession session = login(EMAIL, PASSWORD, status().isOk());
 
@@ -80,7 +54,7 @@ class AuthIntegrationTest {
 
     @Test
     void wrongPasswordIsRejected() throws Exception {
-        createUser(true, UserStatus.ACTIVE);
+        activeVerifiedUser(EMAIL);
 
         login(EMAIL, WRONG_PASSWORD, status().isUnauthorized());
     }
@@ -92,21 +66,21 @@ class AuthIntegrationTest {
 
     @Test
     void suspendedAccountIsRejected() throws Exception {
-        createUser(true, UserStatus.SUSPENDED);
+        user(EMAIL, UserStatus.SUSPENDED, true);
 
         login(EMAIL, PASSWORD, status().isForbidden());
     }
 
     @Test
     void unverifiedAccountIsRejected() throws Exception {
-        createUser(false, UserStatus.ACTIVE);
+        User user = user(EMAIL, UserStatus.ACTIVE, false);
 
-        login(EMAIL, PASSWORD, status().isForbidden());
+        login(user, status().isForbidden());
     }
 
     @Test
     void accountIsLockedAfterFiveWrongPasswords() throws Exception {
-        createUser(true, UserStatus.ACTIVE);
+        activeVerifiedUser(EMAIL);
 
         for (int i = 0; i < 5; i++) {
             login(EMAIL, WRONG_PASSWORD, status().isUnauthorized());
@@ -118,7 +92,7 @@ class AuthIntegrationTest {
 
     @Test
     void logoutEndsTheSession() throws Exception {
-        createUser(true, UserStatus.ACTIVE);
+        activeVerifiedUser(EMAIL);
         MockHttpSession session = login(EMAIL, PASSWORD, status().isOk());
 
         mockMvc.perform(post("/api/auth/logout").with(csrf()).session(session))
@@ -130,7 +104,7 @@ class AuthIntegrationTest {
 
     @Test
     void loginWithoutCsrfTokenIsRejected() throws Exception {
-        createUser(true, UserStatus.ACTIVE);
+        activeVerifiedUser(EMAIL);
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -140,8 +114,8 @@ class AuthIntegrationTest {
 
     @Test
     void loginLoadsTheUserRoles() throws Exception {
-        User user = createUser(true, UserStatus.ACTIVE);
-        roleAssignmentRepository.save(new RoleAssignment(user, Role.STUDENT, null));
+        User user = activeVerifiedUser(EMAIL);
+        assign(user, Role.STUDENT, null);
 
         MockHttpSession session = login(EMAIL, PASSWORD, status().isOk());
 
@@ -156,7 +130,7 @@ class AuthIntegrationTest {
     
     @Test
     void userSuspendedAfterLoginIsBlocked() throws Exception {
-        createUser(true, UserStatus.ACTIVE);
+        activeVerifiedUser(EMAIL);
         MockHttpSession session = login(EMAIL, PASSWORD, status().isOk());
 
         // A moderator suspends the account while the session is still open
@@ -176,26 +150,4 @@ class AuthIntegrationTest {
     }
     
 
-    // ---- Helpers ----
-
-    private User createUser(boolean emailVerified, UserStatus status) {
-        User user = new User(EMAIL, passwordEncoder.encode(PASSWORD), AccountType.UPRM_MEMBER);
-        user.setEmailVerified(emailVerified);
-        user.setStatus(status);
-        return userRepository.save(user);
-    }
-
-    private MockHttpSession login(String email, String password, ResultMatcher expectedStatus) throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/auth/login")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginJson(email, password)))
-                .andExpect(expectedStatus)
-                .andReturn();
-        return (MockHttpSession) result.getRequest().getSession(false);
-    }
-
-    private static String loginJson(String email, String password) {
-        return "{\"email\":\"" + email + "\",\"password\":\"" + password + "\"}";
-    }
 }
