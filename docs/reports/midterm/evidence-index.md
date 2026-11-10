@@ -33,6 +33,8 @@ The following is a proposed organization within 15–20 pages; headings/page all
 | Repository and project webpage documentation | Repository and this documentation PR | README, AGENTS, contributor docs and evidence index | Real project webpage and navigation/access screenshot | Documentation available on branch; webpage URL/access and professor access unverified; repo is private | Luis arranges publication/access; Gabriel checks links and evidence exposure |
 | Remaining work, schedule and blockers | Open canonical backlog, #88/#89 integration | Status roadmap and M1–M4 | Dependency roadmap, no invented calendar sprint dates | Roadmap available; proposal approval date and owner/budget decisions missing | All agree next actions and record decisions before report submission |
 
+**November 10 integration evidence update:** Gabriel's local #119 branch now combines #118's authorization harness, #119's audit foundation, and #120's company decision/queue code. [TE-12](../../testing/test-evidence.md#te-12) records 64/64 local backend tests, an isolated V1–V3-to-V5 preservation check, 22/22 frontend tests, Compose validation, and image build at code commit `5c29336`. The older rows above describe their dated snapshots. The combined PR is not yet merged or team-approved; company signup/publishing, `/api/auth/me` roles, hosted deployment, and final indicator evidence remain missing.
+
 ## Advisor / professor comments — source required
 
 **Current availability: not collected.** Advisor named by the proposal: Fernando Torre. Do not infer feedback from the proposal rubric, an AI review, or teammates' GitHub comments.

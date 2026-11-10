@@ -243,3 +243,7 @@ Compatibility method: the exact heads listed below were inspected directly in fe
 ## Final reconciliation decision
 
 Recover Gabriel's test-infrastructure contribution, adapted to current main, but do not recover PR #98's production authorization or copy PR #100's now-duplicate test class. The implementation is reviewable as a test-and-documentation-only change. Issue #12 cannot be closed until the harness is merged, CI remains green on the final PR head, another team member completes the required security review, and the team confirms the remaining acceptance interpretation. Final I6 acceptance remains future work as protected business endpoints are implemented.
+
+## November 10 consolidation status
+
+The table above is historical to its original observation. PR #98 is now closed without merge. Gabriel's local #119 branch includes this full #118 ancestry through merge `36157e6d0ea3f6ea226257131622f2f907feae86`; the original #118 branch is unchanged and remains open pending team disposition. The combined #118/#119/#120 code plus migration-upgrade test passed 64/64 backend tests at `5c29336aca5df4804bd84149d6f5b84da96fcfc0` as recorded in [TE-12](../../testing/test-evidence.md#te-12). The harness is not yet on `main`, and future endpoint-level I6 cases remain required.

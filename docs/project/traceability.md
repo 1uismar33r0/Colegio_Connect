@@ -398,9 +398,9 @@ Sources: [canonical #12](https://github.com/1uismar33r0/Colegio_Connect/issues/1
 
 Milestone: **M1 - Access foundation**. Original issue references: I6. Proposal mapping: **O2; I6; US1–US2; Figure 3**.
 
-Engineering state: **Verified on branch**. Acceptance note: the main-based harness is used by more than three existing denial cases, contributor instructions exist, and PR #118 CI passed at head `203a424`; AC1's merge clause and teammate security review remain pending, and later documentation-only heads must retain green CI. Location: [PR #118](https://github.com/1uismar33r0/Colegio_Connect/pull/118), branch `gabriel/issue-12-negative-auth-reconciliation`, implementation commit `92fadc467db5a85dcea5c03fc3456e6d38936999`; test files under `backend/src/test/java/com/colegioconnect/`.
+Engineering state: **Verified on branch**. Acceptance note: the main-based harness is used by more than three existing denial cases; its original PR #118 passed CI, and Gabriel consolidated its commits into PR #119 locally on 2026-11-10. AC1's merge clause and teammate security review remain pending. Location: original [PR #118](https://github.com/1uismar33r0/Colegio_Connect/pull/118), implementation `92fadc467db5a85dcea5c03fc3456e6d38936999`; surviving [PR #119](https://github.com/1uismar33r0/Colegio_Connect/pull/119) branch, local merge `36157e6d0ea3f6ea226257131622f2f907feae86` pending publication.
 
-Evidence / blockers (apply to every AC below): **TE-11** in [test evidence](../testing/test-evidence.md#te-11) and Gabriel's [Issue #12 engineering record](../gabriel/security/issue-12-negative-authorization.md). Java 25 focused verification passed 20 tests and full backend verification passed 30. The branch is not merged or teammate-reviewed; final I6 coverage still depends on stable protected business endpoints.
+Evidence / blockers (apply to every AC below): **TE-11** and the [November 10 combined run](../testing/test-evidence.md#te-12), plus Gabriel's [Issue #12 engineering record](../gabriel/security/issue-12-negative-authorization.md). The combined PR #119 code passed 64 backend tests locally. Neither branch is merged or teammate-reviewed; final I6 coverage still depends on protected business endpoints.
 
 Exact source description shared by both issues:
 
@@ -481,9 +481,9 @@ Sources: [canonical #15](https://github.com/1uismar33r0/Colegio_Connect/issues/1
 
 Milestone: **M1 - Access foundation**. Original issue references: I8, Figure 2 block D. Proposal mapping: **O3; I8; US2, US4, US11, US15; Figure 2 block D**.
 
-Engineering state: **Verified on branch**. Acceptance note: foundation tasks are implemented and locally verified; AC1, teammate review, hosted CI, merge, and final I8 action coverage remain pending. Location: `gabriel/issue-15-audit-reconciliation`, implementation commits `132413bb8076371285cdee5a7bd18f6a92871278` and `c0b01a7afc6c8b61eb4ec1cc44259c78658378d8`.
+Engineering state: **Verified on branch**. Acceptance note: foundation tasks and the first approval/rejection audit caller are implemented and locally verified; teammate review, consolidated-head hosted CI, merge, other administrative actions, and final I8 coverage remain pending. Location: `gabriel/issue-15-audit-reconciliation`, implementation commits `132413bb8076371285cdee5a7bd18f6a92871278`, `c0b01a7afc6c8b61eb4ec1cc44259c78658378d8`, and company decision `d43afff1fc2660b8cc5191401c669caaa6084eaf`.
 
-Evidence / blockers (apply to every AC below): **TE-09** in [test evidence](../testing/test-evidence.md) and Gabriel's [Issue #15 engineering record](../gabriel/security/issue-15-audit-foundation.md). The V4 schema, same-transaction service, bounded moderator endpoint, and foundation tests are present on the branch. No role-change or later business mutation service exists, so AC1 and final I8 remain incomplete.
+Evidence / blockers (apply to every AC below): **TE-09** and the [combined verification](../testing/test-evidence.md#te-12), plus Gabriel's [Issue #15 engineering record](../gabriel/security/issue-15-audit-foundation.md). V4 audit, same-transaction service, bounded moderator reads, and Issue #16 company decision audit are present on the branch. Role changes, moderation, and sponsorship still have no audit-producing service, so AC1 and final I8 remain incomplete.
 
 Exact source description shared by both issues:
 
@@ -508,9 +508,9 @@ Sources: [canonical #16](https://github.com/1uismar33r0/Colegio_Connect/issues/1
 
 Milestone: **M2 - Publishing and discovery**. Original issue references: US3, US4, I6. Proposal mapping: **O2, O3; I6, I8; US3–US4; Figures 2–3**.
 
-Engineering state: **Not started**. Acceptance note: criteria/DoD still pending. Location: No feature implementation located on main; domain package placeholders are not implementation.
+Engineering state: **Verified on branch for the approval backend slice**. Acceptance note: a synthetic pending-company queue and atomic approval/rejection with an audit row are locally verified; registration, real applicant data, moderator UI, decision notifications, publishing denial, teammate review, and merge remain pending. Location: [PR #119](https://github.com/1uismar33r0/Colegio_Connect/pull/119) branch after local consolidation of former stacked [PR #120](https://github.com/1uismar33r0/Colegio_Connect/pull/120), code commits `d43afff`, `a8981f9`, and `fcd9224`.
 
-Evidence / blockers (apply to every AC below): **TE-00** in [test evidence](../testing/test-evidence.md). Implement the listed tasks and exercise every acceptance clause; prerequisite access/data/UI workflows and CI integration remain incomplete.
+Evidence / blockers (apply to every AC below): [TE-12](../testing/test-evidence.md#te-12) and Gabriel's [Issue #16 engineering record](../gabriel/security/issue-16-company-decision.md). V5 follows audit V4; the November 10 combined branch passed 64 backend tests and an isolated V1–V3-to-V5 preservation test. AC2 is locally demonstrated for this decision operation but not yet accepted; AC1 cannot pass without publishing and its authorization tests.
 
 Exact source description shared by both issues:
 

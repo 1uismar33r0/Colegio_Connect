@@ -197,3 +197,11 @@ Gabriel's isolated test-only correction `258e28feb987e77ab5129e811768e5856b7b03e
 ## Final reconciliation decision
 
 Recover Gabriel's transaction and read foundation on current `main`, adapted to Massini's merged role model. Do not import PR #98 authorization, do not merge PR #99 unchanged, and do not implement future business actions in Issue #15. The branch makes the foundation independently reviewable; Issue #15 and proposal indicator I8 remain incomplete until teammate review, integration, and every listed action's owning issue provides same-transaction success and rollback evidence.
+
+## November 10 PR consolidation
+
+The preceding sections preserve their dated observations. On November 10, Gabriel's local #119 branch incorporated the full #118 test-only ancestry through merge `36157e6d0ea3f6ea226257131622f2f907feae86` and #120 company decision/queue ancestry through merge `3500ba9f2706f3d9af4e90fa953923d7644bf0ad`. Neither merge touched Cristian's production `AuthorizationPolicy` from #111, the V1 role identifiers, or Luis's #115/#116 branches. The consolidated backend retains audit V4 followed by company-decision V5. An isolated preservation test was added at `5c29336aca5df4804bd84149d6f5b84da96fcfc0`.
+
+At that code revision, the complete Java 25/PostgreSQL 18.6 Testcontainers suite passed 64/64 tests, including authentication, authorization, audit reads/writes, company decision/rollback/concurrency, pending queue, and V1–V3-to-V5 migration preservation. Frontend tests passed 22/22; Compose validation and a backend image build succeeded. [TE-12](../../testing/test-evidence.md#te-12) records the commands, local formatting limitation, and exact scope. These are local results; the consolidated #119 head still needs hosted CI and Cristian's security/schema review before integration.
+
+The first real Issue #15 caller now records approved/rejected company decisions in the same transaction. Issue #15 and I8 remain incomplete for role changes, moderation, account restrictions, and sponsorship. Issue #16 still lacks production company registration, publishing authorization, moderator UI, and decision notifications. The current `/api/auth/me` response still lacks role identifiers for Luis's role-aware navigation; Cristian and Luis own that contract. PR #98 is closed unmerged, and its obsolete role-renaming V4 remains excluded.
