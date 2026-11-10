@@ -25,6 +25,6 @@ public class AuditQueryService {
                     "page must be non-negative and size must be between 1 and 100");
         }
         return AuditPageResponse.from(auditEventRepository
-                .findAllByOrderByOccurredAtDesc(PageRequest.of(page, size)));
+                .findAllByOrderByOccurredAtDescIdDesc(PageRequest.of(page, size)));
     }
 }

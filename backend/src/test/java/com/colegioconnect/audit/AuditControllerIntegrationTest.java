@@ -7,7 +7,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
@@ -18,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -49,6 +52,7 @@ class AuditControllerIntegrationTest {
     @Autowired private RoleAssignmentRepository roleAssignmentRepository;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private TransactionTemplate transactionTemplate;
+    @Autowired private JdbcTemplate jdbcTemplate;
 
     @BeforeEach
     @AfterEach
@@ -122,6 +126,33 @@ class AuditControllerIntegrationTest {
                 .andExpect(jsonPath("$.size").value(1))
                 .andExpect(jsonPath("$.totalElements").value(2))
                 .andExpect(jsonPath("$.totalPages").value(2));
+    }
+
+    @Test
+    void equalTimestampsHaveStableOrderAcrossPages() throws Exception {
+        User moderator = createUser("audit.ties@upr.edu");
+        roleAssignmentRepository.save(new RoleAssignment(moderator, Role.MODERATOR, null));
+        Instant timestamp = Instant.parse("2026-11-08T03:00:00Z");
+        List<UUID> eventIds = List.of(
+                UUID.fromString("00000000-0000-0000-0000-000000000001"),
+                UUID.fromString("00000000-0000-0000-0000-000000000002"),
+                UUID.fromString("00000000-0000-0000-0000-000000000003"));
+        for (UUID eventId : eventIds) {
+            jdbcTemplate.update("""
+                    INSERT INTO audit_log (id, actor_id, action, target_type, target_id, occurred_at)
+                    VALUES (?, ?, 'ROLE_ASSIGNED', 'USER', ?, ?)
+                    """, eventId, moderator.getId(), UUID.randomUUID(), Timestamp.from(timestamp));
+        }
+        MockHttpSession session = login(moderator);
+
+        for (int page = 0; page < eventIds.size(); page++) {
+            UUID expectedId = eventIds.get(eventIds.size() - 1 - page);
+            mockMvc.perform(get("/api/admin/audit-events?page=" + page + "&size=1")
+                            .session(session))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.items[0].id").value(expectedId.toString()))
+                    .andExpect(jsonPath("$.totalElements").value(3));
+        }
     }
 
     @Test

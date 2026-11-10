@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
 
-    Page<AuditEvent> findAllByOrderByOccurredAtDesc(Pageable pageable);
+    Page<AuditEvent> findAllByOrderByOccurredAtDescIdDesc(Pageable pageable);
 }
