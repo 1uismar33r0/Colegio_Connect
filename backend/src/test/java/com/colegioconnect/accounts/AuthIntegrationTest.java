@@ -17,12 +17,15 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.core.context.SecurityContext;
+import org.springframework.test.web.servlet.MvcResult;
 
 
 import com.colegioconnect.TestcontainersConfiguration;
 import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.entity.UserStatus;
 import com.colegioconnect.organizations.entity.Role;
+import com.colegioconnect.organizations.entity.ApprovalStatus;
+import com.colegioconnect.organizations.entity.OrgType;
 import com.colegioconnect.security.NegativeAuthorizationTestHarness;
 
 @SpringBootTest
@@ -43,7 +46,42 @@ class AuthIntegrationTest extends NegativeAuthorizationTestHarness {
         mockMvc.perform(get("/api/auth/me").session(session))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value(EMAIL))
+                .andExpect(jsonPath("$.roles.length()").value(0))
                 .andExpect(jsonPath("$.passwordHash").doesNotExist());
+    }
+
+    @Test
+    void loginAndMeReturnDistinctCurrentRolesFromDatabase() throws Exception {
+        User user = activeVerifiedUser(EMAIL);
+        assign(user, Role.STUDENT, null);
+        assign(user, Role.INSTITUTIONAL,
+                organization("Office one", OrgType.UPRM_OFFICE, ApprovalStatus.APPROVED));
+        assign(user, Role.INSTITUTIONAL,
+                organization("Office two", OrgType.UPRM_DEPARTMENT, ApprovalStatus.APPROVED));
+
+        MvcResult loginResult = mockMvc.perform(post("/api/auth/login").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson(EMAIL, PASSWORD)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.roles.length()").value(2))
+                .andExpect(jsonPath("$.roles[0]").value("INSTITUTIONAL"))
+                .andExpect(jsonPath("$.roles[1]").value("STUDENT"))
+                .andReturn();
+        MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
+
+        mockMvc.perform(get("/api/auth/me").session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.roles.length()").value(2));
+
+        roleAssignmentRepository.deleteAll();
+        mockMvc.perform(get("/api/auth/me").session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.roles.length()").value(0));
+
+        assign(user, Role.MODERATOR, null);
+        mockMvc.perform(get("/api/auth/me").session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.roles[0]").value("MODERATOR"));
     }
 
     @Test

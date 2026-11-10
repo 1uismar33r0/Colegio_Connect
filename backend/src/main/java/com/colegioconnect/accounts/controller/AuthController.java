@@ -25,6 +25,7 @@ import com.colegioconnect.accounts.dto.UserResponse;
 import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.repository.UserRepository;
 import com.colegioconnect.accounts.service.LoginService;
+import com.colegioconnect.organizations.entity.Role;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -57,7 +58,8 @@ public class AuthController {
         }
 
         // Load the user's roles as ROLE_* authorities so @PreAuthorize can check them
-        List<GrantedAuthority> authorities = loginService.authoritiesFor(user);
+        List<Role> roles = loginService.rolesFor(user.getId());
+        List<GrantedAuthority> authorities = loginService.authoritiesFor(roles);
 
         Authentication authentication = UsernamePasswordAuthenticationToken.authenticated(
                 user.getId().toString(), null, authorities);
@@ -67,7 +69,7 @@ public class AuthController {
         SecurityContextHolder.setContext(context);
         securityContextRepository.saveContext(context, httpRequest, httpResponse);
 
-        return UserResponse.from(user);
+        return UserResponse.from(user, roles);
     }
 
     @GetMapping("/me")
@@ -75,7 +77,7 @@ public class AuthController {
         UUID userId = UUID.fromString(authentication.getName());
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-        return UserResponse.from(user);
+        return UserResponse.from(user, loginService.rolesFor(userId));
     }
 
     @GetMapping("/csrf")

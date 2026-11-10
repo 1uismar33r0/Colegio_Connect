@@ -37,6 +37,8 @@ The following is a proposed organization within 15–20 pages; headings/page all
 
 **Audit review follow-up:** At `8021392`, equal-timestamp audit pagination received a unique-ID tie breaker after a failing regression test. The new complete backend suite passed 65/65, and frontend lint, typecheck, 22/22 tests, and build passed locally. These are functional checks, not preliminary load or latency measurements. Hosted CI and team review remain required before integration.
 
+**Issue #10 backend update (November 10):** On `gabriel/issue-10-role-management-backend`, current-role authentication responses and audited moderator role administration passed 88/88 backend tests at `db2eb34`; see [TE-13](../../testing/test-evidence.md#te-13), [ADR 0002](../../decisions/0002-roles-and-admin-access.md), and the [API contract](../../roles/api-contract.md). This branch is pending Cristian's review and integration. Functional tests do not establish discovery performance, full I6/I8 acceptance, a role-management UI, or a hosted deployment. Earlier #119 and role-response statements above are dated snapshots.
+
 ## Advisor / professor comments — source required
 
 **Current availability: not collected.** Advisor named by the proposal: Fernando Torre. Do not infer feedback from the proposal rubric, an AI review, or teammates' GitHub comments.

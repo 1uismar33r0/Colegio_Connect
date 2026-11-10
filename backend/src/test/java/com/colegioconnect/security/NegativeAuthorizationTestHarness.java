@@ -22,6 +22,7 @@ import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.entity.UserStatus;
 import com.colegioconnect.accounts.repository.EmailCodeRepository;
 import com.colegioconnect.accounts.repository.UserRepository;
+import com.colegioconnect.audit.AuditEventRepository;
 import com.colegioconnect.organizations.entity.ApprovalStatus;
 import com.colegioconnect.organizations.entity.OrgType;
 import com.colegioconnect.organizations.entity.Organization;
@@ -45,9 +46,11 @@ public abstract class NegativeAuthorizationTestHarness {
     @Autowired protected RoleAssignmentRepository roleAssignmentRepository;
     @Autowired protected OrganizationRepository organizationRepository;
     @Autowired protected AuthorizationPolicy authorizationPolicy;
+    @Autowired protected AuditEventRepository auditEventRepository;
 
     @BeforeEach
     protected void cleanAuthorizationFixtures() {
+        auditEventRepository.deleteAll();
         roleAssignmentRepository.deleteAll();
         organizationRepository.deleteAll();
         emailCodeRepository.deleteAll();

@@ -1,6 +1,8 @@
 # Project status
 
-**Last updated:** 2026-11-04. **Original evidence observed:** 2026-10-26 (UTC; collection began approximately 04:35Z). **Update evidence observed:** 2026-11-04 (live GitHub PR and issue records). **Current baseline:** [`fc06e936a66921afa78c37e65b5be8dfe815a98d`](https://github.com/1uismar33r0/Colegio_Connect/commit/fc06e936a66921afa78c37e65b5be8dfe815a98d), `origin/main` fetched on November 4. The October 26 statements below remain dated historical observations unless explicitly updated here.
+**Issue #10 update observed:** 2026-11-10. `origin/main` was fetched at `5ff997463a73a0f17f54fb4a4a4c7ec67b0f6f2e`; PR #119 is merged. Role administration and current-role responses are **verified on branch** `gabriel/issue-10-role-management-backend` in [PR #123](https://github.com/1uismar33r0/Colegio_Connect/pull/123); [TE-13](../testing/test-evidence.md#te-13) records local and hosted checks. Cristian review and merge remain pending. The main snapshot and tables below were last comprehensively reconciled November 4, 2026; statements of absent authentication, authorization, and React work describe that older snapshot and are not current repository claims.
+
+**Earlier baseline:** 2026-11-04. **Original evidence observed:** 2026-10-26 (UTC; collection began approximately 04:35Z). **Update evidence observed:** 2026-11-04 (live GitHub PR and issue records). **Baseline then:** [`fc06e936a66921afa78c37e65b5be8dfe815a98d`](https://github.com/1uismar33r0/Colegio_Connect/commit/fc06e936a66921afa78c37e65b5be8dfe815a98d), `origin/main` fetched on November 4. The October 26 statements below remain dated historical observations unless explicitly updated here.
 
 ## Purpose and current condition
 

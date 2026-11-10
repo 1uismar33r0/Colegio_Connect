@@ -314,9 +314,9 @@ Sources: [canonical #9](https://github.com/1uismar33r0/Colegio_Connect/issues/9)
 
 Milestone: **M1 - Access foundation**. Original issue references: US2, I6, Table 2, Access model. Proposal mapping: **O2; I6; US2; Figures 2–3**.
 
-Engineering state: **Not started**. Acceptance note: blocked by dependencies below. Location: main security/package-info.java is a placeholder; #88 has a separate role enum only.
+Engineering state: **In progress**. Location: persisted authorization and role model are on `main` at `5ff9974`; current-role responses and role administration are verified locally on `gabriel/issue-10-role-management-backend`. Acceptance note: ownership, consent, complete protected-endpoint coverage, and Cristian's review remain open.
 
-Evidence / blockers (apply to every AC below): **TE-00, TE-07** in [test evidence](../testing/test-evidence.md). Depends on identity, sessions and reviewed policy matrix; reconcile FACULTY_OFFICE_DEPT/EXTERNAL_COMPANY/ADMIN_MODERATOR with INSTITUTIONAL/COMPANY/MODERATOR before integration.
+Evidence / blockers (apply to every AC below): **TE-00, TE-07, TE-13** in [test evidence](../testing/test-evidence.md). The V1 enum is `STUDENT`, `INSTITUTIONAL`, `COMPANY`, `MODERATOR`; the mapping from original issue names is documented in the policy matrix. Shared authorization is implemented for current administrative endpoints, but universal coverage and a Gabriel security review of the full policy matrix remain acceptance work.
 
 Exact source description shared by both issues:
 
@@ -343,9 +343,9 @@ Sources: [canonical #10](https://github.com/1uismar33r0/Colegio_Connect/issues/1
 
 Milestone: **M1 - Access foundation**. Original issue references: US2. Proposal mapping: **O2, O3; I6, I8; US2; Figures 2–3**.
 
-Engineering state: **Not started**. Acceptance note: criteria/DoD still pending. Location: No feature implementation located on main; domain package placeholders are not implementation.
+Engineering state: **Verified on branch**. Location: `gabriel/issue-10-role-management-backend`, [PR #123](https://github.com/1uismar33r0/Colegio_Connect/pull/123), based on `main` `5ff9974`; not merged. Acceptance note: local backend tests and hosted CI cover AC1 and AC2, but Cristian's backend/security review and integration remain pending.
 
-Evidence / blockers (apply to every AC below): **TE-00** in [test evidence](../testing/test-evidence.md). Implement the listed tasks and exercise every acceptance clause; prerequisite access/data/UI workflows and CI integration remain incomplete.
+Evidence / blockers (apply to every AC below): **TE-00, TE-13** in [test evidence](../testing/test-evidence.md). The branch implements current roles, administrator search, scoped assignment/revocation, durable bootstrap, and same-transaction audit; review the [contract](../roles/api-contract.md) and [ADR](../decisions/0002-roles-and-admin-access.md). UI integration is outside this backend task. Do not close #10 before team review, merge, and Definition of Done verification.
 
 Exact source description shared by both issues:
 

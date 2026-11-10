@@ -33,6 +33,7 @@ Ports bind to `127.0.0.1` so development services are not exposed to the local n
 - Compose also supplies `SPRING_MAIL_HOST=mailpit` and `SPRING_MAIL_PORT=1025`. Outside Docker, the backend uses `localhost:1025` (Mailpit on the host).
 - Flyway is enabled and applies the versioned migrations in `backend/src/main/resources/db/migration`. The merged identity baseline begins with `V1__identity_baseline.sql`; do not modify an applied migration. Add a new versioned migration for later schema changes.
 - `app.mail.from` sets the sender address for emails (default `no-reply@colegioconnect.local`).
+- `APP_BOOTSTRAP_ADMIN_EMAIL` is optional and blank in `.env.example`. Set it only to the complete email of an existing active, email-verified UPRM member when initializing the first moderator. Compose passes it to the backend; a direct host run can set it in the process environment. The backend records one durable completion marker and a system audit event. Once initialization completes, a restart cannot regrant a deliberately revoked role. Keep the address out of logs and remove the setting after initialization. An unknown or ineligible address receives no grant. See [ADR 0002](decisions/0002-roles-and-admin-access.md).
 
 ## Verification and related documentation
 
