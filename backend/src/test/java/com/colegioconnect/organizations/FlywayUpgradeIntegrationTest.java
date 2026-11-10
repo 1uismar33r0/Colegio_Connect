@@ -24,7 +24,7 @@ class FlywayUpgradeIntegrationTest {
     @Autowired private DataSource dataSource;
 
     @Test
-    void v3IdentityDataSurvivesAuditAndCompanyDecisionMigrations() {
+    void v3IdentityDataSurvivesLaterMigrations() {
         String schema = "upgrade_" + UUID.randomUUID().toString().replace("-", "");
         flyway(schema, MigrationVersion.fromVersion("3")).migrate();
 
@@ -70,7 +70,10 @@ class FlywayUpgradeIntegrationTest {
         assertThat(jdbc.queryForObject(
                 "SELECT version FROM " + schema + ".flyway_schema_history "
                         + "WHERE success = TRUE ORDER BY installed_rank DESC LIMIT 1",
-                String.class)).isEqualTo("5");
+                String.class)).isEqualTo("6");
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM " + schema + ".role_admin_state WHERE id = 1",
+                Integer.class)).isEqualTo(1);
 
         UUID auditId = UUID.randomUUID();
         jdbc.update("INSERT INTO " + schema + ".audit_log "

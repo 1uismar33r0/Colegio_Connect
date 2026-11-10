@@ -15,7 +15,7 @@ The V1 database and Java enum use `STUDENT`, `INSTITUTIONAL`, `COMPANY`, and `MO
 
 ## Bootstrap
 
-V6 adds a singleton `role_admin_state` row and an indexed normalized-email expression. At startup, nonblank `APP_BOOTSTRAP_ADMIN_EMAIL` is matched exactly to an existing active, verified UPRM member. The transactional bootstrap locks the singleton row. It grants one global moderator only if no eligible global moderator exists, then marks the row completed. If no eligible account exists, it leaves the row pending for a later startup. Once completed, including when an administrator existed already, it never regrants after revocation. No public endpoint or configured email is logged. The state row records the system initialization separately because audit V4 requires a human user FK as actor; administrator-initiated API changes use audit V4 directly.
+V6 adds a singleton `role_admin_state` row and an indexed normalized-email expression. At startup, nonblank `APP_BOOTSTRAP_ADMIN_EMAIL` is matched exactly to an existing active, verified UPRM member. The transactional bootstrap locks the singleton row. It grants one global moderator only if no eligible global moderator exists, then marks the row completed. If no eligible account exists, it leaves the row pending for a later startup. Once completed, including when an administrator existed already, it never regrants after revocation. No public endpoint or configured email is logged. V6 also extends the existing audit stream with an explicit `SYSTEM` actor type and nullable actor ID for the initial grant; administrator-initiated changes retain `USER` actors and their required IDs.
 
 ## Boundaries
 

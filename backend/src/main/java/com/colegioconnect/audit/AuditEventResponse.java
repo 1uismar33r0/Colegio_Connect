@@ -6,6 +6,7 @@ import java.util.UUID;
 public record AuditEventResponse(
         UUID id,
         UUID actorId,
+        AuditActorType actorType,
         AuditAction action,
         AuditTargetType targetType,
         UUID targetId,
@@ -15,6 +16,7 @@ public record AuditEventResponse(
         return new AuditEventResponse(
                 event.getId(),
                 event.getActorId(),
+                event.getActorType(),
                 event.getAction(),
                 event.getTargetType(),
                 event.getTargetId(),

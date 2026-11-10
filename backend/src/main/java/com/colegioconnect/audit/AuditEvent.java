@@ -20,8 +20,12 @@ public class AuditEvent {
     @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
     private UUID id;
 
-    @Column(name = "actor_id", nullable = false, updatable = false)
+    @Column(name = "actor_id", updatable = false)
     private UUID actorId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "actor_type", nullable = false, updatable = false)
+    private AuditActorType actorType;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, updatable = false)
@@ -44,6 +48,7 @@ public class AuditEvent {
     AuditEvent(UUID actorId, AuditAction action, AuditTargetType targetType,
                UUID targetId, Instant occurredAt) {
         this.actorId = actorId;
+        this.actorType = AuditActorType.USER;
         this.action = action;
         this.targetType = targetType;
         this.targetId = targetId;
@@ -52,8 +57,16 @@ public class AuditEvent {
 
     public UUID getId() { return id; }
     public UUID getActorId() { return actorId; }
+    public AuditActorType getActorType() { return actorType; }
     public AuditAction getAction() { return action; }
     public AuditTargetType getTargetType() { return targetType; }
     public UUID getTargetId() { return targetId; }
     public Instant getOccurredAt() { return occurredAt; }
+
+    static AuditEvent system(AuditAction action, AuditTargetType targetType,
+                             UUID targetId, Instant occurredAt) {
+        AuditEvent event = new AuditEvent(null, action, targetType, targetId, occurredAt);
+        event.actorType = AuditActorType.SYSTEM;
+        return event;
+    }
 }

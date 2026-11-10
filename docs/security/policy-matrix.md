@@ -13,7 +13,7 @@ The database uses the names agreed in V1. They map to the proposal like this:
 | `COMPANY` | External Company |
 | `MODERATOR` | Admin / Moderator |
 
-A user can hold more than one role. Roles are loaded as `ROLE_*` authorities at login.
+A user can hold more than one role. Roles are loaded as `ROLE_*` authorities at login. On the Issue #10 branch, login and `/api/auth/me` also return distinct current role names; `/me` reloads them from the database. Sensitive administrator endpoints use the persisted `@authz.canModerate(authentication)` check, so a stale session authority does not preserve administrator access after revocation.
 
 ## Shared checks
 
@@ -24,7 +24,7 @@ Defined in `security/AuthorizationPolicy` and used from `@PreAuthorize` as `@aut
 | Account status | `isActive(authentication)` | Account exists and is not suspended. Applied to every authenticated request in `SecurityConfig`, so a user suspended after login is blocked right away. |
 | Organization membership | `hasRoleIn(authentication, role, orgId)` | User has the role inside that organization. |
 | Approval status | `isApproved(orgId)` | An administrator approved the organization. |
-| Moderator actions | `canModerate(authentication)` | Account remains active and a global persisted `MODERATOR` assignment still exists. Used for audit-history reading, pending-company queue access, and company decisions, so revocation denies the next request even with an existing session. |
+| Moderator actions | `canModerate(authentication)` | Account remains active, verified, and a UPRM member; a global persisted `MODERATOR` assignment still exists. Used for audit-history reading, pending-company queue access, company decisions, and role administration, so revocation denies the next request even with an existing session. |
 | Ownership | Planned for M2 | User owns the listing. Listings do not exist yet. |
 
 ## Matrix
@@ -51,3 +51,7 @@ Every action requires `isActive`.
 
 Companies cannot search or browse students. A company sees a student's data only when
 that student responds to its listing, or a student team accepts its Express Interest.
+
+## Issue #10 administrator boundary
+
+The role API searches only a complete normalized email and returns bounded, minimal results. `STUDENT` and `MODERATOR` are global; `INSTITUTIONAL` is scoped to a UPRM office or department; `COMPANY` is scoped to an approved external company. Assignment requires an active, verified account of the correct account type. Revocation removes only the specified assignment; moderators cannot revoke their own moderator role or the last eligible moderator. Mutations require the existing session and CSRF protection and write same-transaction audit events. Startup bootstrap is a separate one-time system action; it never grants roles through registration. These controls do not relax the student consent rule above. See [ADR 0002](../decisions/0002-roles-and-admin-access.md) and the [API contract](../roles/api-contract.md).

@@ -6,6 +6,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import com.colegioconnect.accounts.entity.UserStatus;
+import com.colegioconnect.accounts.entity.AccountType;
 import com.colegioconnect.accounts.repository.UserRepository;
 import com.colegioconnect.organizations.entity.ApprovalStatus;
 import com.colegioconnect.organizations.entity.Role;
@@ -44,11 +45,14 @@ public class AuthorizationPolicy {
 
     // Moderation is a platform role and must be rechecked from persistence on every protected action.
     public boolean canModerate(Authentication authentication) {
-        if (!isActive(authentication)) {
-            return false;
-        }
         UUID userId = UUID.fromString(authentication.getName());
-        return roleAssignmentRepository.existsByUserIdAndRoleAndOrganizationIsNull(userId, Role.MODERATOR);
+        return userRepository.findById(userId)
+                .filter(user -> user.getStatus() == UserStatus.ACTIVE
+                        && user.isEmailVerified()
+                        && user.getAccountType() == AccountType.UPRM_MEMBER)
+                .isPresent()
+                && roleAssignmentRepository.existsByUserIdAndRoleAndOrganizationIsNull(
+                        userId, Role.MODERATOR);
     }
 
     // An administrator approved this organization

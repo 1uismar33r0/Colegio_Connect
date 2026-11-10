@@ -21,4 +21,9 @@ public class AuditService {
         auditEventRepository.save(new AuditEvent(
                 actorId, action, targetType, targetId, Instant.now()));
     }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void recordSystem(AuditAction action, AuditTargetType targetType, UUID targetId) {
+        auditEventRepository.save(AuditEvent.system(action, targetType, targetId, Instant.now()));
+    }
 }
