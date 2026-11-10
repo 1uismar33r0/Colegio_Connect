@@ -394,13 +394,13 @@ Definition of Done: the three common requirements above apply; no additional acc
 
 ### Issue #12 / alias #47: Negative-authorization test harness
 
-Sources: [canonical #12](https://github.com/1uismar33r0/Colegio_Connect/issues/12) and [alias #47](https://github.com/1uismar33r0/Colegio_Connect/issues/47); both open. Lead: **Gabriel**. Support: Cristian (policy/API fixtures), Luis (screen/E2E cases), proposed coordination for the access-control test harness. GitHub assignees: canonical **unassigned**; alias **unassigned**.
+Sources: [canonical #12](https://github.com/1uismar33r0/Colegio_Connect/issues/12), open on live inspection 2026-11-07, and historical alias #47 from the 2026-10-26 issue export. A live 2026-11-07 query returned no current issue or PR for #47, so its former open state is not carried forward. Lead: **Gabriel**. Support: Cristian (policy/API fixtures), Luis (screen/E2E cases), proposed coordination for the access-control test harness. GitHub assignee on canonical #12: **unassigned**.
 
 Milestone: **M1 - Access foundation**. Original issue references: I6. Proposal mapping: **O2; I6; US1–US2; Figure 3**.
 
-Engineering state: **Not started**. Acceptance note: criteria/DoD still pending. Location: No feature implementation located on main; domain package placeholders are not implementation.
+Engineering state: **Verified on branch**. Acceptance note: the main-based harness is used by more than three existing denial cases, contributor instructions exist, and PR #118 CI passed at head `203a424`; AC1's merge clause and teammate security review remain pending, and later documentation-only heads must retain green CI. Location: [PR #118](https://github.com/1uismar33r0/Colegio_Connect/pull/118), branch `gabriel/issue-12-negative-auth-reconciliation`, implementation commit `92fadc467db5a85dcea5c03fc3456e6d38936999`; test files under `backend/src/test/java/com/colegioconnect/`.
 
-Evidence / blockers (apply to every AC below): **TE-00** in [test evidence](../testing/test-evidence.md). Implement the listed tasks and exercise every acceptance clause; prerequisite access/data/UI workflows and CI integration remain incomplete.
+Evidence / blockers (apply to every AC below): **TE-11** in [test evidence](../testing/test-evidence.md#te-11) and Gabriel's [Issue #12 engineering record](../gabriel/security/issue-12-negative-authorization.md). Java 25 focused verification passed 20 tests and full backend verification passed 30. The branch is not merged or teammate-reviewed; final I6 coverage still depends on stable protected business endpoints.
 
 Exact source description shared by both issues:
 
