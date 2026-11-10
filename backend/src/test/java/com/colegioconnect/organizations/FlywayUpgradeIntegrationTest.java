@@ -70,10 +70,25 @@ class FlywayUpgradeIntegrationTest {
         assertThat(jdbc.queryForObject(
                 "SELECT version FROM " + schema + ".flyway_schema_history "
                         + "WHERE success = TRUE ORDER BY installed_rank DESC LIMIT 1",
-                String.class)).isEqualTo("6");
+                String.class)).isEqualTo("9");
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM " + schema + ".role_admin_state WHERE id = 1",
                 Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject(
+                "SELECT review_received_at FROM " + schema + ".organizations WHERE id = ?",
+                java.time.OffsetDateTime.class, companyId)).isNull();
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM " + schema + ".listings",
+                Integer.class)).isZero();
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM " + schema + ".saved_listings",
+                Integer.class)).isZero();
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM " + schema + ".listing_responses",
+                Integer.class)).isZero();
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM " + schema + ".listing_reports",
+                Integer.class)).isZero();
 
         UUID auditId = UUID.randomUUID();
         jdbc.update("INSERT INTO " + schema + ".audit_log "

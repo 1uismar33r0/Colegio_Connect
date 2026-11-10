@@ -55,6 +55,18 @@ public class AuthorizationPolicy {
                         userId, Role.MODERATOR);
     }
 
+    // Student-only reads must use the current global assignment, not login-time authorities.
+    public boolean canStudent(Authentication authentication) {
+        UUID userId = UUID.fromString(authentication.getName());
+        return userRepository.findById(userId)
+                .filter(user -> user.getStatus() == UserStatus.ACTIVE
+                        && user.isEmailVerified()
+                        && user.getAccountType() == AccountType.UPRM_MEMBER)
+                .isPresent()
+                && roleAssignmentRepository.existsByUserIdAndRoleAndOrganizationIsNull(
+                        userId, Role.STUDENT);
+    }
+
     // An administrator approved this organization
     public boolean isApproved(UUID organizationId) {
         return organizationRepository.findById(organizationId)

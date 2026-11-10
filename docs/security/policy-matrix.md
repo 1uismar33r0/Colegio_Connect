@@ -52,6 +52,18 @@ Every action requires `isActive`.
 Companies cannot search or browse students. A company sees a student's data only when
 that student responds to its listing, or a student team accepts its Express Interest.
 
+## Issue #122 dashboard reads (stacked branch, not yet merged)
+
+| Read | Current persisted entitlement | Returned scope |
+| --- | --- | --- |
+| Discovery feed | Active authenticated account; publisher eligibility is checked in the query | PUBLIC, published, unexpired records only; organization display name, no publisher contact |
+| Student activity | Verified UPRM account with current global `STUDENT` assignment | Only the session user's response and saved counts |
+| Office overview | Verified UPRM account with current `INSTITUTIONAL` assignment in the selected office/department | That organization only; omission allowed only for one eligible membership |
+| Company dashboard | Verified external account with current `COMPANY` assignment in an approved company | That company only; a separate pending applicant ownership link allows a read-only pending status, with no listings or responses |
+| Review queue | Verified UPRM account with current global `MODERATOR` assignment | Pending companies and distinct open reported listings; no reporter identity or report detail |
+
+The dashboard branch creates a pending applicant ownership *read* link, but external registration does not yet write it. This link never grants `COMPANY` authority. Current status and assignments are rechecked on every request; an ambiguous company or office selection returns 409. See [dashboard contract](../roles/dashboard-api-contract.md) for remaining data-flow dependencies.
+
 ## Issue #10 administrator boundary
 
 The role API searches only a complete normalized email and returns bounded, minimal results. `STUDENT` and `MODERATOR` are global; `INSTITUTIONAL` is scoped to a UPRM office or department; `COMPANY` is scoped to an approved external company. Assignment requires an active, verified account of the correct account type. Revocation removes only the specified assignment; moderators cannot revoke their own moderator role or the last eligible moderator. Mutations require the existing session and CSRF protection and write same-transaction audit events. Startup bootstrap is a separate one-time system action; it never grants roles through registration. These controls do not relax the student consent rule above. See [ADR 0002](../decisions/0002-roles-and-admin-access.md) and the [API contract](../roles/api-contract.md).
