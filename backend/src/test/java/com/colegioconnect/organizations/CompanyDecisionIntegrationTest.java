@@ -209,14 +209,22 @@ class CompanyDecisionIntegrationTest {
     void simultaneousDecisionsWaitOnRowLockAndWriteOneAuditEvent() throws Exception {
         User moderator = moderator();
         Organization company = organizations.save(new Organization("Concurrent Company", OrgType.EXTERNAL_COMPANY));
-        CountDownLatch start = new CountDownLatch(1);
-        CountDownLatch attempted = new CountDownLatch(2);
+        CountDownLatch transactionsReady = new CountDownLatch(2);
+        CountDownLatch startDecision = new CountDownLatch(1);
         Callable<Integer> attempt = () -> {
-            start.await();
-            attempted.countDown();
             try {
-                decisions.decide(moderator.getId(), company.getId(),
-                        new CompanyDecisionRequest(ApprovalStatus.APPROVED, null));
+                transactions.executeWithoutResult(status -> {
+                    organizations.count(); // acquire a connection in this independent transaction
+                    transactionsReady.countDown();
+                    try {
+                        startDecision.await();
+                    } catch (InterruptedException exception) {
+                        Thread.currentThread().interrupt();
+                        throw new IllegalStateException(exception);
+                    }
+                    decisions.decide(moderator.getId(), company.getId(),
+                            new CompanyDecisionRequest(ApprovalStatus.APPROVED, null));
+                });
                 return 204;
             } catch (ResponseStatusException exception) {
                 return exception.getStatusCode().value();
@@ -228,20 +236,20 @@ class CompanyDecisionIntegrationTest {
             var second = executor.submit(attempt);
             transactions.executeWithoutResult(status -> {
                 organizations.findByIdForUpdate(company.getId()).orElseThrow();
-                start.countDown();
                 try {
-                    assertThat(attempted.await(5, TimeUnit.SECONDS)).isTrue();
+                    assertThat(transactionsReady.await(5, TimeUnit.SECONDS)).isTrue();
                 } catch (InterruptedException exception) {
                     Thread.currentThread().interrupt();
                     throw new AssertionError(exception);
                 }
+                startDecision.countDown();
                 assertThat(first.isDone()).isFalse();
                 assertThat(second.isDone()).isFalse();
             });
             assertThat(List.of(first.get(20, TimeUnit.SECONDS), second.get(20, TimeUnit.SECONDS)))
                     .containsExactlyInAnyOrder(204, 409);
         } finally {
-            start.countDown();
+            startDecision.countDown();
             executor.shutdownNow();
         }
         assertThat(organizations.findById(company.getId()).orElseThrow().getApprovalStatus())
