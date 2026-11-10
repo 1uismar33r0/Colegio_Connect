@@ -21,6 +21,7 @@ Docker Compose provides the shared backend, PostgreSQL 18, and Mailpit developme
 | `BACKEND_PORT` | No | Host backend port; defaults to `8080` |
 | `MAILPIT_SMTP_PORT` | No | Host SMTP port; defaults to `1025` |
 | `MAILPIT_UI_PORT` | No | Host Mailpit UI port; defaults to `8025` |
+| `APP_BOOTSTRAP_ADMIN_EMAIL` | No | Email of an already registered and verified `@upr.edu` account that becomes the first moderator at startup. Ignored once any moderator exists. |
 
 Ports bind to `127.0.0.1` so development services are not exposed to the local network. PostgreSQL data is stored in the `postgres_data` named volume. PostgreSQL 18 uses `/var/lib/postgresql` as its persistent volume mount.
 

@@ -1,4 +1,4 @@
-package com.colegioconnect.organizations;
+package com.colegioconnect.organizations.service;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.colegioconnect.organizations.dto.PendingCompanyPageResponse;
 import com.colegioconnect.organizations.entity.ApprovalStatus;
 import com.colegioconnect.organizations.entity.OrgType;
 import com.colegioconnect.organizations.repository.OrganizationRepository;

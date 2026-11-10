@@ -29,6 +29,7 @@ import com.colegioconnect.organizations.entity.Role;
 import com.colegioconnect.organizations.entity.RoleAssignment;
 import com.colegioconnect.organizations.repository.OrganizationRepository;
 import com.colegioconnect.organizations.repository.RoleAssignmentRepository;
+import com.colegioconnect.audit.AuditEventRepository;
 
 /**
  * Reusable persisted fixtures and request helpers for authorization-denial
@@ -45,9 +46,11 @@ public abstract class NegativeAuthorizationTestHarness {
     @Autowired protected RoleAssignmentRepository roleAssignmentRepository;
     @Autowired protected OrganizationRepository organizationRepository;
     @Autowired protected AuthorizationPolicy authorizationPolicy;
+    @Autowired protected AuditEventRepository auditEventRepository;
 
     @BeforeEach
     protected void cleanAuthorizationFixtures() {
+        auditEventRepository.deleteAll(); // audit rows reference users, so delete them first
         roleAssignmentRepository.deleteAll();
         organizationRepository.deleteAll();
         emailCodeRepository.deleteAll();

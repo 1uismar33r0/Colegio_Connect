@@ -25,6 +25,7 @@ Defined in `security/AuthorizationPolicy` and used from `@PreAuthorize` as `@aut
 | Organization membership | `hasRoleIn(authentication, role, orgId)` | User has the role inside that organization. |
 | Approval status | `isApproved(orgId)` | An administrator approved the organization. |
 | Moderator actions | `canModerate(authentication)` | Account remains active and a global persisted `MODERATOR` assignment still exists. Used for audit-history reading, pending-company queue access, and company decisions, so revocation denies the next request even with an existing session. |
+| Role management | `canModerate(authentication)` | Only an active moderator can list, assign, or revoke `INSTITUTIONAL` and `MODERATOR` roles (`/api/admin/role-assignments`). Each change writes an audit record. A moderator cannot remove their own moderator role. The first moderator is created at startup from `APP_BOOTSTRAP_ADMIN_EMAIL`, never through the API. |
 | Ownership | Planned for M2 | User owns the listing. Listings do not exist yet. |
 
 ## Matrix

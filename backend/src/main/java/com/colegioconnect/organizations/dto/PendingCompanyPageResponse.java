@@ -1,4 +1,4 @@
-package com.colegioconnect.organizations;
+package com.colegioconnect.organizations.dto;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ public record PendingCompanyPageResponse(
         long totalElements,
         int totalPages) {
 
-    static PendingCompanyPageResponse from(Page<Organization> organizations) {
+    public static PendingCompanyPageResponse from(Page<Organization> organizations) {
         return new PendingCompanyPageResponse(
                 organizations.getContent().stream().map(PendingCompanyResponse::from).toList(),
                 organizations.getNumber(),
