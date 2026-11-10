@@ -11,4 +11,5 @@ import com.colegioconnect.organizations.entity.RoleAssignment;
 public interface RoleAssignmentRepository extends JpaRepository<RoleAssignment, UUID> {
     List<RoleAssignment> findByUserId(UUID userId);
     boolean existsByUserIdAndRoleAndOrganizationId(UUID userId, Role role, UUID organizationId);
+    boolean existsByUserIdAndRoleAndOrganizationIsNull(UUID userId, Role role);
 }

@@ -1,0 +1,12 @@
+package com.colegioconnect.audit;
+
+public enum AuditAction {
+    ROLE_ASSIGNED,
+    ROLE_REVOKED,
+    ORGANIZATION_APPROVED,
+    ORGANIZATION_REJECTED,
+    LISTING_HIDDEN,
+    LISTING_REMOVED,
+    ACCOUNT_SUSPENDED,
+    SPONSORSHIP_ACCEPTED
+}
