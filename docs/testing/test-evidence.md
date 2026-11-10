@@ -1,4 +1,4 @@
-﻿# Test and verification evidence
+# Test and verification evidence
 
 Snapshot date: **2026-10-26**. Baseline main SHA: `1714e5e0f000f9ad4a2ff6a00bf71c2e14fc5b18`. Scope is A1 documentation and evidence reconciliation. No application test, load test, scan, database mutation, deployment, or acceptance session was run as part of this documentation change. Historical reports and observed hosted CI are identified separately.
 
@@ -113,6 +113,20 @@ Results use **Pass**, **Fail**, **Blocked**, or **Not run**. A Pass applies only
 - **Source:** [wireframe HTML at branch SHA](https://github.com/1uismar33r0/Colegio_Connect/blob/b456f772ac7a307f165a0379be025af3d8d2b00d/docs/colegio-connect-wireframes.html).
 - **Result:** **Pass** for inventory. **Limitations:** app-build and review acceptance tests are **Not run**; exploratory HTML does not demonstrate WCAG compliance or production behavior.
 
+
+<a id="te-10"></a>
+
+### TE-10 — Register, verify and login screens (#14)
+
+- **Date / SHA:** 2026-11-07; branch `feat/issue-14-auth-screens`, based on main `e5cc181b3ebcf7b5cb1050547c1d82922068c064`.
+- **Environment:** Windows 11, Node via `frontend/` npm scripts, Vitest 5.1 with jsdom and axe-core 4.14; local Docker Compose stack (backend, PostgreSQL 18.6, Mailpit) for the API check. The running backend image was built 2026-11-04 and was not rebuilt from this revision.
+- **Procedure:** in `frontend/`: `npm run typecheck`, `npm run lint`, `npx prettier --check src`, `npx vitest run`, `npm run build`. API contract check: with curl and a cookie jar against `http://localhost:8080/api/auth`, seed CSRF, then call register (non-UPRM, new, duplicate), login while unverified, resend inside the cooldown, verify with a wrong and a malformed code, read the code for the synthetic `issue14.<timestamp>@upr.edu` account from the Mailpit API, verify, login with a wrong and the right password, and `GET /me`.
+- **Expected:** all checks pass; page tests cover success, client validation, backend field errors, 409, 401/403/429 login responses, unverified redirect, invalid/expired code, resend success/429/cooldown, keyboard-only registration and axe with no violations in initial and error states; live API status codes and `detail` texts match the ones the screens branch on.
+- **Actual:** typecheck, lint, format and build pass; 9 test files / 51 tests pass (25 new across `Register`, `Verify`, `Login` and `validation`). API: 400 non-UPRM, 201 with `Content-Length: 0`, 409 duplicate, 403 "Verify your email before logging in.", 429 "Wait a minute before requesting a new code.", 400 "Invalid or expired code. Request a new one.", 400 field error for code shape, 204 verify, 401 wrong password, 200 login and 200 `/me` for the new account.
+- **Source:** this branch's diff; test files under `frontend/src/pages/*.test.tsx` and `frontend/src/auth/validation.test.ts`.
+- **Result:** **Pass** for the stated procedure. **Limitations:** axe runs in jsdom with `color-contrast` disabled (as in `AppLayout.test.tsx`); contrast, real-browser keyboard behaviour and screen-reader output were not checked in a browser. The API check exercised the same requests the screens send, not the rendered UI driving a browser. Expired-code (10 min) and hourly resend limits were not waited out; the backend returns the same messages, which the screens display. Team review and CI on the PR remain pending.
+- **Follow-up 2026-11-08 (review on PR #116):** delivery messages reworded so they no longer promise the email arrived; `safeReturnPath` now also rejects backslashes, whitespace and control characters. Same checks rerun: typecheck, lint, build pass; 10 files / 67 tests pass (adds `flowState.test.ts` and a backslash case in `Login.test.tsx`). PR #116's first CI run (Backend, Container, Frontend, CI Gate) passed before these changes.
+
 <a id="te-09"></a>
 
 ### TE-09 — Issue #15 audit foundation reconciliation
@@ -124,6 +138,19 @@ Results use **Pass**, **Fail**, **Blocked**, or **Not run**. A Pass applies only
 - **Actual:** transaction RED failed compilation on missing audit types; endpoint RED produced absent-route/OpenAPI failures. The first endpoint GREEN run exposed method-security denials incorrectly mapped to 500; the narrow 403 mapping corrected the root cause. Final focused run: 13 tests, zero failures/errors/skips. Final pre-documentation clean verification: 41 tests, zero failures/errors/skips; `BUILD SUCCESS`.
 - **Source:** [Issue #15 engineering record](../gabriel/security/issue-15-audit-foundation.md), implementation commits above, and [Issue #15](https://github.com/1uismar33r0/Colegio_Connect/issues/15).
 - **Result:** **Pass** for the branch foundation and current read contract. **Limitations:** PR/team review, hosted CI, and merge remain pending; no owning business action emits an event yet; final I8 and AC1 are not accepted; database-level append-only enforcement and actor-retention policy remain unresolved.
+
+<a id="te-13"></a>
+
+## TE-13 — Notification review fixes (#11, PR #115)
+
+- **Date / SHA:** 2026-11-09; branch `feat/issue-11-notifications`, follow-up to `3eb0a11` (the commit containing this record).
+- **Environment:** Windows 11, JDK 25.0.4.1, Maven wrapper, Docker 29.9.2 with Testcontainers PostgreSQL 18.6; local Compose stack (backend rebuilt from this branch, PostgreSQL, Mailpit).
+- **Procedure:** `./mvnw -B verify` in `backend/`; list `BOOT-INF/classes/.../notifications/` in the built jar. Live: curl register → code from Mailpit API → verify; stop Mailpit, register a second synthetic `@upr.edu` account, inspect `docker logs` for the delivery line and any full address; start Mailpit, wait 62 s, resend → code from Mailpit → verify.
+- **Expected:** review findings closed: (1) delivery failures log only masked addresses and propagate no provider exception; (2) the fake sender is absent from the packaged jar; (3) email is sent only after commit, a rolled-back transaction sends nothing, and a delivery failure leaves a recoverable account.
+- **Actual:** 41 tests pass (34 before), including MailSendException messages with two addresses (logs show only `s***@upr.edu` / `o***@upr.edu`; thrown `EmailDeliveryException` has no cause and no address), first-line summary of multi-line provider errors, delivery failure → 201 then resend → 202 and delivered, rollback → no email, commit → email, and the default context holding exactly one `SmtpEmailSender`. Jar contains no `FakeEmailSender`. Live: 201/204 with Mailpit up; with Mailpit down register returned 201, one FAILURE line with `to=i***@upr.edu`, 0 occurrences of the full address in backend logs; after restart resend 202, code delivered, verify 204.
+- **Result:** **Pass** for the stated procedure. **Limitations:** delivery remains synchronous within the request after commit, with no retry or outbox; a user whose email failed must wait for the 60 s cooldown. Spring Boot's own `MailHealthIndicator` logs connection stack traces when Mailpit is down; they contained no recipient addresses. Startup failure with `app.mail.provider=fake` is inferred from bean wiring, not run. Team review and CI on the PR remain pending.
+
+
 
 ## Indicator evidence plan
 
@@ -226,11 +253,11 @@ At the captured snapshot this produces **84 / 42 / 67 / 134**. Recheck before la
 - **November 10 review correction:** A reviewer found that timestamp-only ordering could repeat or skip events across offset pages when timestamps tie. At code commit `80213929a0253ce99e25b5ddc48733dbcc4eca6c`, a new PostgreSQL/MockMvc test inserted three fixed IDs at an identical timestamp and failed as expected (`...003` expected on page 0, `...001` returned). Ordering by `occurred_at DESC, id DESC` fixed the case. `AuditControllerIntegrationTest` then passed 9/9; `backend/.\mvnw.cmd clean verify` passed **65/65**, zero failures/errors/skips, `BUILD SUCCESS`. Frontend lint, typecheck, 22/22 tests, and production build also passed at this working tree. The earlier `64/64` record remains the pre-fix checkpoint. No throughput or latency measurement follows from these functional tests.
 - **Published checkpoint:** PR #119 head `4a21068774d4da2b9d373dabf46eeb7fdcc28654` passed [hosted CI run 42895043656](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42895043656): Backend, Frontend, Container, and CI Gate succeeded. This verifies the published pre-documentation-follow-up head; team review and main integration remain pending. Stacked PR #120 was marked merged into #119, not into `main`.
 
-<a id="te-13"></a>
+<a id="te-14"></a>
 
-## TE-13 — Issue #122 role home pages against a mock API
+## TE-14 — Issue #122 role home pages against a mock API
 
-- **Date / revision:** 2026-11-10. Branch `feat/issue-122-role-pages` from `main` at `5ff99744` (re-fetched the same day; no newer commits on `main`). The commit containing this record is the tested revision. Number note: TE-10 is reserved by open PR #116, so this record uses TE-13.
+- **Date / revision:** 2026-11-10. Branch `feat/issue-122-role-pages` from `main` at `5ff99744` (re-fetched the same day; no newer commits on `main`). The commit containing this record is the tested revision. Number note: TE-13 is used on main for #11 and by open PR #123, and TE-15 by open PR #126, so this record uses TE-14.
 - **Environment:** Windows 11; Node `24.16.0`; Vitest `5.1.0` with jsdom; axe-core `4.14`; frontend only. No backend, database or browser was used.
 - **Scope under test:**
   - the four role home screens from the core wireframes (`docs/Wireframes` on `Issue-13-Wireframes` at `182d6d6`): Student Discover, University office Overview, External organization Dashboard, Administrator Review queue

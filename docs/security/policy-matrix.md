@@ -13,7 +13,14 @@ The database uses the names agreed in V1. They map to the proposal like this:
 | `COMPANY` | External Company |
 | `MODERATOR` | Admin / Moderator |
 
-A user can hold more than one role. Roles are loaded as `ROLE_*` authorities at login.
+A user can hold more than one role. Roles are loaded as `ROLE_*` authorities at login and returned as `roles` by `POST /api/auth/login` and `GET /api/auth/me`, for the UI only. Server checks always use `@authz`.
+
+Login 403 responses include a stable `code` so the frontend does not depend on the message text:
+
+| `code` | Meaning |
+| --- | --- |
+| `EMAIL_NOT_VERIFIED` | Correct password, but the email is not verified yet |
+| `ACCOUNT_SUSPENDED` | Correct password, but the account is suspended |
 
 ## Shared checks
 
@@ -25,6 +32,7 @@ Defined in `security/AuthorizationPolicy` and used from `@PreAuthorize` as `@aut
 | Organization membership | `hasRoleIn(authentication, role, orgId)` | User has the role inside that organization. |
 | Approval status | `isApproved(orgId)` | An administrator approved the organization. |
 | Moderator actions | `canModerate(authentication)` | Account remains active and a global persisted `MODERATOR` assignment still exists. Used for audit-history reading, pending-company queue access, and company decisions, so revocation denies the next request even with an existing session. |
+| Role management | `canModerate(authentication)` | Only an active moderator can list, assign, or revoke `INSTITUTIONAL` and `MODERATOR` roles (`/api/admin/role-assignments`). Each change writes an audit record. A moderator cannot remove their own moderator role. The first moderator is created at startup from `APP_BOOTSTRAP_ADMIN_EMAIL`, never through the API. |
 | Ownership | Planned for M2 | User owns the listing. Listings do not exist yet. |
 
 ## Matrix

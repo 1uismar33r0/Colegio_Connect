@@ -15,6 +15,8 @@ import { ReviewQueue } from './pages/moderation/ReviewQueue'
 import { NotFound } from './pages/NotFound'
 import { SectionPlaceholder } from './pages/SectionPlaceholder'
 import { StudentDiscover } from './pages/student/StudentDiscover'
+import { Register } from './pages/Register'
+import { Verify } from './pages/Verify'
 
 const title = (t: string) => ({ title: t }) satisfies RouteHandle
 
@@ -109,6 +111,8 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <Home />, handle: title('Home') },
       { path: 'login', element: <Login />, handle: title('Sign in') },
+      { path: 'register', element: <Register />, handle: title('Create account') },
+      { path: 'verify', element: <Verify />, handle: title('Verify your email') },
       { path: 'forbidden', element: <Forbidden />, handle: title('Access denied') },
       {
         element: <RequireAuth />,

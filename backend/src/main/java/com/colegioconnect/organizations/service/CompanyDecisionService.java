@@ -1,4 +1,4 @@
-package com.colegioconnect.organizations;
+package com.colegioconnect.organizations.service;
 
 import java.util.UUID;
 
@@ -10,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.colegioconnect.audit.AuditAction;
 import com.colegioconnect.audit.AuditService;
 import com.colegioconnect.audit.AuditTargetType;
+import com.colegioconnect.organizations.dto.CompanyDecisionRequest;
 import com.colegioconnect.organizations.entity.ApprovalStatus;
 import com.colegioconnect.organizations.entity.OrgType;
 import com.colegioconnect.organizations.entity.Organization;

@@ -12,4 +12,5 @@ public interface RoleAssignmentRepository extends JpaRepository<RoleAssignment, 
     List<RoleAssignment> findByUserId(UUID userId);
     boolean existsByUserIdAndRoleAndOrganizationId(UUID userId, Role role, UUID organizationId);
     boolean existsByUserIdAndRoleAndOrganizationIsNull(UUID userId, Role role);
+      boolean existsByRole(Role role);
 }

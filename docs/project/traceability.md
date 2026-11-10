@@ -1,4 +1,4 @@
-﻿# Requirements and implementation traceability
+# Requirements and implementation traceability
 
 Observation date: **2026-10-26**. Baseline: [`main` at `1714e5e0f000f9ad4a2ff6a00bf71c2e14fc5b18`](https://github.com/1uismar33r0/Colegio_Connect/tree/1714e5e0f000f9ad4a2ff6a00bf71c2e14fc5b18). This register records implementation evidence separately from acceptance and code location. All 84 issues were open at observation time. A merged pull request does not accept its related issue.
 
@@ -456,20 +456,20 @@ Milestone: **M1 - Access foundation**. Proposal mapping: **O5; I15; Table 8; Fig
 
 Engineering state: **Verified on branch**. Location: `feat/issue-122-role-pages`, in `frontend/src/pages/{student,institution,company,moderation}/`, `frontend/src/components/RoleShell.tsx`, `frontend/src/api/contracts.ts` and `frontend/src/test/mockApi.ts`.
 
-Evidence / blockers: **TE-13** in [test evidence](../testing/test-evidence.md#te-13), which ran against a mock API only.
+Evidence / blockers: **TE-14** in [test evidence](../testing/test-evidence.md#te-14), which ran against a mock API only.
 - The proposed endpoints and `roles` in `/api/auth/me` are not implemented, and the backend owner hasn't agreed to them.
 - There is no ADR yet for the administrator being `MODERATOR`.
 - Team review and hosted CI are pending.
 
-### Issue #14 / alias #51: Frontend: register, verify and login screens
+### Issue #14: Frontend: register, verify and login screens
 
-Sources: [canonical #14](https://github.com/1uismar33r0/Colegio_Connect/issues/14) and [alias #51](https://github.com/1uismar33r0/Colegio_Connect/issues/51); both open. Lead: **Luis**. Support: Cristian (API contract), Gabriel (review), per Table 17 frontend group. GitHub assignees: canonical **unassigned**; alias **unassigned**.
+Sources: [canonical #14](https://github.com/1uismar33r0/Colegio_Connect/issues/14), open. The alias #51 recorded at the 2026-10-26 snapshot no longer resolves on GitHub (checked 2026-11-08), so #14 is the only live source. Lead: **Luis**. Support: Cristian (API contract), Gabriel (review), per Table 17 frontend group. GitHub assignee: **1uismar33r0** (Luis), checked 2026-11-08.
 
 Milestone: **M1 - Access foundation**. Original issue references: US1, I15. Proposal mapping: **O2, O5; I5, I15; US1; Figure 3**.
 
-Engineering state: **Not started**. Acceptance note: criteria/DoD still pending. Location: No feature implementation located on main; domain package placeholders are not implementation.
+Engineering state: **Verified on branch** (2026-11-07). Acceptance note: criteria/DoD still pending team review and PR CI. Location: feature branch `feat/issue-14-auth-screens` (based on main `e5cc181`). Gabriel's earlier `gabriel/issue-14-react-auth-foundation` (PR #97) predates the #13 frontend on main and is superseded by it.
 
-Evidence / blockers (apply to every AC below): **TE-00** in [test evidence](../testing/test-evidence.md). Implement the listed tasks and exercise every acceptance clause; prerequisite access/data/UI workflows and CI integration remain incomplete.
+Evidence / blockers (apply to every AC below): **[TE-10](../testing/test-evidence.md#te-10)**. AC1: page tests plus a live API check of every request the screens send; a browser-driven end-to-end run is not yet recorded. AC2: axe-core reports no violations (any impact) in jsdom for each page's initial and error states; colour contrast still needs a real-browser check.
 
 Exact source description shared by both issues:
 
