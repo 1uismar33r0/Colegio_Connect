@@ -11,7 +11,9 @@ import { Forbidden } from './pages/Forbidden'
 import { Home } from './pages/Home'
 import { OfficeOverview } from './pages/institution/OfficeOverview'
 import { Login } from './pages/Login'
+import { AuditLog } from './pages/moderation/AuditLog'
 import { ReviewQueue } from './pages/moderation/ReviewQueue'
+import { RoleManagement } from './pages/moderation/RoleManagement'
 import { NotFound } from './pages/NotFound'
 import { SectionPlaceholder } from './pages/SectionPlaceholder'
 import { StudentDiscover } from './pages/student/StudentDiscover'
@@ -20,7 +22,8 @@ import { Verify } from './pages/Verify'
 
 const title = (t: string) => ({ title: t }) satisfies RouteHandle
 
-type Section = { path: string; label: string; issue?: number }
+/** A sidebar section: its own page, or a placeholder naming the issue that builds it. */
+type Section = { path: string; label: string; issue?: number; element?: ReactNode }
 
 /**
  * One role area from the core wireframes: a guarded sidebar shell whose first section is the
@@ -47,7 +50,7 @@ function roleArea(
           { index: true, element: home.element, handle: title(home.label) },
           ...sections.map((s) => ({
             path: s.path,
-            element: <SectionPlaceholder title={s.label} issue={s.issue} />,
+            element: s.element ?? <SectionPlaceholder title={s.label} issue={s.issue} />,
             handle: title(s.label),
           })),
         ],
@@ -97,8 +100,9 @@ export const roleRoutes: RouteObject[] = [
     { label: 'Review queue', element: <ReviewQueue /> },
     [
       { path: 'organizations', label: 'Organizations', issue: 16 },
-      { path: 'accounts', label: 'Accounts', issue: 39 },
+      { path: 'accounts', label: 'Accounts', element: <RoleManagement /> },
       { path: 'reports', label: 'Reports', issue: 37 },
+      { path: 'audit', label: 'Audit log', element: <AuditLog /> },
     ],
   ),
 ]

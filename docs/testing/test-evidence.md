@@ -255,36 +255,58 @@ At the captured snapshot this produces **84 / 42 / 67 / 134**. Recheck before la
 
 <a id="te-14"></a>
 
-## TE-14 — Issue #122 role home pages against a mock API
+## TE-14 — Issue #122 role home pages, admin pages and login code
 
-- **Date / revision:** 2026-11-10. Branch `feat/issue-122-role-pages` from `main` at `5ff99744` (re-fetched the same day; no newer commits on `main`). The commit containing this record is the tested revision. Number note: TE-13 is used on main for #11 and by open PR #123, and TE-15 by open PR #126, so this record uses TE-14.
-- **Environment:** Windows 11; Node `24.16.0`; Vitest `5.1.0` with jsdom; axe-core `4.14`; frontend only. No backend, database or browser was used.
-- **Scope under test:**
-  - the four role home screens from the core wireframes (`docs/Wireframes` on `Issue-13-Wireframes` at `182d6d6`): Student Discover, University office Overview, External organization Dashboard, Administrator Review queue
-  - the shared sidebar shell
-  - placeholder pages for the sidebar sections
+Number note: TE-13 is used on main for #11 and by open PR #123, and TE-15 by open PR #126, so this record uses TE-14.
+
+- **Scope:**
+  - the four role home screens from the core wireframes (`docs/Wireframes` on `Issue-13-Wireframes` at `182d6d6`), with the shared sidebar shell and section placeholders
   - admin all-access in the route guards (team decision of 2026-11-07: administrator = `MODERATOR`)
   - the Dashboard notice for accounts without roles
-- **Mock API:** the pages read data through `frontend/src/api/roleData.ts`, which calls endpoints proposed in `frontend/src/api/contracts.ts`. None of those endpoints exist yet. Tests replace that module with `vi.mock` and the synthetic fixtures in `frontend/src/test/mockApi.ts`. Fixture wording is the wireframes' placeholder copy; no real people or records.
-- **Procedure:** in `frontend/`:
-  - Before the change, `npx vitest run` gave 5 files and 22 tests passing.
-  - After the change: `npm run typecheck`, `npm run lint`, `npx prettier --check --end-of-line auto src`, `npx vitest run` and `npm run build`.
-- **Expected:** for each page, the content renders from the mock, as do the loading state, the empty state, a retryable error that recovers, and a 403 message without retry. Table headers use `scope="col"`. Unbuilt actions are disabled and their accessible description names the issue that builds them. The sidebar marks the current section. The keyboard alone reaches a sidebar section. axe-core finds no violations. Role guards admit the matching role and the administrator, and send other roles to `/forbidden` and anonymous visitors to `/login`.
-- **Actual:**
-  - typecheck, lint, Prettier (line endings ignored) and the production build exited 0.
-  - `npx vitest run`: **12 files and 84 tests passed**, with 0 failures. 62 tests are new or changed:
-    - one suite per page
-    - `roleAccess.test.tsx` (guards, admin access, placeholders, unknown sub-paths, Dashboard)
-    - `useApiData.test.tsx` (including ignoring an out-of-date response)
-    - `roleData.test.ts` (query string, credentials, problem errors)
-    - updates to the role, guard and layout tests
-  - jsdom prints `HTMLCanvasElement's getContext() … not implemented` during the axe runs on the new pages. It is a warning only, and those tests pass.
-- **Source:** [Issue #122](https://github.com/1uismar33r0/Colegio_Connect/issues/122), the commit containing this record, and the core wireframes on `Issue-13-Wireframes`.
-- **Result:** **Pass** for the frontend behaviour against the mock API on this branch.
+  - the administrator pages on real endpoints: Review queue (`GET /api/admin/organizations/pending`), Accounts (`/api/admin/role-assignments`) and Audit log (`GET /api/admin/audit-events`)
+  - `Login.tsx` detecting unverified accounts by `problem.code === 'EMAIL_NOT_VERIFIED'` instead of the message text
+- **Data sources:**
+  - **Mock only:** the student, office and company pages read data through `frontend/src/api/roleData.ts`, which calls endpoints proposed in `frontend/src/api/contracts.ts`. Those depend on listings and responses (M2/M3) and don't exist on `main`.
+  - **Real endpoints, mocked in component tests:** the admin pages use `frontend/src/api/admin.ts` on the typed client. Their component tests replace it with the typed fixtures in `frontend/src/test/mockApi.ts`.
+  - All data is synthetic.
+- **Run 1, 2026-11-10, mock only:** branch `feat/issue-122-role-pages` from `main` at `5ff99744`, commit `94fd9fa`; Windows 11, Node `24.16.0`, Vitest `5.1.0` (jsdom), axe-core `4.14`.
+  - Baseline before the change: 5 files and 22 tests passed.
+  - After: typecheck, lint, Prettier (`--end-of-line auto`) and build exited 0; **12 files and 84 tests passed**.
+- **Run 2, 2026-11-10:** `main` at `18ae2ba` merged into the branch (#115, #116, #124, #125).
+  - **Merge:** it conflicted only in `router.tsx`, `index.css` and `traceability.md`, where both sides had added content next to each other. After resolving, 17 files and 129 tests passed.
+  - **OpenAPI:** the local Compose backend image was rebuilt from that code. `npm run api:fetch` saved 11 paths, and `npm run api:gen` regenerated `schema.d.ts`; the diff only adds content (`UserResponse.roles`, the role-assignment, pending-company and audit schemas).
+  - **Frontend checks:** typecheck, lint, Prettier (`--end-of-line auto`) and build exited 0. **`npx vitest run`: 20 files and 157 tests passed**, 0 failed. New or changed suites:
+    - `ReviewQueue.test.tsx`: pending companies, paging, 403 without retry, 500 with retry, axe
+    - `RoleManagement.test.tsx`: user-ID validation and focus, lookup with `?userId=`, revoke with confirmation and cancel, the backend's 400/404/409 messages, generic 500, required organization for `INSTITUTIONAL`, axe
+    - `AuditLog.test.tsx`: readable rows, a "Manage roles" link for account targets only, axe
+    - `admin.test.ts`: real paths, query strings, methods, CSRF header and an empty 204, through the real typed client with only `fetch` stubbed
+    - `Login.test.tsx`: redirect on `EMAIL_NOT_VERIFIED`, and no redirect for a 403 whose message mentions "verify" but has no code
+  - **Live API check:** `live-check.ps1` (a scratchpad script, not committed) ran against the rebuilt local backend, using two synthetic `rolepages.*.20261110193618@upr.edu` accounts with codes read from Mailpit. The first moderator came from `APP_BOOTSTRAP_ADMIN_EMAIL`, which was set for one container restart and then removed. **All 30 checks passed**:
+    - Unverified login returns 403 with `code: EMAIL_NOT_VERIFIED`.
+    - Login and `/me` return `roles`.
+    - A non-moderator gets 403 on the pending queue.
+    - The pending queue returns all five paging fields.
+    - `STUDENT` and `INSTITUTIONAL` without an organization are refused with 400.
+    - Assigning `MODERATOR` returns 201 with the assignment; a duplicate returns 409.
+    - The member's `/me` and access change in the same session after assign and after revoke.
+    - Revoking one's own moderator role returns 400; revoking again returns 404.
+    - The audit log holds `ROLE_ASSIGNED` and `ROLE_REVOKED` with the admin as actor and `USER` as target.
+  - **Test client note:** the session cookie is `Secure`, and .NET Framework drops it over `http://`. The script re-adds it the way a browser does for `http://localhost`.
+- **Expected:**
+  - For each page: content, loading, empty, retryable error and 403 states.
+  - `scope="col"` headers; unbuilt actions disabled, with their accessible description naming the issue that builds them.
+  - The current sidebar section marked; keyboard-only section navigation; no axe violations.
+  - Role guards admit the matching role and the administrator, and send other roles to `/forbidden` and anonymous visitors to `/login`.
+  - The live check returns the statuses, messages and shapes the admin pages rely on.
+- **Actual:** as listed for each run above. jsdom prints `HTMLCanvasElement's getContext() … not implemented` during axe runs; it is a warning only, and those tests pass.
+- **Source:** [Issue #122](https://github.com/1uismar33r0/Colegio_Connect/issues/122), PRs [#124](https://github.com/1uismar33r0/Colegio_Connect/pull/124) and [#125](https://github.com/1uismar33r0/Colegio_Connect/pull/125), the commit containing this record, and the core wireframes on `Issue-13-Wireframes`.
+- **Result:** **Pass** on this branch. That means mock-backed behaviour for the student, office and company pages, and component tests plus a live API check for the admin pages.
 - **Limitations:**
-  - The API contract is a proposal that the backend owner has not agreed to.
-  - `/api/auth/me` still returns no roles, so against the real backend every role area redirects to `/forbidden`. The pages can't be reached in a running app until the backend adds `roles`.
-  - Admin = `MODERATOR` follows a team decision that has no ADR in `docs/decisions/` yet.
-  - Colour contrast is disabled in jsdom, and no real-browser keyboard pass or check of the layout under 760px was run.
+  - The student, office and company endpoints are a proposal. Open PR #126 implements a different, unmerged contract, which needs reconciling before these pages switch to real data.
+  - No account can get `STUDENT` or `COMPANY`: registration doesn't assign them and the API refuses them, so only the administrator reaches those areas today.
+  - There is no user search by email, so Accounts looks users up by ID, taken from the audit log.
+  - There is no organization list or search, so `INSTITUTIONAL` needs a pasted organization ID; there is no API that creates UPRM organizations, so a live assign of `INSTITUTIONAL` wasn't exercised.
+  - The live check doesn't drive the React screens in a browser. Colour contrast, a keyboard-only pass and the layout under 760px still need a real browser.
+  - Admin = `MODERATOR` has no ADR on `main`; open PR #123 proposes one.
   - The plain `npm run format:check` fails on Windows line endings in untouched files, as TE-12 recorded; Linux CI is the authoritative run.
-  - Hosted CI and a teammate review are pending. This does not accept I15 or any issue criterion by itself.
+  - Hosted CI and teammate review are pending. This does not accept I15 or any issue criterion by itself.

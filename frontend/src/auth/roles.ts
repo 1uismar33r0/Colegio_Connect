@@ -11,11 +11,15 @@ export const ADMIN_ROLE: Role = 'MODERATOR'
 const isRole = (value: unknown): value is Role =>
   typeof value === 'string' && (ROLES as readonly string[]).includes(value)
 
-/** /api/auth/me does not return roles yet; until it does this yields []. */
+/** Roles from /api/auth/login or /me (UI only). Unknown values are dropped; missing roles give []. */
 export function rolesOf(user: object | null | undefined): Role[] {
   const roles: unknown = user && 'roles' in user ? user.roles : undefined
   return Array.isArray(roles) ? roles.filter(isRole) : []
 }
+
+/** Roles an administrator can assign or revoke via /api/admin/role-assignments (#10). */
+export const ASSIGNABLE_ROLES = ['INSTITUTIONAL', 'MODERATOR'] as const satisfies readonly Role[]
+export type AssignableRole = (typeof ASSIGNABLE_ROLES)[number]
 
 export const isAdmin = (userRoles: readonly Role[]) => userRoles.includes(ADMIN_ROLE)
 

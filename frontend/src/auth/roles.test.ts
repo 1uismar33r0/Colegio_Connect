@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { ROLES, hasAnyRole, isAdmin, rolesOf } from './roles'
 
 describe('rolesOf', () => {
-  it('returns [] when /me has no roles field (current backend)', () => {
+  it('returns [] when the response has no roles field', () => {
     expect(rolesOf({ id: '1', email: 'a@upr.edu' })).toEqual([])
   })
 

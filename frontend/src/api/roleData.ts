@@ -3,7 +3,6 @@ import {
   type CompanyDashboard,
   type FeedItem,
   type OfficeOverview,
-  type ReviewQueue,
   type StudentActivity,
   type StudentFeedFilters,
 } from './contracts'
@@ -36,5 +35,3 @@ export const getStudentActivity = () => getJson<StudentActivity>(ROLE_ENDPOINTS.
 export const getOfficeOverview = () => getJson<OfficeOverview>(ROLE_ENDPOINTS.officeOverview)
 
 export const getCompanyDashboard = () => getJson<CompanyDashboard>(ROLE_ENDPOINTS.companyDashboard)
-
-export const getReviewQueue = () => getJson<ReviewQueue>(ROLE_ENDPOINTS.reviewQueue)

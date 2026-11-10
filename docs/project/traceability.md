@@ -454,11 +454,13 @@ Source: [#122](https://github.com/1uismar33r0/Colegio_Connect/issues/122). It wa
 
 Milestone: **M1 - Access foundation**. Proposal mapping: **O5; I15; Table 8; Figure 3**. The role features themselves remain with their own issues (#16, #20, #22, #23, #31, #33, #37, #39).
 
-Engineering state: **Verified on branch**. Location: `feat/issue-122-role-pages`, in `frontend/src/pages/{student,institution,company,moderation}/`, `frontend/src/components/RoleShell.tsx`, `frontend/src/api/contracts.ts` and `frontend/src/test/mockApi.ts`.
+Engineering state: **Verified on branch**. Location: `feat/issue-122-role-pages`, in `frontend/src/pages/{student,institution,company,moderation}/`, `frontend/src/components/RoleShell.tsx`, `frontend/src/api/admin.ts` (real endpoints), `frontend/src/api/contracts.ts` (proposed) and `frontend/src/test/mockApi.ts`.
 
-Evidence / blockers: **TE-14** in [test evidence](../testing/test-evidence.md#te-14), which ran against a mock API only.
-- The proposed endpoints and `roles` in `/api/auth/me` are not implemented, and the backend owner hasn't agreed to them.
-- There is no ADR yet for the administrator being `MODERATOR`.
+Evidence / blockers: **TE-14** in [test evidence](../testing/test-evidence.md#te-14).
+- The administrator pages use the real `/api/admin/organizations/pending`, `/api/admin/role-assignments` and `/api/admin/audit-events`, and were checked live.
+- The student, office and company pages still use the mock API. Their endpoints depend on listings and responses (M2/M3); open PR #126 proposes a different contract.
+- No account can get `STUDENT` or `COMPANY` yet, and there is no user or organization search.
+- Admin = `MODERATOR` has no ADR on `main`.
 - Team review and hosted CI are pending.
 
 ### Issue #14: Frontend: register, verify and login screens

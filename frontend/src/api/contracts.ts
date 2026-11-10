@@ -1,5 +1,5 @@
-// PROPOSED contract for the role home pages (#122). These endpoints do not exist yet;
-// the backend owner implements them. When they land in the OpenAPI document:
+// PROPOSED contract for the student, office and company home pages (#122). These endpoints do not
+// exist yet; they depend on listings and responses (M2/M3). When they land in the OpenAPI document:
 //   1. regenerate src/api/schema.d.ts (npm run api:fetch && npm run api:gen),
 //   2. replace these hand-written types with components['schemas'][...] aliases,
 //   3. switch src/api/roleData.ts to the typed `api` client,
@@ -10,8 +10,8 @@ export const ROLE_ENDPOINTS = {
   studentActivity: '/api/me/activity',
   officeOverview: '/api/institution/overview',
   companyDashboard: '/api/company/dashboard',
-  reviewQueue: '/api/admin/review-queue',
 } as const
+// The administrator pages already use real endpoints; see src/api/admin.ts.
 
 /** ISO-8601 instant, e.g. "2026-11-08T12:00:00Z". */
 export type IsoDateTime = string
@@ -75,21 +75,4 @@ export type CompanyDashboard = {
   stats: { activeListings: number; responses: number; profileStatus: ProfileStatus }
   active: CompanyListing[]
   attention: { newResponses: number }
-}
-
-// ---- Administrator / moderator: Review queue ----
-
-export type ReviewReason = 'NEW_ORGANIZATION' | 'REPORTED_LISTING' | 'PROFILE_VERIFICATION'
-
-export type ReviewItem = {
-  id: string
-  submission: string
-  submittedBy: string
-  reason: ReviewReason
-  receivedAt: IsoDateTime
-}
-
-export type ReviewQueue = {
-  stats: { awaitingReview: number; reportedListings: number; pendingVerification: number }
-  items: ReviewItem[]
 }

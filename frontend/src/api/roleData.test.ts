@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from './problem'
-import { getReviewQueue, getStudentFeed } from './roleData'
+import { getOfficeOverview, getStudentFeed } from './roleData'
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -37,7 +37,7 @@ describe('roleData (proposed endpoints)', () => {
       'fetch',
       vi.fn(async () => json({ status: 403, title: 'Forbidden' }, 403)),
     )
-    const error = await getReviewQueue().catch((e: unknown) => e)
+    const error = await getOfficeOverview().catch((e: unknown) => e)
     expect(error).toBeInstanceOf(ApiError)
     expect(error).toMatchObject({ status: 403, problem: { title: 'Forbidden' } })
   })
@@ -47,6 +47,6 @@ describe('roleData (proposed endpoints)', () => {
       'fetch',
       vi.fn(async () => new Response('gateway down', { status: 502 })),
     )
-    await expect(getReviewQueue()).rejects.toMatchObject({ status: 502 })
+    await expect(getOfficeOverview()).rejects.toMatchObject({ status: 502 })
   })
 })

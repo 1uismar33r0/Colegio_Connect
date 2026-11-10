@@ -2,10 +2,11 @@ import { screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Role } from '../auth/roles'
 import { routes } from '../router'
-import { expectNoAxeViolations, mockRoleApi } from '../test/mockApi'
+import { expectNoAxeViolations, mockAdminApi, mockRoleApi } from '../test/mockApi'
 import { fakeAuth, renderWithAuth } from '../test/renderWithAuth'
 
 vi.mock('../api/roleData')
+vi.mock('../api/admin')
 
 const renderAs = (path: string, roles: Role[]) => renderWithAuth(routes, path, fakeAuth({ roles }))
 
@@ -18,6 +19,7 @@ const HOMES: [string, Role, string][] = [
 
 beforeEach(() => {
   mockRoleApi()
+  mockAdminApi()
 })
 
 describe('role areas', () => {
@@ -54,15 +56,15 @@ describe('role areas', () => {
   })
 
   it('renders a placeholder that names the issue for each unbuilt section', async () => {
-    renderAs('/moderation/accounts', ['MODERATOR'])
-    expect(await screen.findByRole('heading', { level: 1, name: 'Accounts' })).toBeInTheDocument()
-    expect(screen.getByText(/built in issue #39/)).toBeInTheDocument()
+    renderAs('/moderation/reports', ['MODERATOR'])
+    expect(await screen.findByRole('heading', { level: 1, name: 'Reports' })).toBeInTheDocument()
+    expect(screen.getByText(/built in issue #37/)).toBeInTheDocument()
     const nav = screen.getByRole('navigation', { name: 'Administration sections' })
-    expect(within(nav).getByRole('link', { name: 'Accounts' })).toHaveAttribute(
+    expect(within(nav).getByRole('link', { name: 'Reports' })).toHaveAttribute(
       'aria-current',
       'page',
     )
-    expect(document.title).toBe('Accounts · Colegio Connect')
+    expect(document.title).toBe('Reports · Colegio Connect')
   })
 
   it('shows unknown sub-paths as not found', () => {
