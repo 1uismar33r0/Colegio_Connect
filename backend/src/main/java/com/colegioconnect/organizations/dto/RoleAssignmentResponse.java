@@ -1,4 +1,4 @@
-package com.colegioconnect.organizations;
+package com.colegioconnect.organizations.dto;
 
 import java.util.UUID;
 
@@ -7,7 +7,7 @@ import com.colegioconnect.organizations.entity.RoleAssignment;
 
 public record RoleAssignmentResponse(UUID id, UUID userId, Role role, UUID organizationId) {
 
-    static RoleAssignmentResponse from(RoleAssignment assignment) {
+    public static RoleAssignmentResponse from(RoleAssignment assignment) {
         UUID organizationId = assignment.getOrganization() == null
                 ? null
                 : assignment.getOrganization().getId();

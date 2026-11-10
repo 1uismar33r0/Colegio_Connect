@@ -1,4 +1,4 @@
-package com.colegioconnect.organizations;
+package com.colegioconnect.organizations.service;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,6 +14,8 @@ import com.colegioconnect.accounts.repository.UserRepository;
 import com.colegioconnect.audit.AuditAction;
 import com.colegioconnect.audit.AuditService;
 import com.colegioconnect.audit.AuditTargetType;
+import com.colegioconnect.organizations.dto.RoleAssignmentRequest;
+import com.colegioconnect.organizations.dto.RoleAssignmentResponse;
 import com.colegioconnect.organizations.entity.OrgType;
 import com.colegioconnect.organizations.entity.Organization;
 import com.colegioconnect.organizations.entity.Role;

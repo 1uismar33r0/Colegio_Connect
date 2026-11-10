@@ -1,4 +1,4 @@
-package com.colegioconnect.organizations;
+package com.colegioconnect.organizations.controller;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.colegioconnect.organizations.dto.RoleAssignmentRequest;
+import com.colegioconnect.organizations.dto.RoleAssignmentResponse;
+import com.colegioconnect.organizations.service.RoleAssignmentService;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;

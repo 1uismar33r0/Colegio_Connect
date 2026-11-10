@@ -13,6 +13,7 @@ import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.entity.UserStatus;
 import com.colegioconnect.audit.AuditAction;
 import com.colegioconnect.organizations.entity.Role;
+import com.colegioconnect.organizations.service.AdminBootstrap;
 import com.colegioconnect.security.NegativeAuthorizationTestHarness;
 
 @SpringBootTest(properties = "app.bootstrap.admin-email=first@upr.edu")

@@ -40,6 +40,7 @@ import com.colegioconnect.accounts.repository.UserRepository;
 import com.colegioconnect.audit.AuditAction;
 import com.colegioconnect.audit.AuditEventRepository;
 import com.colegioconnect.audit.AuditTargetType;
+import com.colegioconnect.organizations.dto.CompanyDecisionRequest;
 import com.colegioconnect.organizations.entity.ApprovalStatus;
 import com.colegioconnect.organizations.entity.OrgType;
 import com.colegioconnect.organizations.entity.Organization;
@@ -47,6 +48,7 @@ import com.colegioconnect.organizations.entity.Role;
 import com.colegioconnect.organizations.entity.RoleAssignment;
 import com.colegioconnect.organizations.repository.OrganizationRepository;
 import com.colegioconnect.organizations.repository.RoleAssignmentRepository;
+import com.colegioconnect.organizations.service.CompanyDecisionService;
 
 @SpringBootTest
 @AutoConfigureMockMvc

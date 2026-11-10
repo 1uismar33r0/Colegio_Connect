@@ -1,4 +1,4 @@
-package com.colegioconnect.organizations;
+package com.colegioconnect.organizations.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package com.colegioconnect.organizations;
+package com.colegioconnect.organizations.dto;
 
 import com.colegioconnect.organizations.entity.ApprovalStatus;
 

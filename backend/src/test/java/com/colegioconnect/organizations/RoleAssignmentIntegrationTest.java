@@ -29,6 +29,7 @@ import com.colegioconnect.organizations.entity.OrgType;
 import com.colegioconnect.organizations.entity.Organization;
 import com.colegioconnect.organizations.entity.Role;
 import com.colegioconnect.organizations.entity.RoleAssignment;
+import com.colegioconnect.organizations.service.AdminBootstrap;
 import com.colegioconnect.security.NegativeAuthorizationTestHarness;
 
 @SpringBootTest
