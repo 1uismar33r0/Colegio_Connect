@@ -136,16 +136,6 @@
           "auth-controller"
         ],
         "operationId": "csrf",
-        "parameters": [
-          {
-            "name": "csrfToken",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CsrfToken"
-            }
-          }
-        ],
         "responses": {
           "204": {
             "description": "No Content"
@@ -241,20 +231,6 @@
               "UPRM_MEMBER",
               "EXTERNAL_ORGANIZATION"
             ]
-          }
-        }
-      },
-      "CsrfToken": {
-        "type": "object",
-        "properties": {
-          "token": {
-            "type": "string"
-          },
-          "headerName": {
-            "type": "string"
-          },
-          "parameterName": {
-            "type": "string"
           }
         }
       }
