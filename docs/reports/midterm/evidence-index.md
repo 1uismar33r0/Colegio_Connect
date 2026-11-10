@@ -4,6 +4,8 @@
 
 ## Confirmed course instructions and provenance
 
+**November 10 dashboard note:** Gabriel's Issue #122 backend read branch [contract](../../roles/dashboard-api-contract.md) and [TE-15](../../testing/test-evidence.md#te-15) are branch-local engineering evidence. Luis's role pages at `94fd9fa` use mock data in component tests. Neither the table foundations nor a green frontend build establish a working listing publication, student response, or load-test result for the report. Keep the midterm's implementation/performance claims bounded to actual run evidence.
+
 The locally supplied **`Captone  Deliverables Fall.pdf`**, titled *CAPSTONE Activities & Deliverables Fall 2026*, is one page, SHA-256 `d4ca4c5ffca7fad502ebe114da717abe3da2c2a74f9a09c6af1e77b0afa83ad4`. It was read on October 26. It requires:
 
 - **Progress report: November 10, 2026**, 15–20 pages, submitted through the Moodle Capstone page (30%). Clearly address proposal reviews, updated design elements, preliminary performance results, and project documentation including code repository and project webpage.

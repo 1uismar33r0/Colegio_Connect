@@ -44,6 +44,14 @@ class DashboardOpenApiIntegrationTest {
         assertProperties(schemas, "ReviewQueueResponse", "stats", "items");
         assertProperties(schemas, "ReviewQueueStats", "awaitingReview", "reportedListings",
                 "pendingVerification");
+        assertThat(schemas.path("FeedItem").path("required").toString())
+                .contains("id", "title", "source", "postedAt", "type", "summary", "tags");
+        assertThat(schemas.path("ReviewQueueStats").path("required").toString())
+                .contains("awaitingReview", "reportedListings", "pendingVerification");
+        assertThat(schemas.path("OfficeRecentItem").path("properties")
+                .path("newResponses").toString()).contains("null");
+        assertThat(schemas.path("ReviewQueueItem").path("properties")
+                .path("receivedAt").toString()).contains("null");
         assertThat(paths.path("/api/institution/overview").path("get").path("parameters")
                 .toString()).contains("organizationId");
         assertThat(paths.path("/api/company/dashboard").path("get").path("parameters")

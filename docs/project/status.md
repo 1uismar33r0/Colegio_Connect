@@ -6,6 +6,8 @@
 
 ## Purpose and current condition
 
+**Issue #122 branch checkpoint (2026-11-10):** Five dashboard reads and V7–V9 data foundations are verified on `gabriel/issue-122-role-dashboard-api`, with [TE-15](../testing/test-evidence.md#te-15). Code location is the branch only. The issue remains **In progress**: no listing/response/report write journeys, external company application writer, source-label completion, browser verification, performance result, team review, or main integration. Luis's `94fd9fa` pages use mock API fixtures in tests. Main advanced to `f68480c` with Cristian's #124, creating role API merge conflicts with this branch's #123 base. Do not infer acceptance or deployment from the read tests.
+
 Colegio Connect is an independent UPRM student prototype for discovering six opportunity categories, publishing through verified institutions and approved companies, controlled student responses, moderation, and two-sided capstone sponsorship. Companies must never browse the student population; disclosure requires a student's response or a team's accepted interest request. The [approved proposal and complete requirement map](traceability.md) define the scope.
 
 **Current milestone: M1 — Access foundation, In progress.** Infrastructure foundations exist, but M1 is not complete: no working registration, verification, login, authorization, or React application has been established on main. No hosted application is verified. No proposal indicator is accepted at its full target. Calendar sprint boundaries cannot be established because the proposal approval date is unknown.
