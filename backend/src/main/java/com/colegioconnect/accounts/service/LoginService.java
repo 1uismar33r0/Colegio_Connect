@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.time.Instant;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.Comparator;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +20,7 @@ import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.entity.UserStatus;
 import com.colegioconnect.accounts.repository.UserRepository;
 import com.colegioconnect.organizations.repository.RoleAssignmentRepository;
+import com.colegioconnect.organizations.entity.Role;
 
 @Service
 public class LoginService {
@@ -81,13 +84,19 @@ public class LoginService {
         return user;
     }
 
-    // Spring Security expects "ROLE_" + name, so hasRole('STUDENT') matches ROLE_STUDENT
     @Transactional(readOnly = true)
-    public List<GrantedAuthority> authoritiesFor(User user) {
-        return roleAssignmentRepository.findByUserId(user.getId())
+    public List<Role> rolesFor(UUID userId) {
+        return roleAssignmentRepository.findByUserId(userId)
                 .stream()
                 .map(assignment -> assignment.getRole())
                 .distinct()
+                .sorted(Comparator.comparing(Role::name))
+                .toList();
+    }
+
+    // Session authorities remain for compatibility; protected admin routes recheck persisted roles.
+    public List<GrantedAuthority> authoritiesFor(List<Role> roles) {
+        return roles.stream()
                 .map(role -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + role.name()))
                 .toList();
     }
