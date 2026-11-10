@@ -13,7 +13,14 @@ The database uses the names agreed in V1. They map to the proposal like this:
 | `COMPANY` | External Company |
 | `MODERATOR` | Admin / Moderator |
 
-A user can hold more than one role. Roles are loaded as `ROLE_*` authorities at login.
+A user can hold more than one role. Roles are loaded as `ROLE_*` authorities at login and returned as `roles` by `POST /api/auth/login` and `GET /api/auth/me`, for the UI only. Server checks always use `@authz`.
+
+Login 403 responses include a stable `code` so the frontend does not depend on the message text:
+
+| `code` | Meaning |
+| --- | --- |
+| `EMAIL_NOT_VERIFIED` | Correct password, but the email is not verified yet |
+| `ACCOUNT_SUSPENDED` | Correct password, but the account is suspended |
 
 ## Shared checks
 
