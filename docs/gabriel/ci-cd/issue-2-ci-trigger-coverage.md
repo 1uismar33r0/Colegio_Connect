@@ -1,6 +1,6 @@
 # Issue #2 CI trigger coverage
 
-**Status:** CI verified on [PR #107](https://github.com/1uismar33r0/Colegio_Connect/pull/107) at audited head `15d0469`, pending teammate review and a fresh check against current main. **Branch:** `gabriel/issue-2-ci-trigger-coverage`. **Trigger implementation:** `242046d`. **Current main:** `e5cc181` after #111/#112; the PR's last recorded base and green checks were against `a128824`.
+**Status:** CI verified on [PR #107](https://github.com/1uismar33r0/Colegio_Connect/pull/107) after normal merge `351fd89` incorporated current main `e5cc181` (#111/#112). Push and PR runs at that head passed; teammate approval and enforceable required checks remain. **Branch:** `gabriel/issue-2-ci-trigger-coverage`. **Trigger implementation:** `242046d`. Older `a128824` run counts below remain dated history.
 
 ## Purpose and proposal relationship
 
@@ -83,6 +83,7 @@ The workflow itself cannot block a merge. The repository owner must configure Gi
 | Stacked PR [42319774193](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42319774193) | `da47445` | Backend: 19 tests; Frontend: 22 tests in 5 files; Container and CI Gate passed | PR base was the PR #106 branch |
 | Local structural checks | `2eb4b03` | All 15 trigger/job/gate/permission/concurrency invariants, documentation links, scope, whitespace, and credential-pattern checks passed | Static validation supplements GitHub execution |
 | Current audited head push [42326710752](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42326710752) and PR [42326716528](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42326716528) | `15d0469` | Backend, Frontend, Container, and CI Gate succeeded in both events | Both runs predate #111/#112 on current main; neither is a manual dispatch |
+| Current-main push [42895871782](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42895871782) and PR [42895882167](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42895882167) | `351fd89` | Backend, Frontend, Container, and CI Gate succeeded in both events; local Java 25 suite passed 30/30 and frontend passed 22/22 | Main `e5cc181` is an ancestor of this normal merge; no manual dispatch run has been claimed |
 
 At the original November 7 checkpoint, local `actionlint` and Java 25 were unavailable and Docker was not running in that session. Hosted GitHub Actions supplied Java 25 and Docker. Later local environments have Java 25 and Docker; their availability does not retroactively change the recorded CI runs. Windows `core.autocrlf=true` can make the exact Prettier command see CRLF locally; Linux CI is authoritative for the unchanged frontend sources.
 
@@ -90,8 +91,12 @@ At the original November 7 checkpoint, local `actionlint` and Java 25 were unava
 
 Original [PR #103](https://github.com/1uismar33r0/Colegio_Connect/pull/103) used the superseded #97 frontend base but established dated push/PR trigger evidence in `docs/testing/2026-11-04-ci-trigger-coverage.md`. PR #107 preserves its unrestricted push/PR behavior and adds the same manual dispatch offered by draft [PR #121](https://github.com/1uismar33r0/Colegio_Connect/pull/121). #121 alone is narrower: it does not expand automatic branch/stacked-PR coverage. If the team accepts #107 and its final current-main checks, #103 and #121 need no separate workflow merge; preserve #103's dated test evidence before any team-authorized closure. Neither older PR is closed by this documentation update.
 
+The #103 source record at `0538e54f8ffcc366113b17b4cce5d83fa70d42d3` reports `actionlint` in a disposable Docker run and `docker compose --env-file .env.example config --quiet`, both exit 0 on its November 4 CI-trigger branch. Those results are historical source evidence, not validation of #107's current head. Its unrestricted triggers are present in #107; this paragraph preserves the unique dated check before any #103 closure decision.
+
+Draft #121 at `f7a2bd50a5992e7bebef57c9cf578c938811c759` records `git diff --check`, a `js-yaml` parse, and structural assertions for its manual-only workflow change; it did not record a hosted manual run. Its source notes that GitHub needs `workflow_dispatch` on the default branch and that the selected target ref must itself contain the reviewed workflow before manual verification of that ref. #107 includes the trigger, but a future manual run on another existing branch still needs that branch updated and its checkout SHA checked. This retains #121's useful operating guidance without a second workflow merge.
+
 ## Remaining work
 
-- Obtain another team member's formal review of PR #107 after Cristian's documentation feedback is addressed; rerun CI against current main.
+- Obtain another team member's formal review of PR #107 after Cristian's documentation feedback; the current-main push and PR CI runs above passed.
 - Have the repository owner enforce `CI Gate` and demonstrate that a failing required check blocks merging.
 - Resolve the separate backend role and OpenAPI publication contracts before treating frontend authorization or generated-client behavior as integrated.
