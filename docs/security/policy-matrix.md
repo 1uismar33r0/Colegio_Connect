@@ -24,7 +24,7 @@ Defined in `security/AuthorizationPolicy` and used from `@PreAuthorize` as `@aut
 | Account status | `isActive(authentication)` | Account exists and is not suspended. Applied to every authenticated request in `SecurityConfig`, so a user suspended after login is blocked right away. |
 | Organization membership | `hasRoleIn(authentication, role, orgId)` | User has the role inside that organization. |
 | Approval status | `isApproved(orgId)` | An administrator approved the organization. |
-| Moderator actions | `canModerate(authentication)` | Account remains active and a global persisted `MODERATOR` assignment still exists. Used for audit-history reading so revocation denies the next request even with an existing session. |
+| Moderator actions | `canModerate(authentication)` | Account remains active and a global persisted `MODERATOR` assignment still exists. Used for audit-history reading, pending-company queue access, and company decisions, so revocation denies the next request even with an existing session. |
 | Ownership | Planned for M2 | User owns the listing. Listings do not exist yet. |
 
 ## Matrix

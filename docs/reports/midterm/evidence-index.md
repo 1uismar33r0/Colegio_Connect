@@ -1,6 +1,6 @@
 # Midterm report evidence index
 
-**Updated / evidence observed: 2026-11-08.** Coordinator: Luis; Gabriel and Cristian supply their engineering evidence. This is a preparation index, not the submitted report. Current implementation baseline: [status](../../project/status.md); exact requirements: [traceability](../../project/traceability.md).
+**Updated / evidence observed: 2026-11-10.** Coordinator: Luis; Gabriel and Cristian supply their engineering evidence. This is a preparation index, not the submitted report. Current implementation baseline: [status](../../project/status.md); exact requirements: [traceability](../../project/traceability.md).
 
 ## Confirmed course instructions and provenance
 
@@ -34,6 +34,8 @@ The following is a proposed organization within 15–20 pages; headings/page all
 | Remaining work, schedule and blockers | Open canonical backlog, #88/#89 integration | Status roadmap and M1–M4 | Dependency roadmap, no invented calendar sprint dates | Roadmap available; proposal approval date and owner/budget decisions missing | All agree next actions and record decisions before report submission |
 
 **November 10 integration evidence update:** Gabriel's local #119 branch now combines #118's authorization harness, #119's audit foundation, and #120's company decision/queue code. [TE-12](../../testing/test-evidence.md#te-12) records 64/64 local backend tests, an isolated V1–V3-to-V5 preservation check, 22/22 frontend tests, Compose validation, and image build at code commit `5c29336`. The older rows above describe their dated snapshots. The combined PR is not yet merged or team-approved; company signup/publishing, `/api/auth/me` roles, hosted deployment, and final indicator evidence remain missing.
+
+**Audit review follow-up:** At `8021392`, equal-timestamp audit pagination received a unique-ID tie breaker after a failing regression test. The new complete backend suite passed 65/65, and frontend lint, typecheck, 22/22 tests, and build passed locally. These are functional checks, not preliminary load or latency measurements. Hosted CI and team review remain required before integration.
 
 ## Advisor / professor comments — source required
 
