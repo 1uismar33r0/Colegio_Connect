@@ -225,3 +225,39 @@ At the captured snapshot this produces **84 / 42 / 67 / 134**. Recheck before la
 
 - **November 10 review correction:** A reviewer found that timestamp-only ordering could repeat or skip events across offset pages when timestamps tie. At code commit `80213929a0253ce99e25b5ddc48733dbcc4eca6c`, a new PostgreSQL/MockMvc test inserted three fixed IDs at an identical timestamp and failed as expected (`...003` expected on page 0, `...001` returned). Ordering by `occurred_at DESC, id DESC` fixed the case. `AuditControllerIntegrationTest` then passed 9/9; `backend/.\mvnw.cmd clean verify` passed **65/65**, zero failures/errors/skips, `BUILD SUCCESS`. Frontend lint, typecheck, 22/22 tests, and production build also passed at this working tree. The earlier `64/64` record remains the pre-fix checkpoint. No throughput or latency measurement follows from these functional tests.
 - **Published checkpoint:** PR #119 head `4a21068774d4da2b9d373dabf46eeb7fdcc28654` passed [hosted CI run 42895043656](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42895043656): Backend, Frontend, Container, and CI Gate succeeded. This verifies the published pre-documentation-follow-up head; team review and main integration remain pending. Stacked PR #120 was marked merged into #119, not into `main`.
+
+<a id="te-13"></a>
+
+## TE-13 — Issue #122 role home pages against a mock API
+
+- **Date / revision:** 2026-11-10. Branch `feat/issue-122-role-pages` from `main` at `5ff99744` (re-fetched the same day; no newer commits on `main`). The commit containing this record is the tested revision. Number note: TE-10 is reserved by open PR #116, so this record uses TE-13.
+- **Environment:** Windows 11; Node `24.16.0`; Vitest `5.1.0` with jsdom; axe-core `4.14`; frontend only. No backend, database or browser was used.
+- **Scope under test:**
+  - the four role home screens from the core wireframes (`docs/Wireframes` on `Issue-13-Wireframes` at `182d6d6`): Student Discover, University office Overview, External organization Dashboard, Administrator Review queue
+  - the shared sidebar shell
+  - placeholder pages for the sidebar sections
+  - admin all-access in the route guards (team decision of 2026-11-07: administrator = `MODERATOR`)
+  - the Dashboard notice for accounts without roles
+- **Mock API:** the pages read data through `frontend/src/api/roleData.ts`, which calls endpoints proposed in `frontend/src/api/contracts.ts`. None of those endpoints exist yet. Tests replace that module with `vi.mock` and the synthetic fixtures in `frontend/src/test/mockApi.ts`. Fixture wording is the wireframes' placeholder copy; no real people or records.
+- **Procedure:** in `frontend/`:
+  - Before the change, `npx vitest run` gave 5 files and 22 tests passing.
+  - After the change: `npm run typecheck`, `npm run lint`, `npx prettier --check --end-of-line auto src`, `npx vitest run` and `npm run build`.
+- **Expected:** for each page, the content renders from the mock, as do the loading state, the empty state, a retryable error that recovers, and a 403 message without retry. Table headers use `scope="col"`. Unbuilt actions are disabled and their accessible description names the issue that builds them. The sidebar marks the current section. The keyboard alone reaches a sidebar section. axe-core finds no violations. Role guards admit the matching role and the administrator, and send other roles to `/forbidden` and anonymous visitors to `/login`.
+- **Actual:**
+  - typecheck, lint, Prettier (line endings ignored) and the production build exited 0.
+  - `npx vitest run`: **12 files and 84 tests passed**, with 0 failures. 62 tests are new or changed:
+    - one suite per page
+    - `roleAccess.test.tsx` (guards, admin access, placeholders, unknown sub-paths, Dashboard)
+    - `useApiData.test.tsx` (including ignoring an out-of-date response)
+    - `roleData.test.ts` (query string, credentials, problem errors)
+    - updates to the role, guard and layout tests
+  - jsdom prints `HTMLCanvasElement's getContext() … not implemented` during the axe runs on the new pages. It is a warning only, and those tests pass.
+- **Source:** [Issue #122](https://github.com/1uismar33r0/Colegio_Connect/issues/122), the commit containing this record, and the core wireframes on `Issue-13-Wireframes`.
+- **Result:** **Pass** for the frontend behaviour against the mock API on this branch.
+- **Limitations:**
+  - The API contract is a proposal that the backend owner has not agreed to.
+  - `/api/auth/me` still returns no roles, so against the real backend every role area redirects to `/forbidden`. The pages can't be reached in a running app until the backend adds `roles`.
+  - Admin = `MODERATOR` follows a team decision that has no ADR in `docs/decisions/` yet.
+  - Colour contrast is disabled in jsdom, and no real-browser keyboard pass or check of the layout under 760px was run.
+  - The plain `npm run format:check` fails on Windows line endings in untouched files, as TE-12 recorded; Linux CI is the authoritative run.
+  - Hosted CI and a teammate review are pending. This does not accept I15 or any issue criterion by itself.

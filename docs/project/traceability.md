@@ -448,6 +448,19 @@ Exact source tasks (checkboxes describe the issue snapshot):
 
 Definition of Done: the three common requirements above apply; no additional acceptance is inferred from task checks or merges.
 
+### Issue #122: Frontend: role home pages from core wireframes (mock API)
+
+Source: [#122](https://github.com/1uismar33r0/Colegio_Connect/issues/122). It was opened on 2026-11-10 and has no alias. It is follow-up work to the #13 core wireframes, not an approved-scope change. Lead: **Luis**. GitHub assignee: **1uismar33r0**.
+
+Milestone: **M1 - Access foundation**. Proposal mapping: **O5; I15; Table 8; Figure 3**. The role features themselves remain with their own issues (#16, #20, #22, #23, #31, #33, #37, #39).
+
+Engineering state: **Verified on branch**. Location: `feat/issue-122-role-pages`, in `frontend/src/pages/{student,institution,company,moderation}/`, `frontend/src/components/RoleShell.tsx`, `frontend/src/api/contracts.ts` and `frontend/src/test/mockApi.ts`.
+
+Evidence / blockers: **TE-13** in [test evidence](../testing/test-evidence.md#te-13), which ran against a mock API only.
+- The proposed endpoints and `roles` in `/api/auth/me` are not implemented, and the backend owner hasn't agreed to them.
+- There is no ADR yet for the administrator being `MODERATOR`.
+- Team review and hosted CI are pending.
+
 ### Issue #14 / alias #51: Frontend: register, verify and login screens
 
 Sources: [canonical #14](https://github.com/1uismar33r0/Colegio_Connect/issues/14) and [alias #51](https://github.com/1uismar33r0/Colegio_Connect/issues/51); both open. Lead: **Luis**. Support: Cristian (API contract), Gabriel (review), per Table 17 frontend group. GitHub assignees: canonical **unassigned**; alias **unassigned**.
