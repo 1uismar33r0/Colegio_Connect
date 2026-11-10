@@ -24,6 +24,8 @@ import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.entity.UserStatus;
 import com.colegioconnect.organizations.entity.Role;
 import com.colegioconnect.security.NegativeAuthorizationTestHarness;
+import com.colegioconnect.organizations.entity.ApprovalStatus;
+import com.colegioconnect.organizations.entity.OrgType;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -147,6 +149,58 @@ class AuthIntegrationTest extends NegativeAuthorizationTestHarness {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.paths['/api/auth/csrf'].get.parameters").doesNotExist());
+    }
+
+        // ---- Roles in /me ----
+
+    @Test
+    void currentUserIncludesRoles() throws Exception {
+        User user = activeVerifiedUser(EMAIL, Role.STUDENT);
+        assign(user, Role.INSTITUTIONAL, organization("Registrar", OrgType.UPRM_OFFICE, ApprovalStatus.APPROVED));
+
+        MockHttpSession session = login(EMAIL, PASSWORD, status().isOk());
+
+        mockMvc.perform(get("/api/auth/me").session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.roles.length()").value(2))
+                .andExpect(jsonPath("$.roles[0]").value("STUDENT"))
+                .andExpect(jsonPath("$.roles[1]").value("INSTITUTIONAL"));
+    }
+
+    @Test
+    void currentUserWithoutRolesHasEmptyList() throws Exception {
+        activeVerifiedUser(EMAIL);
+
+        MockHttpSession session = login(EMAIL, PASSWORD, status().isOk());
+
+        mockMvc.perform(get("/api/auth/me").session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.roles.length()").value(0));
+    }
+
+    // ---- Error codes on login ----
+
+    @Test
+    void unverifiedLoginReturnsErrorCode() throws Exception {
+        user(EMAIL, UserStatus.ACTIVE, false);
+
+        mockMvc.perform(post("/api/auth/login").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson(EMAIL, PASSWORD)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("EMAIL_NOT_VERIFIED"))
+                .andExpect(jsonPath("$.detail").value("Verify your email before logging in."));
+    }
+
+    @Test
+    void suspendedLoginReturnsErrorCode() throws Exception {
+        user(EMAIL, UserStatus.SUSPENDED, true);
+
+        mockMvc.perform(post("/api/auth/login").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson(EMAIL, PASSWORD)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("ACCOUNT_SUSPENDED"));
     }
     
 

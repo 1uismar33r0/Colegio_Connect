@@ -2,21 +2,21 @@ package com.colegioconnect.accounts.service;
 
 import java.time.Duration;
 import java.time.Instant;
-
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.colegioconnect.accounts.dto.LoginRequest;
 import com.colegioconnect.accounts.entity.User;
 import com.colegioconnect.accounts.entity.UserStatus;
 import com.colegioconnect.accounts.repository.UserRepository;
+import com.colegioconnect.organizations.entity.Role;
 import com.colegioconnect.organizations.repository.RoleAssignmentRepository;
 
 @Service
@@ -36,7 +36,7 @@ public class LoginService {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleAssignmentRepository = roleAssignmentRepository;
-        
+
         // this will avoid timing attacks by ensuring that the password check takes
         // a similar amount of time for both existing and non-existing users
         this.dummyHash = passwordEncoder.encode("dummy-password-used-only-for-timing");
@@ -71,28 +71,42 @@ public class LoginService {
 
         // Only checked after a correct password, so these messages are shown only to the owner
         if (user.getStatus() == UserStatus.SUSPENDED) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This account is suspended.");
+            throw forbidden("ACCOUNT_SUSPENDED", "This account is suspended.");
         }
         if (!user.isEmailVerified()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Verify your email before logging in.");
+            throw forbidden("EMAIL_NOT_VERIFIED", "Verify your email before logging in.");
         }
 
         user.resetFailedLogins();
         return user;
     }
 
+    // The user's current roles, read from the database (not the session snapshot)
+    @Transactional(readOnly = true)
+    public List<Role> rolesFor(User user) {
+        return roleAssignmentRepository.findByUserId(user.getId()).stream()
+                .map(assignment -> assignment.getRole())
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
     // Spring Security expects "ROLE_" + name, so hasRole('STUDENT') matches ROLE_STUDENT
     @Transactional(readOnly = true)
     public List<GrantedAuthority> authoritiesFor(User user) {
-        return roleAssignmentRepository.findByUserId(user.getId())
-                .stream()
-                .map(assignment -> assignment.getRole())
-                .distinct()
+        return rolesFor(user).stream()
                 .map(role -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + role.name()))
                 .toList();
     }
 
     private String normalize(String email) {
         return email.trim().toLowerCase();
+    }
+
+    // Adds a stable "code" to the error so the frontend does not depend on the message text
+    private static ResponseStatusException forbidden(String code, String message) {
+        ResponseStatusException exception = new ResponseStatusException(HttpStatus.FORBIDDEN, message);
+        exception.getBody().setProperty("code", code);
+        return exception;
     }
 }

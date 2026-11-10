@@ -67,7 +67,7 @@ public class AuthController {
         SecurityContextHolder.setContext(context);
         securityContextRepository.saveContext(context, httpRequest, httpResponse);
 
-        return UserResponse.from(user);
+        return UserResponse.from(user, loginService.rolesFor(user));
     }
 
     @GetMapping("/me")
@@ -75,7 +75,7 @@ public class AuthController {
         UUID userId = UUID.fromString(authentication.getName());
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-        return UserResponse.from(user);
+        return UserResponse.from(user, loginService.rolesFor(user));
     }
 
     @GetMapping("/csrf")
