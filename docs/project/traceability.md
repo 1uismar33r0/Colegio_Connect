@@ -110,9 +110,9 @@ Sources: [canonical #2](https://github.com/1uismar33r0/Colegio_Connect/issues/2)
 
 Milestone: **M1 - Access foundation**. Original issue references: I13, Table 14. Proposal mapping: **O5; I13; infrastructure enabler; Figure 1**.
 
-Engineering state: **Verified on branch**. Acceptance note: blocked by dependencies below. Location: feat/issue-2-ci; .github/workflows/ci.yml and .github/dependabot.yml.
+Engineering state: **Verified on branch**. Acceptance note: AC1 is verified at a `main`-based PR checkpoint; AC2 remains blocked by repository-owner enforcement and review dependencies. Location: merged CI/frontend foundation on `main`; trigger delta in ready-for-review PR #107 (`gabriel/issue-2-ci-trigger-coverage`) targeting `main`; `.github/workflows/ci.yml` and `.github/dependabot.yml`.
 
-Evidence / blockers (apply to every AC below): **TE-03, TE-02** in [test evidence](../testing/test-evidence.md). PR #89 remains open without reviews. AC1 has observed push and PR runs, but no main workflow. AC2 has no enforced required-check proof. Frontend checks remain deferred to #13; no failure-blocking merge experiment was performed.
+Evidence / blockers (apply to every AC below): **TE-03, TE-10, TE-02** in [test evidence](../testing/test-evidence.md). PR #89 is merged and main contains the CI foundation; PR #106 merged the Frontend job as `a128824`. After PR #107 was retargeted to `main`, push run `42325561434` and PR run `42325565946` passed Backend, Frontend, Container, and CI Gate at `678c43e`, verifying AC1's two event types for the unrestricted triggers. AC2 has no enforceable required-check proof or safe rejection experiment; repository-owner/admin action and another member's review remain required.
 
 Exact source description shared by both issues:
 

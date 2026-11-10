@@ -1,6 +1,6 @@
 ﻿# Test and verification evidence
 
-Snapshot date: **2026-10-26**. Baseline main SHA: `1714e5e0f000f9ad4a2ff6a00bf71c2e14fc5b18`. Scope is A1 documentation and evidence reconciliation. No application test, load test, scan, database mutation, deployment, or acceptance session was run as part of this documentation change. Historical reports and observed hosted CI are identified separately.
+Baseline snapshot date: **2026-10-26**. Baseline main SHA: `1714e5e0f000f9ad4a2ff6a00bf71c2e14fc5b18`. The original scope was A1 documentation and evidence reconciliation; later evidence records, including TE-10 observed on 2026-11-07, state their own revisions and procedures. Historical reports and observed hosted CI are identified separately. No load test, security scan, deployment, or acceptance session is implied by the CI evidence.
 
 Results use **Pass**, **Fail**, **Blocked**, or **Not run**. A Pass applies only to the stated procedure and expected result. It does not accept the corresponding feature or proposal indicator. Engineering/acceptance states and all 67 exact issue criteria are maintained in [traceability.md](../project/traceability.md). There is no evidence that any complete I1–I17 target has been accepted.
 
@@ -112,6 +112,18 @@ Results use **Pass**, **Fail**, **Blocked**, or **Not run**. A Pass applies only
 - **Actual:** `docs/colegio-connect-wireframes.html` exists; `frontend/.gitkeep` remains. No React/TypeScript app/package/build or evidence of team/advisor review is present in inspected sources.
 - **Source:** [wireframe HTML at branch SHA](https://github.com/1uismar33r0/Colegio_Connect/blob/b456f772ac7a307f165a0379be025af3d8d2b00d/docs/colegio-connect-wireframes.html).
 - **Result:** **Pass** for inventory. **Limitations:** app-build and review acceptance tests are **Not run**; exploratory HTML does not demonstrate WCAG compliance or production behavior.
+
+<a id="te-10"></a>
+
+### TE-10 — Issue #2 unrestricted push and PR trigger verification
+
+- **Date / SHA:** 2026-11-07 UTC; historical branch checkpoint `6852a0cecf297284eecb3c3439ea27d91fb90cf2`, containing trigger implementation commit `242046d`. PR #106 later merged as `a128824`; ready-for-review PR #107 targets `main` without rewriting its branch history. Latest recorded verified checkpoint: `678c43e610c906621a821c679aa1345204686b84`.
+- **Environment:** GitHub-hosted `ubuntu-latest`; Temurin Java 25, Node 24, Maven wrapper, npm locked dependencies, Docker/Compose. Local supplementary checks used Windows PowerShell, Node 24, and Docker Compose static parsing; local Java 17, unavailable Docker daemon, and absent `actionlint` prevented equivalent full local execution.
+- **Procedure:** push `gabriel/issue-2-ci-trigger-coverage` to exercise unrestricted `push`; open stacked draft PR #107 targeting `Issue#13-frontend-setup` to exercise unrestricted `pull_request`; inspect exact head SHA, event, jobs, steps, conclusions, and test summaries. Statically assert 15 trigger/job/gate/permission/concurrency lines and check documentation links, changed-path scope, whitespace, and credential patterns.
+- **Expected:** both events start CI at the branch checkpoint; Backend, Frontend, Container, and CI Gate succeed; gate depends on every required job. No application source changes or main-only artifact upload occur.
+- **Actual:** Historical [push run 42319237423](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42319237423) and [PR run 42319380659](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42319380659) passed at `6852a0c`. After PR #106 merged and PR #107 targeted `main`, [push run 42325561434](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42325561434) and [PR run 42325565946](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42325565946) each completed successfully at `678c43e`. The current PR run reports Maven **19 tests, 0 failures, 0 errors, 0 skipped** and Vitest **22 tests in 5 files**, plus successful lint, format, typecheck, generated-type drift check, production build, Compose validation, image build, and CI Gate. Main-only image save/upload correctly skipped for the feature push and PR. Static checks passed 15/15 and found no scoped-link, whitespace, unexpected-path, or credential-pattern failure.
+- **Source:** ready-for-review [PR #107](https://github.com/1uismar33r0/Colegio_Connect/pull/107), the two linked runs, and [Gabriel's CI record](../gabriel/ci-cd/issue-2-ci-trigger-coverage.md).
+- **Result:** **Pass** for Issue #2 AC1 at `main`-based checkpoint `678c43e`. **Limitations:** PR #107 still has no teammate review. Manual dispatch was configured but not invoked because AC1 requires push/PR, not manual execution. AC2 remains **Blocked**: no verified required-check enforcement or safe failing-merge rejection exists, and Gabriel lacks repository admin permission. These jobs do not constitute the 20 deployed scenarios or complete I13 acceptance.
 
 ## Indicator evidence plan
 
