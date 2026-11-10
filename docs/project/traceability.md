@@ -343,9 +343,9 @@ Sources: [canonical #10](https://github.com/1uismar33r0/Colegio_Connect/issues/1
 
 Milestone: **M1 - Access foundation**. Original issue references: US2. Proposal mapping: **O2, O3; I6, I8; US2; Figures 2–3**.
 
-Engineering state: **Verified on branch**. Location: `gabriel/issue-10-role-management-backend`, based on `main` `5ff9974`; not merged. Acceptance note: local backend tests cover AC1 and AC2, but Cristian's backend/security review, hosted CI, and integration remain pending.
+Engineering state: **Verified on branch**. Location: `gabriel/issue-10-role-management-backend`, [PR #123](https://github.com/1uismar33r0/Colegio_Connect/pull/123), based on `main` `5ff9974`; not merged. Acceptance note: local backend tests and hosted CI cover AC1 and AC2, but Cristian's backend/security review and integration remain pending.
 
-Evidence / blockers (apply to every AC below): **TE-00, TE-13** in [test evidence](../testing/test-evidence.md). The branch implements current roles, administrator search, scoped assignment/revocation, durable bootstrap, and same-transaction audit; review the [contract](../roles/api-contract.md) and [ADR](../decisions/0002-roles-and-admin-access.md). UI integration is outside this backend task. Do not close #10 before team review, CI, merge, and Definition of Done verification.
+Evidence / blockers (apply to every AC below): **TE-00, TE-13** in [test evidence](../testing/test-evidence.md). The branch implements current roles, administrator search, scoped assignment/revocation, durable bootstrap, and same-transaction audit; review the [contract](../roles/api-contract.md) and [ADR](../decisions/0002-roles-and-admin-access.md). UI integration is outside this backend task. Do not close #10 before team review, merge, and Definition of Done verification.
 
 Exact source description shared by both issues:
 
