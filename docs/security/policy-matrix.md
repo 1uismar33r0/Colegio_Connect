@@ -31,7 +31,7 @@ Defined in `security/AuthorizationPolicy` and used from `@PreAuthorize` as `@aut
 | Account status | `isActive(authentication)` | Account exists and is not suspended. Applied to every authenticated request in `SecurityConfig`, so a user suspended after login is blocked right away. |
 | Organization membership | `hasRoleIn(authentication, role, orgId)` | User has the role inside that organization. |
 | Approval status | `isApproved(orgId)` | An administrator approved the organization. |
-| Moderator actions | `canModerate(authentication)` | Account remains active and a global persisted `MODERATOR` assignment still exists. Used for audit-history reading, pending-company queue access, and company decisions, so revocation denies the next request even with an existing session. |
+| Moderator actions | `canModerate(authentication)` | In the dashboard branch, account must be active, email verified, and a UPRM member with a current global persisted `MODERATOR` assignment. Used for audit-history reading, pending-company queue access, role administration and company decisions, so revocation denies the next request even with an existing session. |
 | Role management | `canModerate(authentication)` | Only an active moderator can list, assign, or revoke `INSTITUTIONAL` and `MODERATOR` roles (`/api/admin/role-assignments`). Each change writes an audit record. A moderator cannot remove their own moderator role. The first moderator is created at startup from `APP_BOOTSTRAP_ADMIN_EMAIL`, never through the API. |
 | Ownership | Planned for M2 | User owns the listing. Listings do not exist yet. |
 
@@ -59,3 +59,15 @@ Every action requires `isActive`.
 
 Companies cannot search or browse students. A company sees a student's data only when
 that student responds to its listing, or a student team accepts its Express Interest.
+
+## Issue #122 dashboard reads (main-based branch)
+
+| Read | Current persisted entitlement | Returned scope |
+| --- | --- | --- |
+| Discovery feed | Active authenticated account; publisher eligibility is checked in the query | PUBLIC, published, unexpired records only; organization display name, no publisher contact |
+| Student activity | Verified UPRM account with current global `STUDENT` assignment | Only the session user's response and saved counts |
+| Office overview | Verified UPRM account with current `INSTITUTIONAL` assignment in the selected office/department | That organization only; omission allowed only for one eligible membership |
+| Company dashboard | Verified external account with current `COMPANY` assignment in an approved company | That company only; a separate pending applicant ownership link allows a read-only pending status, with no listings or responses |
+| Review queue | Verified UPRM account with current global `MODERATOR` assignment | Pending companies and distinct open reported listings; no reporter identity or report detail |
+
+The pending applicant ownership link never grants `COMPANY` authority. Current status and assignments are checked on every dashboard request; an ambiguous company or office selection returns 409. Current main lacks a company/student role assignment endpoint and external registration does not yet create applicant links. See [dashboard contract](../roles/dashboard-api-contract.md) and [role reconciliation](../roles/reconciliation-123-124-125.md).

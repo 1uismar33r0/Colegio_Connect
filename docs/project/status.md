@@ -1,5 +1,7 @@
 # Project status
 
+**Dashboard reconciliation checkpoint (2026-11-10):** Main `18ae2ba` now includes Cristian's #124 role API and #125 current roles in login/`/me`. The main-based `gabriel/issue-122-role-dashboard-main` branch adds five dashboard read APIs without importing Gabriel's competing #123 role service, bootstrap, or V6 migration. This is **In progress** on a feature branch, not merged or accepted. Read foundations do not supply listing/response/report write journeys, company applicant registration, or a browser rendering result. See [TE-15](../testing/test-evidence.md#te-15), [contract](../roles/dashboard-api-contract.md), and [role reconciliation](../roles/reconciliation-123-124-125.md). The older main snapshot below is historical.
+
 **Last updated:** 2026-11-04. **Original evidence observed:** 2026-10-26 (UTC; collection began approximately 04:35Z). **Update evidence observed:** 2026-11-04 (live GitHub PR and issue records). **Current baseline:** [`fc06e936a66921afa78c37e65b5be8dfe815a98d`](https://github.com/1uismar33r0/Colegio_Connect/commit/fc06e936a66921afa78c37e65b5be8dfe815a98d), `origin/main` fetched on November 4. The October 26 statements below remain dated historical observations unless explicitly updated here.
 
 ## Purpose and current condition
