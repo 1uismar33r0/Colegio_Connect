@@ -113,6 +113,7 @@ Results use **Pass**, **Fail**, **Blocked**, or **Not run**. A Pass applies only
 - **Source:** [wireframe HTML at branch SHA](https://github.com/1uismar33r0/Colegio_Connect/blob/b456f772ac7a307f165a0379be025af3d8d2b00d/docs/colegio-connect-wireframes.html).
 - **Result:** **Pass** for inventory. **Limitations:** app-build and review acceptance tests are **Not run**; exploratory HTML does not demonstrate WCAG compliance or production behavior.
 
+
 <a id="te-10"></a>
 
 ### TE-10 — Register, verify and login screens (#14)
@@ -125,6 +126,31 @@ Results use **Pass**, **Fail**, **Blocked**, or **Not run**. A Pass applies only
 - **Source:** this branch's diff; test files under `frontend/src/pages/*.test.tsx` and `frontend/src/auth/validation.test.ts`.
 - **Result:** **Pass** for the stated procedure. **Limitations:** axe runs in jsdom with `color-contrast` disabled (as in `AppLayout.test.tsx`); contrast, real-browser keyboard behaviour and screen-reader output were not checked in a browser. The API check exercised the same requests the screens send, not the rendered UI driving a browser. Expired-code (10 min) and hourly resend limits were not waited out; the backend returns the same messages, which the screens display. Team review and CI on the PR remain pending.
 - **Follow-up 2026-11-08 (review on PR #116):** delivery messages reworded so they no longer promise the email arrived; `safeReturnPath` now also rejects backslashes, whitespace and control characters. Same checks rerun: typecheck, lint, build pass; 10 files / 67 tests pass (adds `flowState.test.ts` and a backslash case in `Login.test.tsx`). PR #116's first CI run (Backend, Container, Frontend, CI Gate) passed before these changes.
+
+<a id="te-09"></a>
+
+### TE-09 — Issue #15 audit foundation reconciliation
+
+- **Date / SHA:** 2026-11-08; authoritative base `e5cc181b3ebcf7b5cb1050547c1d82922068c064`; transaction implementation `132413bb8076371285cdee5a7bd18f6a92871278`; protected query implementation `c0b01a7afc6c8b61eb4ec1cc44259c78658378d8`.
+- **Environment:** Windows; Temurin Java `25.0.5+8`; Spring Boot `4.1.2`; Docker Desktop `29.5.2`; PostgreSQL `18.6` through Testcontainers.
+- **Procedure:** establish a clean 30-test baseline; execute TDD RED/GREEN for `AuditServiceIntegrationTest` and `AuditControllerIntegrationTest`; run focused audit/error-handler tests; run `mvnw.cmd clean verify`. Inspect PR #99's full history, PR #98 dependency, every fetched remote branch for audit code, and PR #115 notification logging.
+- **Expected:** controlled actor/action/target/time rows join the caller's transaction; rollback and missing transaction leave no row; only a current persisted moderator can read bounded newest-first pages; same-session suspension/role revocation denies access; response excludes sensitive/free-form data; endpoint appears in OpenAPI.
+- **Actual:** transaction RED failed compilation on missing audit types; endpoint RED produced absent-route/OpenAPI failures. The first endpoint GREEN run exposed method-security denials incorrectly mapped to 500; the narrow 403 mapping corrected the root cause. Final focused run: 13 tests, zero failures/errors/skips. Final pre-documentation clean verification: 41 tests, zero failures/errors/skips; `BUILD SUCCESS`.
+- **Source:** [Issue #15 engineering record](../gabriel/security/issue-15-audit-foundation.md), implementation commits above, and [Issue #15](https://github.com/1uismar33r0/Colegio_Connect/issues/15).
+- **Result:** **Pass** for the branch foundation and current read contract. **Limitations:** PR/team review, hosted CI, and merge remain pending; no owning business action emits an event yet; final I8 and AC1 are not accepted; database-level append-only enforcement and actor-retention policy remain unresolved.
+
+<a id="te-13"></a>
+
+## TE-13 — Notification review fixes (#11, PR #115)
+
+- **Date / SHA:** 2026-11-09; branch `feat/issue-11-notifications`, follow-up to `3eb0a11` (the commit containing this record).
+- **Environment:** Windows 11, JDK 25.0.4.1, Maven wrapper, Docker 29.9.2 with Testcontainers PostgreSQL 18.6; local Compose stack (backend rebuilt from this branch, PostgreSQL, Mailpit).
+- **Procedure:** `./mvnw -B verify` in `backend/`; list `BOOT-INF/classes/.../notifications/` in the built jar. Live: curl register → code from Mailpit API → verify; stop Mailpit, register a second synthetic `@upr.edu` account, inspect `docker logs` for the delivery line and any full address; start Mailpit, wait 62 s, resend → code from Mailpit → verify.
+- **Expected:** review findings closed: (1) delivery failures log only masked addresses and propagate no provider exception; (2) the fake sender is absent from the packaged jar; (3) email is sent only after commit, a rolled-back transaction sends nothing, and a delivery failure leaves a recoverable account.
+- **Actual:** 41 tests pass (34 before), including MailSendException messages with two addresses (logs show only `s***@upr.edu` / `o***@upr.edu`; thrown `EmailDeliveryException` has no cause and no address), first-line summary of multi-line provider errors, delivery failure → 201 then resend → 202 and delivered, rollback → no email, commit → email, and the default context holding exactly one `SmtpEmailSender`. Jar contains no `FakeEmailSender`. Live: 201/204 with Mailpit up; with Mailpit down register returned 201, one FAILURE line with `to=i***@upr.edu`, 0 occurrences of the full address in backend logs; after restart resend 202, code delivered, verify 204.
+- **Result:** **Pass** for the stated procedure. **Limitations:** delivery remains synchronous within the request after commit, with no retry or outbox; a user whose email failed must wait for the 60 s cooldown. Spring Boot's own `MailHealthIndicator` logs connection stack traces when Mailpit is down; they contained no recipient addresses. Startup failure with `app.mail.provider=fake` is inferred from bean wiring, not run. Team review and CI on the PR remain pending.
+
+
 
 ## Indicator evidence plan
 
@@ -200,3 +226,29 @@ foreach ($group in $groups) {
 ```
 
 At the captured snapshot this produces **84 / 42 / 67 / 134**. Recheck before later acceptance because issue bodies and repository state can change. Exact-document comparison must also check all criterion text, not only these counts.
+
+<a id="te-11"></a>
+
+## TE-11 - Issue #12 negative-authorization harness reconciliation
+
+- **Date / SHA:** 2026-11-07; authoritative base `e5cc181b3ebcf7b5cb1050547c1d82922068c064`; harness implementation `92fadc467db5a85dcea5c03fc3456e6d38936999` on `gabriel/issue-12-negative-auth-reconciliation`.
+- **Environment:** Windows; Temurin Java `25.0.5+8`; Spring Boot `4.1.2`; Maven Wrapper; Docker Desktop `29.5.2`; PostgreSQL `18.6` through Testcontainers; synthetic users and organizations only.
+- **Procedure:** compare original PR #100 head `52352763d0f01e1b8bb9f87e1ec843bb357c2c6b` with current main and merged PR #111/#112 contracts; refactor existing authentication and authorization-policy tests to inherit the test-only harness; verify the missing harness fails compilation first; run `mvnw.cmd -Dtest=AuthIntegrationTest,AuthorizationPolicyIntegrationTest test`; run `mvnw.cmd clean verify`; inspect the production-source diff.
+- **Expected:** the two existing consumer classes use reusable user/status/organization/role/session fixtures; all 20 focused tests and the complete backend suite pass; production source, migrations, endpoints, and OpenAPI remain unchanged.
+- **Actual:** RED failed for the missing `NegativeAuthorizationTestHarness` and intended helper symbols. After implementation, `AuthIntegrationTest` passed 12 and `AuthorizationPolicyIntegrationTest` passed 8, with zero failures/errors/skips. Clean verification passed 30 tests with zero failures/errors/skips and Maven `BUILD SUCCESS`. Only three backend test files changed in the implementation commit.
+- **Source:** [Gabriel's Issue #12 engineering record](../gabriel/security/issue-12-negative-authorization.md), [canonical Issue #12](https://github.com/1uismar33r0/Colegio_Connect/issues/12), [original PR #100](https://github.com/1uismar33r0/Colegio_Connect/pull/100), [reconciliation PR #118](https://github.com/1uismar33r0/Colegio_Connect/pull/118), and implementation commit `92fadc467db5a85dcea5c03fc3456e6d38936999`.
+- **Result:** **Pass** for branch-local harness implementation and current supported-case verification. PR #118 run `42445314730` passed Backend, Frontend, Container, and CI Gate at head `203a424`. **Limitations:** AC1 requires merge and teammate review is pending; later documentation-only heads must retain green CI. This does not accept final indicator I6: business endpoints for publishing, ownership, consent, moderation, and sponsorship are not yet available on the inspected baseline.
+
+<a id="te-12"></a>
+
+## TE-12 — Gabriel authorization, audit, and company consolidation
+
+- **Date / revision:** 2026-11-10; `main` base `e5cc181b3ebcf7b5cb1050547c1d82922068c064`; combined #118/#119/#120 code and upgrade test at `5c29336aca5df4804bd84149d6f5b84da96fcfc0`. This is the local surviving #119 branch before publication, not a main merge.
+- **Environment:** Windows; Temurin Java `25.0.5+8`; Spring Boot `4.1.2`; Maven Wrapper; Docker Desktop `29.5.2`; PostgreSQL `18.6` through disposable Testcontainers; Node `24.16.0`; synthetic data.
+- **Procedure / result:** `backend/.\mvnw.cmd -Dtest=AuditServiceIntegrationTest,AuditControllerIntegrationTest test` passed 11/11 before consolidation; the #118/#119 focused four-class run passed 31/31; the first #118/#119/#120 full `backend/.\mvnw.cmd clean verify` passed 63/63. A new isolated Flyway test applied V1–V3, inserted synthetic identity/organization/role rows, applied V4–V5, and verified unchanged identifiers/roles, pending status, new decision column, and audit insert; its focused run passed 1/1. Final `backend/.\mvnw.cmd clean verify` at `5c29336` passed **64/64**, zero failures/errors/skips, `BUILD SUCCESS`.
+- **Frontend and infrastructure:** `npm.cmd ci`, `npm.cmd run lint`, `typecheck`, `test` (22/22), `api:gen`, and `build` exited 0. The generated schema's normalized blob matched the committed schema, so no API type change was staged. `docker compose --env-file .env.example config --quiet` and `docker build --tag colegio-connect:gabriel-consolidation-5c29336 backend` exited 0. The image build skips tests; Maven verification above is separate.
+- **Local formatting limitation:** The unmodified `npm.cmd run format:check` failed on Windows line endings and an ignored `frontend/test-results/.last-run.json`. A read-only Prettier check with `--end-of-line auto` and both `.prettierignore` and repository `.gitignore` passed. Linux hosted CI is required for the unchanged canonical formatting command. `npm ci` also reported 11 moderate dependency advisories; no dependency change was made in this consolidation.
+- **Coverage and limits:** Tests exercise real server sessions, 403 denial, persisted moderator revocation, audit persistence/rollback, company approval/rejection, row-lock concurrency, pending queue, clean-schema migration through V5, and a V1–V3 upgrade. The audit-failure rollback test substitutes the audit service and does not simulate a database failure after an actual insert. There is no complete company registration/publishing flow or universal role-revocation policy. `/api/auth/me` still omits roles. Hosted CI at the consolidated head and another team member's review are pending; no issue or indicator is accepted by this local run alone.
+
+- **November 10 review correction:** A reviewer found that timestamp-only ordering could repeat or skip events across offset pages when timestamps tie. At code commit `80213929a0253ce99e25b5ddc48733dbcc4eca6c`, a new PostgreSQL/MockMvc test inserted three fixed IDs at an identical timestamp and failed as expected (`...003` expected on page 0, `...001` returned). Ordering by `occurred_at DESC, id DESC` fixed the case. `AuditControllerIntegrationTest` then passed 9/9; `backend/.\mvnw.cmd clean verify` passed **65/65**, zero failures/errors/skips, `BUILD SUCCESS`. Frontend lint, typecheck, 22/22 tests, and production build also passed at this working tree. The earlier `64/64` record remains the pre-fix checkpoint. No throughput or latency measurement follows from these functional tests.
+- **Published checkpoint:** PR #119 head `4a21068774d4da2b9d373dabf46eeb7fdcc28654` passed [hosted CI run 42895043656](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42895043656): Backend, Frontend, Container, and CI Gate succeeded. This verifies the published pre-documentation-follow-up head; team review and main integration remain pending. Stacked PR #120 was marked merged into #119, not into `main`.

@@ -33,6 +33,9 @@ Ports bind to `127.0.0.1` so development services are not exposed to the local n
 - Compose also supplies `SPRING_MAIL_HOST=mailpit` and `SPRING_MAIL_PORT=1025`. Outside Docker, the backend uses `localhost:1025` (Mailpit on the host).
 - Flyway is enabled and applies the versioned migrations in `backend/src/main/resources/db/migration`. The merged identity baseline begins with `V1__identity_baseline.sql`; do not modify an applied migration. Add a new versioned migration for later schema changes.
 - `app.mail.from` sets the sender address for emails (default `no-reply@colegioconnect.local`).
+- `app.mail.provider` selects the email adapter. The packaged application only contains `smtp` (the default; Mailpit in development). `fake` keeps emails in memory and exists only in test sources (`src/test/.../FakeEmailSender`), so setting it on a deployed app leaves no email sender and startup fails instead of silently discarding mail. Supporting a new vendor only takes a new `EmailSender` implementation in `notifications/`.
+- Verification emails are sent after the registration or resend transaction commits (`VerificationEmailListener`). If delivery fails, the request still succeeds, an `Email delivery FAILURE` line is logged with a masked address, and the user recovers with **Resend code** after the 60 second cooldown. There is no automatic retry.
+
 
 ## Verification and related documentation
 

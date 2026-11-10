@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -26,6 +27,9 @@ public class Organization {
     @Enumerated(EnumType.STRING)
     private ApprovalStatus approvalStatus;
 
+    @Column(name = "decision_reason", length = 500)
+    private String decisionReason;
+
     protected Organization() {
         // Required by JPA
     }
@@ -40,7 +44,9 @@ public class Organization {
     public String getName() { return name; }
     public OrgType getOrgType() { return orgType; }
     public ApprovalStatus getApprovalStatus() { return approvalStatus; }
+    public String getDecisionReason() { return decisionReason; }
 
     public void setName(String name) { this.name = name; }
     public void setApprovalStatus(ApprovalStatus approvalStatus) { this.approvalStatus = approvalStatus; }
+    public void setDecisionReason(String decisionReason) { this.decisionReason = decisionReason; }
 }
