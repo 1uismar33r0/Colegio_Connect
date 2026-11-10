@@ -28,11 +28,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.colegioconnect.TestcontainersConfiguration;
 import com.colegioconnect.accounts.entity.AccountType;
 import com.colegioconnect.accounts.entity.User;
+import com.colegioconnect.accounts.entity.UserStatus;
 import com.colegioconnect.accounts.repository.EmailCodeRepository;
 import com.colegioconnect.accounts.repository.UserRepository;
 import com.colegioconnect.audit.AuditAction;
@@ -60,6 +62,7 @@ class CompanyDecisionIntegrationTest {
     @Autowired private EmailCodeRepository codes;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private CompanyDecisionService decisions;
+    @Autowired private TransactionTemplate transactions;
 
     @BeforeEach
     @AfterEach
@@ -191,12 +194,26 @@ class CompanyDecisionIntegrationTest {
     }
 
     @Test
-    void simultaneousDecisionsSerializeAndWriteOneAuditEvent() throws Exception {
+    void suspendedModeratorCannotDecideUsingExistingSession() throws Exception {
+        User moderator = moderator();
+        Organization company = organizations.save(new Organization("Suspended Company", OrgType.EXTERNAL_COMPANY));
+        MockHttpSession session = login(moderator);
+        moderator.setStatus(UserStatus.SUSPENDED);
+        users.saveAndFlush(moderator);
+        decide(company.getId(), "{\"decision\":\"APPROVED\"}", session)
+                .andExpect(status().isForbidden());
+        assertPendingWithoutAudit(company.getId());
+    }
+
+    @Test
+    void simultaneousDecisionsWaitOnRowLockAndWriteOneAuditEvent() throws Exception {
         User moderator = moderator();
         Organization company = organizations.save(new Organization("Concurrent Company", OrgType.EXTERNAL_COMPANY));
         CountDownLatch start = new CountDownLatch(1);
+        CountDownLatch attempted = new CountDownLatch(2);
         Callable<Integer> attempt = () -> {
             start.await();
+            attempted.countDown();
             try {
                 decisions.decide(moderator.getId(), company.getId(),
                         new CompanyDecisionRequest(ApprovalStatus.APPROVED, null));
@@ -209,10 +226,22 @@ class CompanyDecisionIntegrationTest {
         try {
             var first = executor.submit(attempt);
             var second = executor.submit(attempt);
-            start.countDown();
+            transactions.executeWithoutResult(status -> {
+                organizations.findByIdForUpdate(company.getId()).orElseThrow();
+                start.countDown();
+                try {
+                    assertThat(attempted.await(5, TimeUnit.SECONDS)).isTrue();
+                } catch (InterruptedException exception) {
+                    Thread.currentThread().interrupt();
+                    throw new AssertionError(exception);
+                }
+                assertThat(first.isDone()).isFalse();
+                assertThat(second.isDone()).isFalse();
+            });
             assertThat(List.of(first.get(20, TimeUnit.SECONDS), second.get(20, TimeUnit.SECONDS)))
                     .containsExactlyInAnyOrder(204, 409);
         } finally {
+            start.countDown();
             executor.shutdownNow();
         }
         assertThat(organizations.findById(company.getId()).orElseThrow().getApprovalStatus())
