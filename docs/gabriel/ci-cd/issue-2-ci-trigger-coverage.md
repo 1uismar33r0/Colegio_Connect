@@ -1,10 +1,10 @@
 # Issue #2 CI trigger coverage
 
-**Status:** CI verified on ready-for-review [PR #107](https://github.com/1uismar33r0/Colegio_Connect/pull/107) targeting `main`. **Branch:** `gabriel/issue-2-ci-trigger-coverage`. **Trigger implementation:** `242046d`. **Latest verified checkpoint:** `678c43e`. **Main baseline:** PR #106 merged as `a128824` on 2026-11-07.
+**Status:** CI verified on [PR #107](https://github.com/1uismar33r0/Colegio_Connect/pull/107) at audited head `15d0469`, pending teammate review and a fresh check against current main. **Branch:** `gabriel/issue-2-ci-trigger-coverage`. **Trigger implementation:** `242046d`. **Current main:** `e5cc181` after #111/#112; the PR's last recorded base and green checks were against `a128824`.
 
 ## Purpose and proposal relationship
 
-GitHub Actions runs the same repeatable checks on GitHub-hosted machines whenever the configured repository events occur. Colegio Connect needs that shared environment because Luis develops the React frontend, Massini develops the Spring Boot backend and database behavior, and Gabriel maintains the integration pipeline. A common pipeline catches incompatible changes before integration rather than relying on each developer's workstation.
+GitHub Actions runs the same repeatable checks on GitHub-hosted machines whenever the configured repository events occur. Colegio Connect needs that shared environment because Luis develops the React frontend, Cristian develops the Spring Boot backend and database behavior, and Gabriel maintains the integration pipeline. A common pipeline catches incompatible changes before integration rather than relying on each developer's workstation.
 
 The approved proposal maps CI to Objective O5 and Indicator I13. CI is supporting engineering evidence, not full I13 acceptance: I13 also requires at least 20 deployed core workflow scenarios, zero unhandled server errors, and all required automated tests passing. A green workflow also does not prove branch protection, security, performance, accessibility, recovery, or complete application functionality.
 
@@ -22,7 +22,7 @@ on:
 - **What it does:** starts CI for every pushed branch, including feature branches and `main`.
 - **Why it is needed:** developers receive feedback before opening or updating a PR, and a `main` push can package the integration image.
 - **How it works:** the empty `push` mapping intentionally has no branch filter. The container image is still saved and uploaded only when the ref is `refs/heads/main`.
-- **Team support:** Luis sees frontend failures on his branch; Massini sees backend, database, and container failures on his branch.
+- **Team support:** Luis sees frontend failures on his branch; Cristian sees backend, database, and container failures on his branch.
 - **How it is tested:** push a named feature-branch commit and confirm all four jobs use that exact SHA.
 - **Demonstrated result:** feature-branch push run [42325561434](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42325561434) passed all four jobs at `678c43e` while PR #107 targeted `main`.
 
@@ -31,7 +31,7 @@ on:
 - **What it does:** starts CI for every pull request, regardless of its base branch.
 - **Why it is needed:** normal and stacked PRs both need integration checks; restricting the base to `main` previously omitted stacked work.
 - **How it works:** the empty `pull_request` mapping uses GitHub's normal PR activity types without a base-branch filter.
-- **Team support:** Luis and Massini can review a shared green or failing result for the proposed merge, not only the contributor's branch state.
+- **Team support:** Luis and Cristian can review a shared green or failing result for the proposed merge, not only the contributor's branch state.
 - **How it is tested:** open or synchronize a PR and confirm the workflow checks the PR's current head in the proposed merge context.
 - **Demonstrated result:** PR run [42325565946](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42325565946) passed all four jobs at `678c43e` with PR #107 based on `main`.
 
@@ -48,7 +48,7 @@ on:
 
 ### Backend
 
-The Backend job checks out the revision without persisting credentials, installs Temurin Java 25, caches Maven dependencies, and runs `./mvnw --batch-mode --no-transfer-progress verify`. Maven discovers the current JUnit and Testcontainers tests, so Massini does not need CI-specific database test code. The job is successful only when compilation, test execution, and Maven verification all succeed. The last verified PR run reported 19 tests with no failures, errors, or skips.
+The Backend job checks out the revision without persisting credentials, installs Temurin Java 25, caches Maven dependencies, and runs `./mvnw --batch-mode --no-transfer-progress verify`. Maven discovers the current JUnit and Testcontainers tests, so Cristian does not need CI-specific database test code. The job is successful only when compilation, test execution, and Maven verification all succeed. PR #107's November 7 run reported 19 tests at its then-current base; current main has more tests, so that count is historical.
 
 ### Frontend
 
@@ -56,7 +56,7 @@ The Frontend job installs Node 24 and the exact locked dependencies with `npm ci
 
 ### Container
 
-The Container job first parses the Compose configuration using `.env.example`, then builds the backend image. That detects invalid Compose wiring and Dockerfile/build failures for Gabriel and Massini. Saving and uploading the seven-day image artifact is deliberately limited to a push to `main`; feature and PR runs build the image but skip publication.
+The Container job first parses the Compose configuration using `.env.example`, then builds the backend image. That detects invalid Compose wiring and Dockerfile/build failures for Gabriel and Cristian. Saving and uploading the seven-day image artifact is deliberately limited to a push to `main`; feature and PR runs build the image but skip publication.
 
 ### CI Gate and failure reporting
 
@@ -82,11 +82,16 @@ The workflow itself cannot block a merge. The repository owner must configure Gi
 | Feature push [42319769681](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42319769681) | `da47445` | Backend, Frontend, Container, and CI Gate passed | Predates PR #107's base change to `main` |
 | Stacked PR [42319774193](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42319774193) | `da47445` | Backend: 19 tests; Frontend: 22 tests in 5 files; Container and CI Gate passed | PR base was the PR #106 branch |
 | Local structural checks | `2eb4b03` | All 15 trigger/job/gate/permission/concurrency invariants, documentation links, scope, whitespace, and credential-pattern checks passed | Static validation supplements GitHub execution |
+| Current audited head push [42326710752](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42326710752) and PR [42326716528](https://github.com/1uismar33r0/Colegio_Connect/actions/runs/42326716528) | `15d0469` | Backend, Frontend, Container, and CI Gate succeeded in both events | Both runs predate #111/#112 on current main; neither is a manual dispatch |
 
-Local `actionlint` and Java 25 are unavailable, and the local Docker daemon is not running. Hosted GitHub Actions supplies Java 25 and Docker. Windows `core.autocrlf=true` also makes the exact Prettier command see CRLF locally; Linux CI is the authoritative required-format execution for the unchanged frontend sources.
+At the original November 7 checkpoint, local `actionlint` and Java 25 were unavailable and Docker was not running in that session. Hosted GitHub Actions supplied Java 25 and Docker. Later local environments have Java 25 and Docker; their availability does not retroactively change the recorded CI runs. Windows `core.autocrlf=true` can make the exact Prettier command see CRLF locally; Linux CI is authoritative for the unchanged frontend sources.
+
+## Overlap with older CI PRs
+
+Original [PR #103](https://github.com/1uismar33r0/Colegio_Connect/pull/103) used the superseded #97 frontend base but established dated push/PR trigger evidence in `docs/testing/2026-11-04-ci-trigger-coverage.md`. PR #107 preserves its unrestricted push/PR behavior and adds the same manual dispatch offered by draft [PR #121](https://github.com/1uismar33r0/Colegio_Connect/pull/121). #121 alone is narrower: it does not expand automatic branch/stacked-PR coverage. If the team accepts #107 and its final current-main checks, #103 and #121 need no separate workflow merge; preserve #103's dated test evidence before any team-authorized closure. Neither older PR is closed by this documentation update.
 
 ## Remaining work
 
-- Obtain another team member's review of PR #107.
+- Obtain another team member's formal review of PR #107 after Cristian's documentation feedback is addressed; rerun CI against current main.
 - Have the repository owner enforce `CI Gate` and demonstrate that a failing required check blocks merging.
 - Resolve the separate backend role and OpenAPI publication contracts before treating frontend authorization or generated-client behavior as integrated.
