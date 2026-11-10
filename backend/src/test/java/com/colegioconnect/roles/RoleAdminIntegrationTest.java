@@ -1,6 +1,7 @@
 package com.colegioconnect.roles;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -333,6 +334,29 @@ class RoleAdminIntegrationTest extends NegativeAuthorizationTestHarness {
         assertThat(roleAssignmentRepository.findByUserId(target.getId()))
                 .extracting(RoleAssignment::getRole).containsExactly(Role.STUDENT);
         assertThat(auditEventRepository.count()).isEqualTo(1);
+    }
+
+    @Test
+    void roleMutationRechecksActorAfterAcquiringAdminLock() {
+        User actor = activeVerifiedUser("stale.actor@upr.edu", Role.MODERATOR);
+        User target = activeVerifiedUser("stale.target@upr.edu", Role.STUDENT);
+        roleAssignmentRepository.deleteAll(roleAssignmentRepository.findByUserId(actor.getId()));
+
+        assertThatThrownBy(() -> service.assign(actor.getId(), target.getId(),
+                new RoleChangeRequest(Role.MODERATOR, null)))
+                .isInstanceOf(org.springframework.web.server.ResponseStatusException.class)
+                .satisfies(error -> assertThat(((org.springframework.web.server.ResponseStatusException) error)
+                        .getStatusCode().value()).isEqualTo(403));
+        assertThatThrownBy(() -> service.revoke(actor.getId(), target.getId(),
+                new RoleChangeRequest(Role.STUDENT, null)))
+                .isInstanceOf(org.springframework.web.server.ResponseStatusException.class)
+                .satisfies(error -> assertThat(((org.springframework.web.server.ResponseStatusException) error)
+                        .getStatusCode().value()).isEqualTo(403));
+        assertThat(roleAssignmentRepository.existsByUserIdAndRoleAndOrganizationIsNull(
+                target.getId(), Role.STUDENT)).isTrue();
+        assertThat(roleAssignmentRepository.existsByUserIdAndRoleAndOrganizationIsNull(
+                target.getId(), Role.MODERATOR)).isFalse();
+        assertThat(auditEventRepository.count()).isZero();
     }
 
     @Test

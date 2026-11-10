@@ -74,6 +74,7 @@ public class RoleAdminService {
     public void assign(UUID actorId, UUID userId, RoleChangeRequest request) {
         validateShape(request);
         state.lock();
+        requireCurrentModerator(actorId);
         User user = user(userId);
         Organization organization = resolveOrganization(request.organizationId());
         validateEligibility(user, request.role(), organization);
@@ -88,6 +89,7 @@ public class RoleAdminService {
     public void revoke(UUID actorId, UUID userId, RoleChangeRequest request) {
         validateShape(request);
         state.lock();
+        requireCurrentModerator(actorId);
         user(userId);
         RoleAssignment assignment = existing(userId, request.role(), request.organizationId());
         if (assignment == null) {
@@ -115,6 +117,18 @@ public class RoleAdminService {
                 ? assignments.findByUserIdAndRoleAndOrganizationIsNull(userId, role).orElse(null)
                 : assignments.findByUserIdAndRoleAndOrganizationId(userId, role, organizationId)
                         .orElse(null);
+    }
+
+    private void requireCurrentModerator(UUID actorId) {
+        boolean eligible = users.findById(actorId)
+                .filter(actor -> actor.getStatus() == UserStatus.ACTIVE && actor.isEmailVerified()
+                        && actor.getAccountType() == AccountType.UPRM_MEMBER)
+                .isPresent();
+        if (!eligible || !assignments.existsByUserIdAndRoleAndOrganizationIsNull(
+                actorId, Role.MODERATOR)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Moderator authority is no longer current.");
+        }
     }
 
     private User user(UUID id) {
