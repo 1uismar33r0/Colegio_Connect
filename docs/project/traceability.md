@@ -448,15 +448,15 @@ Exact source tasks (checkboxes describe the issue snapshot):
 
 Definition of Done: the three common requirements above apply; no additional acceptance is inferred from task checks or merges.
 
-### Issue #14 / alias #51: Frontend: register, verify and login screens
+### Issue #14: Frontend: register, verify and login screens
 
-Sources: [canonical #14](https://github.com/1uismar33r0/Colegio_Connect/issues/14) and [alias #51](https://github.com/1uismar33r0/Colegio_Connect/issues/51); both open. Lead: **Luis**. Support: Cristian (API contract), Gabriel (review), per Table 17 frontend group. GitHub assignees: canonical **unassigned**; alias **unassigned**.
+Sources: [canonical #14](https://github.com/1uismar33r0/Colegio_Connect/issues/14), open. The alias #51 recorded at the 2026-10-26 snapshot no longer resolves on GitHub (checked 2026-11-08), so #14 is the only live source. Lead: **Luis**. Support: Cristian (API contract), Gabriel (review), per Table 17 frontend group. GitHub assignee: **1uismar33r0** (Luis), checked 2026-11-08.
 
 Milestone: **M1 - Access foundation**. Original issue references: US1, I15. Proposal mapping: **O2, O5; I5, I15; US1; Figure 3**.
 
-Engineering state: **Not started**. Acceptance note: criteria/DoD still pending. Location: No feature implementation located on main; domain package placeholders are not implementation.
+Engineering state: **Verified on branch** (2026-11-07). Acceptance note: criteria/DoD still pending team review and PR CI. Location: feature branch `feat/issue-14-auth-screens` (based on main `e5cc181`). Gabriel's earlier `gabriel/issue-14-react-auth-foundation` (PR #97) predates the #13 frontend on main and is superseded by it.
 
-Evidence / blockers (apply to every AC below): **TE-00** in [test evidence](../testing/test-evidence.md). Implement the listed tasks and exercise every acceptance clause; prerequisite access/data/UI workflows and CI integration remain incomplete.
+Evidence / blockers (apply to every AC below): **[TE-10](../testing/test-evidence.md#te-10)**. AC1: page tests plus a live API check of every request the screens send; a browser-driven end-to-end run is not yet recorded. AC2: axe-core reports no violations (any impact) in jsdom for each page's initial and error states; colour contrast still needs a real-browser check.
 
 Exact source description shared by both issues:
 

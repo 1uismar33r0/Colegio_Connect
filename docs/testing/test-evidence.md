@@ -113,6 +113,20 @@ Results use **Pass**, **Fail**, **Blocked**, or **Not run**. A Pass applies only
 - **Source:** [wireframe HTML at branch SHA](https://github.com/1uismar33r0/Colegio_Connect/blob/b456f772ac7a307f165a0379be025af3d8d2b00d/docs/colegio-connect-wireframes.html).
 - **Result:** **Pass** for inventory. **Limitations:** app-build and review acceptance tests are **Not run**; exploratory HTML does not demonstrate WCAG compliance or production behavior.
 
+
+<a id="te-10"></a>
+
+### TE-10 — Register, verify and login screens (#14)
+
+- **Date / SHA:** 2026-11-07; branch `feat/issue-14-auth-screens`, based on main `e5cc181b3ebcf7b5cb1050547c1d82922068c064`.
+- **Environment:** Windows 11, Node via `frontend/` npm scripts, Vitest 5.1 with jsdom and axe-core 4.14; local Docker Compose stack (backend, PostgreSQL 18.6, Mailpit) for the API check. The running backend image was built 2026-11-04 and was not rebuilt from this revision.
+- **Procedure:** in `frontend/`: `npm run typecheck`, `npm run lint`, `npx prettier --check src`, `npx vitest run`, `npm run build`. API contract check: with curl and a cookie jar against `http://localhost:8080/api/auth`, seed CSRF, then call register (non-UPRM, new, duplicate), login while unverified, resend inside the cooldown, verify with a wrong and a malformed code, read the code for the synthetic `issue14.<timestamp>@upr.edu` account from the Mailpit API, verify, login with a wrong and the right password, and `GET /me`.
+- **Expected:** all checks pass; page tests cover success, client validation, backend field errors, 409, 401/403/429 login responses, unverified redirect, invalid/expired code, resend success/429/cooldown, keyboard-only registration and axe with no violations in initial and error states; live API status codes and `detail` texts match the ones the screens branch on.
+- **Actual:** typecheck, lint, format and build pass; 9 test files / 51 tests pass (25 new across `Register`, `Verify`, `Login` and `validation`). API: 400 non-UPRM, 201 with `Content-Length: 0`, 409 duplicate, 403 "Verify your email before logging in.", 429 "Wait a minute before requesting a new code.", 400 "Invalid or expired code. Request a new one.", 400 field error for code shape, 204 verify, 401 wrong password, 200 login and 200 `/me` for the new account.
+- **Source:** this branch's diff; test files under `frontend/src/pages/*.test.tsx` and `frontend/src/auth/validation.test.ts`.
+- **Result:** **Pass** for the stated procedure. **Limitations:** axe runs in jsdom with `color-contrast` disabled (as in `AppLayout.test.tsx`); contrast, real-browser keyboard behaviour and screen-reader output were not checked in a browser. The API check exercised the same requests the screens send, not the rendered UI driving a browser. Expired-code (10 min) and hourly resend limits were not waited out; the backend returns the same messages, which the screens display. Team review and CI on the PR remain pending.
+- **Follow-up 2026-11-08 (review on PR #116):** delivery messages reworded so they no longer promise the email arrived; `safeReturnPath` now also rejects backslashes, whitespace and control characters. Same checks rerun: typecheck, lint, build pass; 10 files / 67 tests pass (adds `flowState.test.ts` and a backslash case in `Login.test.tsx`). PR #116's first CI run (Backend, Container, Frontend, CI Gate) passed before these changes.
+
 <a id="te-09"></a>
 
 ### TE-09 — Issue #15 audit foundation reconciliation
@@ -135,6 +149,7 @@ Results use **Pass**, **Fail**, **Blocked**, or **Not run**. A Pass applies only
 - **Expected:** review findings closed: (1) delivery failures log only masked addresses and propagate no provider exception; (2) the fake sender is absent from the packaged jar; (3) email is sent only after commit, a rolled-back transaction sends nothing, and a delivery failure leaves a recoverable account.
 - **Actual:** 41 tests pass (34 before), including MailSendException messages with two addresses (logs show only `s***@upr.edu` / `o***@upr.edu`; thrown `EmailDeliveryException` has no cause and no address), first-line summary of multi-line provider errors, delivery failure → 201 then resend → 202 and delivered, rollback → no email, commit → email, and the default context holding exactly one `SmtpEmailSender`. Jar contains no `FakeEmailSender`. Live: 201/204 with Mailpit up; with Mailpit down register returned 201, one FAILURE line with `to=i***@upr.edu`, 0 occurrences of the full address in backend logs; after restart resend 202, code delivered, verify 204.
 - **Result:** **Pass** for the stated procedure. **Limitations:** delivery remains synchronous within the request after commit, with no retry or outbox; a user whose email failed must wait for the 60 s cooldown. Spring Boot's own `MailHealthIndicator` logs connection stack traces when Mailpit is down; they contained no recipient addresses. Startup failure with `app.mail.provider=fake` is inferred from bean wiring, not run. Team review and CI on the PR remain pending.
+
 
 
 ## Indicator evidence plan
