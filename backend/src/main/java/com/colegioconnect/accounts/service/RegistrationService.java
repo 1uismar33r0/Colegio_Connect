@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -39,19 +40,23 @@ public class RegistrationService {
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher events;
     private final SecureRandom random = new SecureRandom();
+    private final boolean registrationEnabled;
 
     public RegistrationService(UserRepository userRepository,
                                EmailCodeRepository emailCodeRepository,
                                PasswordEncoder passwordEncoder,
-                               ApplicationEventPublisher events) {
+                               ApplicationEventPublisher events,
+                               @Value("${app.registration.enabled:true}") boolean registrationEnabled) {
         this.userRepository = userRepository;
         this.emailCodeRepository = emailCodeRepository;
         this.passwordEncoder = passwordEncoder;
         this.events = events;
+        this.registrationEnabled = registrationEnabled;
     }
 
     @Transactional
     public void register(RegisterRequest request) {
+        requireRegistrationEnabled();
         String email = normalize(request.email());
 
         if (!email.endsWith(UPRM_DOMAIN)) {
@@ -103,6 +108,7 @@ public class RegistrationService {
 
     @Transactional
     public void resend(ResendRequest request) {
+        requireRegistrationEnabled();
         User user = userRepository.findByEmail(normalize(request.email())).orElse(null);
 
         // Do nothing for unknown or verified emails, so nobody can find out which emails exist
@@ -126,6 +132,13 @@ public class RegistrationService {
         }
 
         sendNewCode(user);
+    }
+
+    private void requireRegistrationEnabled() {
+        if (!registrationEnabled) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                    "Registration is unavailable in this staging environment.");
+        }
     }
 
     private void sendNewCode(User user) {

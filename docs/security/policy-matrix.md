@@ -71,3 +71,7 @@ that student responds to its listing, or a student team accepts its Express Inte
 | Review queue | Verified UPRM account with current global `MODERATOR` assignment | Pending companies and distinct open reported listings; no reporter identity or report detail |
 
 The pending applicant ownership link never grants `COMPANY` authority. Current status and assignments are checked on every dashboard request; an ambiguous company or office selection returns 409. External registration does not yet create applicant links. A future listing write service must derive trust labels from server-side role, owner and approval data; V6 CHECK/FK rules and the read query do not by themselves implement publishing review. See [dashboard contract](../roles/dashboard-api-contract.md) and [role reconciliation](../roles/reconciliation-123-124-125.md).
+
+## Render staging public boundary (Issue #4)
+
+The React shell and known browser deep links are anonymous GET resources; they grant no backend role. Business `/api` routes retain the current session/role/organization checks and CSRF protection. The status-only health/readiness routes are public. Mailpit's SMTP and inbox bind inside the container to loopback and are not routed by Spring. With remote mailbox retrieval unavailable, the staging profile disables registration and resend by default; local development remains enabled. No public verification-code inspection or email-verification bypass is approved. Cristian must review the security configuration and this gate before integration.

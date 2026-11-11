@@ -27,8 +27,14 @@ public class SecurityConfig {
                         "/api/auth/resend", "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
                 // Open: health check, API docs and error pages
-                .requestMatchers("/actuator/health", "/v3/api-docs/**",
+                .requestMatchers("/actuator/health", "/actuator/health/**", "/v3/api-docs/**",
                         "/swagger-ui.html", "/swagger-ui/**", "/error").permitAll()
+                // Only the React shell and its static assets are public browser GETs.
+                // No /api, /actuator, or admin API path can match these patterns.
+                .requestMatchers(HttpMethod.GET, "/", "/index.html", "/login", "/register",
+                        "/verify", "/dashboard", "/forbidden", "/student", "/student/**",
+                        "/institution", "/institution/**", "/company", "/company/**",
+                        "/moderation", "/moderation/**", "/assets/**", "/favicon.ico").permitAll()
                 // Everything else needs a logged-in user whose account is still active
                 .anyRequest().access((authentication, context) -> {
                     Authentication user = authentication.get();
