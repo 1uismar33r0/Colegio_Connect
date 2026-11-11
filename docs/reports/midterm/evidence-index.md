@@ -1,5 +1,7 @@
 # Midterm report evidence index
 
+**Hosted staging follow-up (2026-11-10 local / 2026-11-11 UTC):** The separate Issue #4 branch is now live on Render at `3852e2a`; see [hosted deployment evidence](render-deployment-evidence.md) and [TE-16](../../testing/test-evidence.md#te-16). A single allowlisted account completed Resend sandbox verification and login, and a built-in first-moderator grant was logged. This is branch-only functional evidence; general signup, performance, recovery and team acceptance remain open. Earlier rows below retain their dated snapshot meaning.
+
 **Updated / evidence observed: 2026-11-10.** Coordinator: Luis; Gabriel and Cristian supply their engineering evidence. This is a preparation index, not the submitted report. Current implementation baseline: [status](../../project/status.md); exact requirements: [traceability](../../project/traceability.md).
 
 ## Confirmed course instructions and provenance

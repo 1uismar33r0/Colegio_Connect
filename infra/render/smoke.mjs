@@ -1,4 +1,4 @@
-// Run against the isolated local staging image: node infra/render/smoke.mjs http://127.0.0.1:18084
+// Run against a staging image or hosted URL with registration disabled or limited to another address.
 const base = process.argv[2]
 if (!base || !/^https?:\/\//.test(base)) throw new Error('Pass the local staging base URL')
 const checks = []
@@ -55,7 +55,7 @@ const registration = await fetch(new URL('/api/auth/register', base), {
   body: payload,
 })
 if (registration.status !== 503) throw new Error(`Staging registration gate: ${registration.status}`)
-checks.push('registration with CSRF: 503 (disabled)')
+checks.push('registration with CSRF: 503 (gated)')
 const requestHeaders = {
   'Content-Type': 'application/json',
   Cookie: [xsrf, session].filter(Boolean).join('; '),
@@ -66,7 +66,7 @@ const resend = await fetch(new URL('/api/auth/resend', base), {
   body: JSON.stringify({ email: 'render.disabled@upr.edu' }),
 })
 if (resend.status !== 503) throw new Error(`Staging resend gate: ${resend.status}`)
-checks.push('resend with CSRF: 503 (disabled)')
+checks.push('resend with CSRF: 503 (gated)')
 const verify = await fetch(new URL('/api/auth/verify', base), {
   method: 'POST', headers: requestHeaders,
   body: JSON.stringify({ email: 'render.disabled@upr.edu', code: '000000' }),
