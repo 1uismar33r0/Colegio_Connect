@@ -13,7 +13,6 @@ import com.colegioconnect.organizations.entity.Organization;
 import com.colegioconnect.organizations.entity.ApprovalStatus;
 import com.colegioconnect.listings.CompanyDashboardResponse.CompanyActiveItem;
 import com.colegioconnect.listings.CompanyDashboardResponse.CompanyAttention;
-import com.colegioconnect.listings.CompanyDashboardResponse.CompanyProfileStatus;
 import com.colegioconnect.listings.CompanyDashboardResponse.CompanyStats;
 
 @Service
@@ -33,7 +32,7 @@ public class CompanyDashboardService {
         organizationId = organization.getId();
         if (organization.getApprovalStatus() == ApprovalStatus.PENDING) {
             return new CompanyDashboardResponse(
-                    new CompanyStats(0, 0, CompanyProfileStatus.PENDING_APPROVAL),
+                    new CompanyStats(0, 0, ApprovalStatus.PENDING),
                     List.of(), new CompanyAttention(0));
         }
         Map<String, ?> parameters = Map.of("organizationId", organizationId);
@@ -48,7 +47,7 @@ public class CompanyDashboardService {
                            AND response.status = 'ACTIVE') AS responses
                 """, parameters, (rs, rowNumber) -> new CompanyStats(
                 rs.getLong("active_listings"), rs.getLong("responses"),
-                CompanyProfileStatus.INCOMPLETE));
+                organization.getApprovalStatus()));
         CompanyAttention attention = jdbc.queryForObject("""
                 SELECT count(*) AS new_responses
                   FROM listing_responses response

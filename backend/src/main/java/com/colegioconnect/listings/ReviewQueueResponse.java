@@ -24,7 +24,6 @@ public record ReviewQueueResponse(ReviewQueueStats stats, List<ReviewQueueItem> 
 
     public enum ReviewReason {
         NEW_ORGANIZATION,
-        REPORTED_LISTING,
-        PROFILE_VERIFICATION
+        REPORTED_LISTING
     }
 }

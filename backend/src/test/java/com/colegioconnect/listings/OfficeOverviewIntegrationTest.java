@@ -131,8 +131,8 @@ class OfficeOverviewIntegrationTest extends NegativeAuthorizationTestHarness {
         UUID id = UUID.randomUUID();
         Instant now = Instant.now();
         jdbc.update("INSERT INTO listings (id, publisher_user_id, organization_id, title, "
-                        + "summary, opportunity_type, field, status, posted_at, closes_at) "
-                        + "VALUES (?, ?, ?, ?, 'Synthetic summary', 'JOB', 'Computing', ?, ?, ?)",
+                        + "summary, opportunity_type, trust_label, status, posted_at, closes_at) "
+                        + "VALUES (?, ?, ?, ?, 'Synthetic summary', 'JOB', 'VERIFIED_UPRM_INSTITUTION', ?, ?, ?)",
                 id, publisher.getId(), organization.getId(), title, status,
                 "DRAFT".equals(status) ? null : Timestamp.from(now.minusSeconds(60)),
                 Timestamp.from(now.plusSeconds(86400)));

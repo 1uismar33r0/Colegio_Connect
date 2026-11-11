@@ -55,7 +55,7 @@ class CompanyDashboardIntegrationTest extends NegativeAuthorizationTestHarness {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.stats.activeListings").value(0))
                 .andExpect(jsonPath("$.stats.responses").value(0))
-                .andExpect(jsonPath("$.stats.profileStatus").value("INCOMPLETE"))
+                .andExpect(jsonPath("$.stats.approvalStatus").value("APPROVED"))
                 .andExpect(jsonPath("$.active.length()").value(0))
                 .andExpect(jsonPath("$.attention.newResponses").value(0));
         mockMvc.perform(get("/api/company/dashboard")
@@ -140,7 +140,7 @@ class CompanyDashboardIntegrationTest extends NegativeAuthorizationTestHarness {
         var session = login(owner, status().isOk());
         mockMvc.perform(get("/api/company/dashboard").session(session))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.stats.profileStatus").value("PENDING_APPROVAL"))
+                .andExpect(jsonPath("$.stats.approvalStatus").value("PENDING"))
                 .andExpect(jsonPath("$.stats.activeListings").value(0))
                 .andExpect(jsonPath("$.active.length()").value(0));
         mockMvc.perform(get("/api/company/dashboard?organizationId=" + other.getId())
@@ -165,8 +165,8 @@ class CompanyDashboardIntegrationTest extends NegativeAuthorizationTestHarness {
         UUID id = UUID.randomUUID();
         Instant now = Instant.now();
         jdbc.update("INSERT INTO listings (id, publisher_user_id, organization_id, title, "
-                        + "summary, opportunity_type, field, status, posted_at, closes_at) "
-                        + "VALUES (?, ?, ?, ?, 'Synthetic summary', 'JOB', 'Computing', ?, ?, ?)",
+                        + "summary, opportunity_type, trust_label, status, posted_at, closes_at) "
+                        + "VALUES (?, ?, ?, ?, 'Synthetic summary', 'JOB', 'VERIFIED_UPRM_INSTITUTION', ?, ?, ?)",
                 id, publisher.getId(), organization.getId(), title, status,
                 "DRAFT".equals(status) ? null : Timestamp.from(now.minusSeconds(60)),
                 Timestamp.from(now.plusSeconds(86400L * closingDays)));

@@ -5,14 +5,15 @@ import java.util.List;
 import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.colegioconnect.organizations.entity.ApprovalStatus;
 
 @Schema(requiredProperties = {"stats", "active", "attention"})
 public record CompanyDashboardResponse(CompanyStats stats, List<CompanyActiveItem> active,
                                        CompanyAttention attention) {
 
-    @Schema(requiredProperties = {"activeListings", "responses", "profileStatus"})
+    @Schema(requiredProperties = {"activeListings", "responses", "approvalStatus"})
     public record CompanyStats(long activeListings, long responses,
-                               CompanyProfileStatus profileStatus) {
+                               ApprovalStatus approvalStatus) {
     }
 
     @Schema(requiredProperties = {"id", "title", "type", "closesAt", "responses"})
@@ -24,9 +25,4 @@ public record CompanyDashboardResponse(CompanyStats stats, List<CompanyActiveIte
     public record CompanyAttention(long newResponses) {
     }
 
-    public enum CompanyProfileStatus {
-        COMPLETE,
-        INCOMPLETE,
-        PENDING_APPROVAL
-    }
 }

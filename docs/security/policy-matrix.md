@@ -64,10 +64,10 @@ that student responds to its listing, or a student team accepts its Express Inte
 
 | Read | Current persisted entitlement | Returned scope |
 | --- | --- | --- |
-| Discovery feed | Active authenticated account; publisher eligibility is checked in the query | PUBLIC, published, unexpired records only; organization display name, no publisher contact |
+| Discovery feed | Active authenticated account; publisher eligibility is checked in the query | Published, unexpired organization/team records only; current publisher role, account and owner approval checked; public organization/team name and trust label, no publisher contact |
 | Student activity | Verified UPRM account with current global `STUDENT` assignment | Only the session user's response and saved counts |
 | Office overview | Verified UPRM account with current `INSTITUTIONAL` assignment in the selected office/department | That organization only; omission allowed only for one eligible membership |
 | Company dashboard | Verified external account with current `COMPANY` assignment in an approved company | That company only; a separate pending applicant ownership link allows a read-only pending status, with no listings or responses |
 | Review queue | Verified UPRM account with current global `MODERATOR` assignment | Pending companies and distinct open reported listings; no reporter identity or report detail |
 
-The pending applicant ownership link never grants `COMPANY` authority. Current status and assignments are checked on every dashboard request; an ambiguous company or office selection returns 409. Current main lacks a company/student role assignment endpoint and external registration does not yet create applicant links. See [dashboard contract](../roles/dashboard-api-contract.md) and [role reconciliation](../roles/reconciliation-123-124-125.md).
+The pending applicant ownership link never grants `COMPANY` authority. Current status and assignments are checked on every dashboard request; an ambiguous company or office selection returns 409. External registration does not yet create applicant links. A future listing write service must derive trust labels from server-side role, owner and approval data; V6 CHECK/FK rules and the read query do not by themselves implement publishing review. See [dashboard contract](../roles/dashboard-api-contract.md) and [role reconciliation](../roles/reconciliation-123-124-125.md).

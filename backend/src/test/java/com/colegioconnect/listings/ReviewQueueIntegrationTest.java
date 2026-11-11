@@ -65,9 +65,9 @@ class ReviewQueueIntegrationTest extends NegativeAuthorizationTestHarness {
         assign(publisher, Role.INSTITUTIONAL, office);
         UUID listing = UUID.randomUUID();
         jdbc.update("INSERT INTO listings (id, publisher_user_id, organization_id, title, "
-                        + "summary, opportunity_type, field, status) "
+                        + "summary, opportunity_type, trust_label, status) "
                         + "VALUES (?, ?, ?, 'Reported opportunity', 'Synthetic summary', "
-                        + "'JOB', 'Computing', 'DRAFT')",
+                        + "'JOB', 'VERIFIED_UPRM_INSTITUTION', 'DRAFT')",
                 listing, publisher.getId(), office.getId());
         User reporter = activeVerifiedUser("private.reporter@upr.edu", Role.STUDENT);
         User secondReporter = activeVerifiedUser("private.second@upr.edu", Role.STUDENT);

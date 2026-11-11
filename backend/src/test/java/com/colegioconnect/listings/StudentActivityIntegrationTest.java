@@ -99,9 +99,9 @@ class StudentActivityIntegrationTest extends NegativeAuthorizationTestHarness {
     private UUID listing(User publisher, Organization organization) {
         UUID id = UUID.randomUUID();
         jdbc.update("INSERT INTO listings (id, publisher_user_id, organization_id, title, "
-                        + "summary, opportunity_type, field, status) "
+                        + "summary, opportunity_type, trust_label, status) "
                         + "VALUES (?, ?, ?, 'Synthetic activity listing', 'Synthetic summary', "
-                        + "'JOB', 'Computing', 'DRAFT')",
+                        + "'JOB', 'VERIFIED_UPRM_INSTITUTION', 'DRAFT')",
                 id, publisher.getId(), organization.getId());
         return id;
     }
