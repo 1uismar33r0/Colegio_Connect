@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8080",
+      "url": "http://127.0.0.1:18083",
       "description": "Generated server url"
     }
   ],
@@ -110,6 +110,286 @@
         }
       }
     },
+    "/api/admin/role-assignments": {
+      "get": {
+        "tags": [
+          "role-assignment-controller"
+        ],
+        "operationId": "findForUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RoleAssignmentResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "role-assignment-controller"
+        ],
+        "operationId": "assign",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleAssignmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleAssignmentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/organizations/{id}/decision": {
+      "post": {
+        "tags": [
+          "company-decision-controller"
+        ],
+        "operationId": "decide",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompanyDecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/me/activity": {
+      "get": {
+        "tags": [
+          "student-activity-controller"
+        ],
+        "summary": "Current student's saved and active response counts",
+        "operationId": "current",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentActivityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/listings/feed": {
+      "get": {
+        "tags": [
+          "discovery-feed-controller"
+        ],
+        "summary": "Discover published opportunities",
+        "description": "Filters currently eligible, published, unexpired listings. deadlineOnOrBefore is an inclusive America/Puerto_Rico calendar date; listings without a closing time are not published. Results are ordered by publication time and ID; page starts at zero and size is 1 to 100. The old field filter returns 400 because field is not part of the approved model.",
+        "operationId": "find",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Temporary alias for category; remove after Luis migrates.",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sourceLabel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "deadlineOnOrBefore",
+            "in": "query",
+            "description": "Inclusive Puerto Rico local date (YYYY-MM-DD).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FeedItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/institution/overview": {
+      "get": {
+        "tags": [
+          "office-overview-controller"
+        ],
+        "summary": "Institutional overview for a selected authorized organization",
+        "operationId": "current_1",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfficeOverviewResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/company/dashboard": {
+      "get": {
+        "tags": [
+          "company-dashboard-controller"
+        ],
+        "summary": "Company dashboard for a selected approved organization",
+        "operationId": "current_2",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyDashboardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/auth/me": {
       "get": {
         "tags": [
@@ -136,6 +416,160 @@
           "auth-controller"
         ],
         "operationId": "csrf",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/admin/review-queue": {
+      "get": {
+        "tags": [
+          "review-queue-controller"
+        ],
+        "summary": "Review pending companies and reported listings",
+        "description": "Pending verification counts pending company profile checks in the existing approval queue. Results are paged and ordered by persisted receipt time and ID.",
+        "operationId": "find_1",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewQueueResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/organizations/pending": {
+      "get": {
+        "tags": [
+          "pending-company-queue-controller"
+        ],
+        "summary": "List pending external companies",
+        "description": "Returns minimal company review entries, ordered by name then ID; page size is 1 to 100.",
+        "operationId": "findPending",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingCompanyPageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/audit-events": {
+      "get": {
+        "tags": [
+          "audit-controller"
+        ],
+        "operationId": "findRecent",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditPageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/role-assignments/{id}": {
+      "delete": {
+        "tags": [
+          "role-assignment-controller"
+        ],
+        "operationId": "revoke",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
         "responses": {
           "204": {
             "description": "No Content"
@@ -231,6 +665,513 @@
               "UPRM_MEMBER",
               "EXTERNAL_ORGANIZATION"
             ]
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "STUDENT",
+                "INSTITUTIONAL",
+                "MODERATOR",
+                "COMPANY"
+              ]
+            }
+          }
+        }
+      },
+      "RoleAssignmentRequest": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "STUDENT",
+              "INSTITUTIONAL",
+              "MODERATOR",
+              "COMPANY"
+            ]
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "role",
+          "userId"
+        ]
+      },
+      "RoleAssignmentResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "STUDENT",
+              "INSTITUTIONAL",
+              "MODERATOR",
+              "COMPANY"
+            ]
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "CompanyDecisionRequest": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "decision"
+        ]
+      },
+      "StudentActivityResponse": {
+        "type": "object",
+        "properties": {
+          "activeResponses": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "saved": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "activeResponses",
+          "saved"
+        ]
+      },
+      "FeedItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "sourceLabel": {
+            "type": "string"
+          },
+          "postedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "postedAt",
+          "source",
+          "sourceLabel",
+          "summary",
+          "tags",
+          "title",
+          "type"
+        ]
+      },
+      "OfficeOverviewResponse": {
+        "type": "object",
+        "properties": {
+          "stats": {
+            "$ref": "#/components/schemas/OfficeStats"
+          },
+          "recent": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OfficeRecentItem"
+            }
+          }
+        },
+        "required": [
+          "recent",
+          "stats"
+        ]
+      },
+      "OfficeRecentItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "newResponses": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PUBLISHED",
+              "DRAFT",
+              "CLOSED"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "newResponses",
+          "status",
+          "title",
+          "type"
+        ]
+      },
+      "OfficeStats": {
+        "type": "object",
+        "properties": {
+          "published": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "newResponses": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "drafts": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "drafts",
+          "newResponses",
+          "published"
+        ]
+      },
+      "CompanyActiveItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "closesAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "responses": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "closesAt",
+          "id",
+          "responses",
+          "title",
+          "type"
+        ]
+      },
+      "CompanyAttention": {
+        "type": "object",
+        "properties": {
+          "newResponses": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "newResponses"
+        ]
+      },
+      "CompanyDashboardResponse": {
+        "type": "object",
+        "properties": {
+          "stats": {
+            "$ref": "#/components/schemas/CompanyStats"
+          },
+          "active": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompanyActiveItem"
+            }
+          },
+          "attention": {
+            "$ref": "#/components/schemas/CompanyAttention"
+          }
+        },
+        "required": [
+          "active",
+          "attention",
+          "stats"
+        ]
+      },
+      "CompanyStats": {
+        "type": "object",
+        "properties": {
+          "activeListings": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "responses": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "approvalStatus": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED"
+            ]
+          }
+        },
+        "required": [
+          "activeListings",
+          "approvalStatus",
+          "responses"
+        ]
+      },
+      "ReviewQueueItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "submission": {
+            "type": "string"
+          },
+          "submittedBy": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "NEW_ORGANIZATION",
+              "REPORTED_LISTING"
+            ]
+          },
+          "receivedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Unknown for legacy organization records without a UUIDv7 timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "reason",
+          "receivedAt",
+          "submission",
+          "submittedBy"
+        ]
+      },
+      "ReviewQueueResponse": {
+        "type": "object",
+        "properties": {
+          "stats": {
+            "$ref": "#/components/schemas/ReviewQueueStats"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewQueueItem"
+            }
+          }
+        },
+        "required": [
+          "items",
+          "stats"
+        ]
+      },
+      "ReviewQueueStats": {
+        "type": "object",
+        "properties": {
+          "awaitingReview": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "reportedListings": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "pendingVerification": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "awaitingReview",
+          "pendingVerification",
+          "reportedListings"
+        ]
+      },
+      "PendingCompanyPageResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PendingCompanyResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "PendingCompanyResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "approvalStatus": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED"
+            ]
+          }
+        }
+      },
+      "AuditEventResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "ROLE_ASSIGNED",
+              "ROLE_REVOKED",
+              "ORGANIZATION_APPROVED",
+              "ORGANIZATION_REJECTED",
+              "LISTING_HIDDEN",
+              "LISTING_REMOVED",
+              "ACCOUNT_SUSPENDED",
+              "SPONSORSHIP_ACCEPTED"
+            ]
+          },
+          "targetType": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "ORGANIZATION",
+              "LISTING",
+              "SPONSORSHIP_REQUEST"
+            ]
+          },
+          "targetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AuditPageResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditEventResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       }
