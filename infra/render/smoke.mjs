@@ -74,4 +74,4 @@ const verify = await fetch(new URL('/api/auth/verify', base), {
 if (verify.status !== 400) throw new Error(`Unknown-account verify: ${verify.status}`)
 checks.push('unknown-account verify: 400')
 console.log(checks.join('\n'))
-console.log(`PASS ${checks.length} local HTTP checks`)
+console.log(`PASS ${checks.length} HTTP checks`)

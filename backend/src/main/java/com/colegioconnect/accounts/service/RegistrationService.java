@@ -41,23 +41,28 @@ public class RegistrationService {
     private final ApplicationEventPublisher events;
     private final SecureRandom random = new SecureRandom();
     private final boolean registrationEnabled;
+    private final String allowedEmail;
 
     public RegistrationService(UserRepository userRepository,
                                EmailCodeRepository emailCodeRepository,
                                PasswordEncoder passwordEncoder,
                                ApplicationEventPublisher events,
-                               @Value("${app.registration.enabled:true}") boolean registrationEnabled) {
+                               @Value("${app.registration.enabled:true}") boolean registrationEnabled,
+                               @Value("${app.registration.allowed-email:}") String allowedEmail) {
         this.userRepository = userRepository;
         this.emailCodeRepository = emailCodeRepository;
         this.passwordEncoder = passwordEncoder;
         this.events = events;
         this.registrationEnabled = registrationEnabled;
+        this.allowedEmail = allowedEmail.trim().toLowerCase();
     }
 
     @Transactional
     public void register(RegisterRequest request) {
         requireRegistrationEnabled();
         String email = normalize(request.email());
+
+        requireAllowedEmail(email);
 
         if (!email.endsWith(UPRM_DOMAIN)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -109,7 +114,9 @@ public class RegistrationService {
     @Transactional
     public void resend(ResendRequest request) {
         requireRegistrationEnabled();
-        User user = userRepository.findByEmail(normalize(request.email())).orElse(null);
+        String email = normalize(request.email());
+        requireAllowedEmail(email);
+        User user = userRepository.findByEmail(email).orElse(null);
 
         // Do nothing for unknown or verified emails, so nobody can find out which emails exist
         if (user == null || user.isEmailVerified()) {
@@ -136,6 +143,13 @@ public class RegistrationService {
 
     private void requireRegistrationEnabled() {
         if (!registrationEnabled) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                    "Registration is unavailable in this staging environment.");
+        }
+    }
+
+    private void requireAllowedEmail(String email) {
+        if (!allowedEmail.isEmpty() && !allowedEmail.equals(email)) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
                     "Registration is unavailable in this staging environment.");
         }

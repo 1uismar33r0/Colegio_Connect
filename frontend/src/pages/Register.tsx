@@ -11,6 +11,7 @@ export function Register() {
   const navigate = useNavigate()
   const { busy, failure, formRef, run } = useFormSubmit()
   const errors = failure?.fieldErrors ?? {}
+  const unavailable = failure?.status === 503
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -43,7 +44,14 @@ export function Register() {
       <p>Colegio Connect is open to UPRM students and staff with an institutional email.</p>
 
       {failure && (
-        <ErrorMessage title="We couldn't create your account" message={failure.message} />
+        <ErrorMessage
+          title={unavailable ? 'Account creation is unavailable' : "We couldn't create your account"}
+          message={
+            unavailable
+              ? 'Account creation is unavailable right now. Existing verified users can sign in. Contact the project team if you need access.'
+              : failure.message
+          }
+        />
       )}
       {failure?.status === 409 && (
         <p>

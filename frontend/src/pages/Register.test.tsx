@@ -101,6 +101,18 @@ describe('Register', () => {
     expect(alert).not.toHaveTextContent('NullPointerException')
   })
 
+  it('explains when staging account creation is unavailable', async () => {
+    vi.mocked(register).mockRejectedValue(apiError(503, { detail: 'Internal staging setting' }))
+    renderRegister()
+
+    await fillAndSubmit('a@upr.edu', 'correct-horse')
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('Account creation is unavailable')
+    expect(alert).toHaveTextContent('Existing verified users can sign in')
+    expect(alert).not.toHaveTextContent('Internal staging setting')
+  })
+
   it('can be completed with the keyboard alone', async () => {
     vi.mocked(register).mockResolvedValue(undefined)
     renderRegister()
