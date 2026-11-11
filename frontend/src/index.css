@@ -101,7 +101,8 @@ button.secondary {
 
 .app-header nav ul {
   display: flex;
-  gap: 1rem;
+  flex-wrap: wrap; /* an administrator sees every area; keep 375px screens from scrolling sideways */
+  gap: 0.25rem 1rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -482,9 +483,27 @@ th {
   margin-top: 0;
 }
 
-td code {
+td code,
+.scope code {
   font-size: 0.8125rem;
   word-break: break-all;
+}
+
+/* Verified publisher type, kept apart from the publisher name (PR #127). */
+.trust-label {
+  margin: 0.25rem 0 0;
+  color: var(--color-primary); /* 8.74:1 */
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.more-filters summary {
+  cursor: pointer;
+  color: var(--color-primary);
+}
+
+.more-filters[open] {
+  flex-basis: 100%;
 }
 
 /* Wireframe: one column below 760px; the sidebar becomes a horizontal strip. */

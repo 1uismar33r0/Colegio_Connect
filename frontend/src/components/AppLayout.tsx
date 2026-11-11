@@ -1,16 +1,15 @@
 import { useEffect, useRef } from 'react'
 import { NavLink, Outlet, useLocation, useMatches } from 'react-router'
-import { AREAS, accountLabels } from '../auth/areas'
+import { AREAS, accountLabels, canOpenArea } from '../auth/areas'
 import { useAuth } from '../auth/useAuth'
-import { hasAnyRole } from '../auth/roles'
 
 export type RouteHandle = { title?: string }
 
 const APP_NAME = 'Colegio Connect'
 
 export function AppLayout() {
-  const { status, roles, logout } = useAuth()
-  const visibleAreas = AREAS.filter((a) => hasAnyRole(roles, [a.role]))
+  const { status, roles, user, logout } = useAuth()
+  const visibleAreas = AREAS.filter((a) => canOpenArea(a, roles, user))
 
   // Page title: the deepest route that declares handle.title wins.
   const matches = useMatches()

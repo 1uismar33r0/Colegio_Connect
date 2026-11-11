@@ -1,37 +1,46 @@
-import {
-  ROLE_ENDPOINTS,
-  type CompanyDashboard,
-  type FeedItem,
-  type OfficeOverview,
-  type StudentActivity,
-  type StudentFeedFilters,
-} from './contracts'
-import { toApiError } from './problem'
+import { api, unwrap } from './client'
+import { FEED_PAGE_SIZE } from './listingOptions'
+import type { components, operations } from './schema'
 
-// Data access for the role home pages. Tests replace this whole module with the mock API in
-// src/test/mockApi.ts. Plain fetch is used because these paths are not in schema.d.ts yet;
-// see contracts.ts for the steps to move to the typed client.
+// Role dashboard read APIs (#122, PR #127). Types come from the generated OpenAPI schema; tests
+// replace this module with the mock API in src/test/mockApi.ts.
 
-async function getJson<T>(path: string, query?: Record<string, string | undefined>): Promise<T> {
-  const params = new URLSearchParams()
-  for (const [key, value] of Object.entries(query ?? {})) {
-    if (value) params.set(key, value)
-  }
-  const url = params.size ? `${path}?${params}` : path
-  const response = await fetch(url, {
-    credentials: 'include',
-    headers: { Accept: 'application/json' },
-  })
-  const body: unknown = await response.json().catch(() => null)
-  if (!response.ok) throw toApiError(response, body)
-  return body as T
+type Schemas = components['schemas']
+export type FeedItem = Schemas['FeedItem']
+export type StudentActivity = Schemas['StudentActivityResponse']
+export type OfficeOverview = Schemas['OfficeOverviewResponse']
+export type ListingStatus = Schemas['OfficeRecentItem']['status']
+export type CompanyDashboard = Schemas['CompanyDashboardResponse']
+export type ApprovalStatus = Schemas['CompanyStats']['approvalStatus']
+
+type FeedQuery = NonNullable<operations['find']['parameters']['query']>
+/** The approved feed filters. The deprecated `type` alias is intentionally not sent. */
+export type StudentFeedFilters = Pick<
+  FeedQuery,
+  'keyword' | 'category' | 'sourceLabel' | 'organizationId' | 'deadlineOnOrBefore'
+>
+
+/** Drops unset and empty filters so the backend applies only the ones the user chose. */
+function setFilters(filters: StudentFeedFilters): StudentFeedFilters {
+  return Object.fromEntries(Object.entries(filters).filter(([, value]) => value))
 }
 
-export const getStudentFeed = (filters: StudentFeedFilters = {}) =>
-  getJson<FeedItem[]>(ROLE_ENDPOINTS.studentFeed, filters)
+export const getStudentFeed = (filters: StudentFeedFilters = {}, page = 0) =>
+  unwrap(
+    api.GET('/api/listings/feed', {
+      params: { query: { ...setFilters(filters), page, size: FEED_PAGE_SIZE } },
+    }),
+  )
 
-export const getStudentActivity = () => getJson<StudentActivity>(ROLE_ENDPOINTS.studentActivity)
+export const getStudentActivity = () => unwrap(api.GET('/api/me/activity'))
 
-export const getOfficeOverview = () => getJson<OfficeOverview>(ROLE_ENDPOINTS.officeOverview)
+/**
+ * With no organizationId the backend picks the user's only eligible office; with several it
+ * answers 409 until one is chosen (see components/OrganizationScope.tsx).
+ */
+export const getOfficeOverview = (organizationId?: string) =>
+  unwrap(api.GET('/api/institution/overview', { params: { query: { organizationId } } }))
 
-export const getCompanyDashboard = () => getJson<CompanyDashboard>(ROLE_ENDPOINTS.companyDashboard)
+/** Same organization selection rules as getOfficeOverview. */
+export const getCompanyDashboard = (organizationId?: string) =>
+  unwrap(api.GET('/api/company/dashboard', { params: { query: { organizationId } } }))

@@ -2,39 +2,40 @@ import axe from 'axe-core'
 import { expect, vi } from 'vitest'
 import * as adminApi from '../api/admin'
 import type { AuditPage, PendingCompanyPage, RoleAssignment } from '../api/admin'
-import type { CompanyDashboard, FeedItem, OfficeOverview, StudentActivity } from '../api/contracts'
 import { ApiError } from '../api/problem'
 import * as roleData from '../api/roleData'
+import type { CompanyDashboard, FeedItem, OfficeOverview, StudentActivity } from '../api/roleData'
 
-// MOCK API for the role home pages (#122).
-// - Student, office and company pages: endpoints are PROPOSED in src/api/contracts.ts and depend on
-//   listings and responses (M2/M3). When they land, update `fixtures` to their real responses.
-// - Administrator pages: real endpoints (src/api/admin.ts); `adminFixtures` follow the generated
-//   OpenAPI types and only stand in for the backend inside component tests.
+// MOCK API for component tests of the role pages (#122). Runtime pages always call the real
+// backend; these fixtures only stand in for it inside Vitest. Shapes come from the generated
+// OpenAPI schema (src/api/schema.d.ts), so a backend contract change fails typecheck here.
 //
 // Usage in a test file (paths relative to the test file; vi.mock must be at top level):
 //   vi.mock('../../api/roleData')    or    vi.mock('../../api/admin')
 //   beforeEach(() => mockRoleApi())        beforeEach(() => mockAdminApi())
 //   mockRoleApi({ getOfficeOverview: () => apiFailure(500) })   // override one endpoint
 //
-// All data is synthetic placeholder wording from the core wireframes, not real records.
+// All data is synthetic placeholder wording from the core wireframes, not real records. Labels
+// (type, sourceLabel) are the backend's display labels.
 
 export const fixtures = {
   feed: [
     {
-      id: 'feed-1',
+      id: '0190eeee-0000-7000-8000-000000000001',
       title: 'Community Health Data Project',
       source: 'University Office',
+      sourceLabel: 'Verified UPRM institution',
       postedAt: '2026-11-08T16:00:00Z',
-      type: 'Capstone',
+      type: 'Capstone sponsorship',
       summary:
         'Collaborate with a local team to build a practical data dashboard for community health outreach.',
       tags: ['Data science', 'Team project'],
     },
     {
-      id: 'feed-2',
+      id: '0190eeee-0000-7000-8000-000000000002',
       title: 'Summer Software Internship',
       source: 'Northstar Labs',
+      sourceLabel: 'Approved external company',
       postedAt: '2026-11-05T16:00:00Z',
       type: 'Internship',
       summary:
@@ -49,23 +50,23 @@ export const fixtures = {
     stats: { published: 8, newResponses: 12, drafts: 2 },
     recent: [
       {
-        id: 'office-1',
+        id: '0190eeee-0000-7000-8000-000000000011',
         title: 'Community Health Data Project',
-        type: 'Capstone',
+        type: 'Capstone sponsorship',
         newResponses: 6,
         status: 'PUBLISHED',
       },
       {
-        id: 'office-2',
+        id: '0190eeee-0000-7000-8000-000000000012',
         title: 'Student Research Assistant',
-        type: 'Research',
+        type: 'Research position',
         newResponses: 3,
         status: 'PUBLISHED',
       },
       {
-        id: 'office-3',
-        title: 'Fall Volunteer Orientation',
-        type: 'Event',
+        id: '0190eeee-0000-7000-8000-000000000013',
+        title: 'Fall Research Participation Study',
+        type: 'Research participation',
         newResponses: null,
         status: 'DRAFT',
       },
@@ -73,26 +74,26 @@ export const fixtures = {
   } satisfies OfficeOverview,
 
   companyDashboard: {
-    stats: { activeListings: 4, responses: 17, profileStatus: 'COMPLETE' },
+    stats: { activeListings: 4, responses: 17, approvalStatus: 'APPROVED' },
     active: [
       {
-        id: 'company-1',
+        id: '0190eeee-0000-7000-8000-000000000021',
         title: 'Summer Software Internship',
         type: 'Internship',
         closesAt: '2027-06-14T16:00:00Z',
         responses: 9,
       },
       {
-        id: 'company-2',
+        id: '0190eeee-0000-7000-8000-000000000022',
         title: 'Nonprofit Website Redesign',
-        type: 'Capstone project',
+        type: 'Capstone sponsorship',
         closesAt: '2027-05-30T16:00:00Z',
         responses: 5,
       },
       {
-        id: 'company-3',
-        title: 'Community Tech Workshop',
-        type: 'Event',
+        id: '0190eeee-0000-7000-8000-000000000023',
+        title: 'Junior Data Analyst',
+        type: 'Job',
         closesAt: '2027-05-22T16:00:00Z',
         responses: 1,
       },
@@ -101,9 +102,8 @@ export const fixtures = {
   } satisfies CompanyDashboard,
 }
 
-// ---- Administrator pages: REAL endpoints on main (#10, #15, #16) ----
-// Shapes follow the generated OpenAPI schema (src/api/schema.d.ts), so a backend change that breaks
-// them fails typecheck here. IDs are synthetic UUIDs.
+// ---- Administrator pages (src/api/admin.ts; #10, #15, #16) ----
+// IDs are synthetic UUIDs.
 
 export const ADMIN_IDS = {
   admin: '0190aaaa-0000-7000-8000-000000000001',
@@ -200,8 +200,8 @@ type RoleApi = typeof roleData
 type Overrides = { [K in keyof RoleApi]?: RoleApi[K] }
 
 /** A rejected call shaped like a backend problem+json error. */
-export const apiFailure = (status: number): Promise<never> =>
-  Promise.reject(new ApiError(status, { status, title: 'Synthetic test failure' }))
+export const apiFailure = (status: number, detail?: string): Promise<never> =>
+  Promise.reject(new ApiError(status, { status, title: 'Synthetic test failure', detail }))
 
 /** A call that never settles, for asserting loading states. */
 export const pending = (): Promise<never> => new Promise(() => {})

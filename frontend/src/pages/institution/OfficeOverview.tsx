@@ -1,7 +1,5 @@
-import type { ListingStatus } from '../../api/contracts'
-import { getOfficeOverview } from '../../api/roleData'
-import { useApiData } from '../../api/useApiData'
-import { AsyncContent } from '../../components/AsyncContent'
+import { getOfficeOverview, type ListingStatus } from '../../api/roleData'
+import { OrganizationScope } from '../../components/OrganizationScope'
 import {
   EmptyState,
   PageHeading,
@@ -21,8 +19,6 @@ const STATUS_LABEL: Record<ListingStatus, string> = {
 const PENDING_NOTE_ID = 'office-pending-note'
 
 export function OfficeOverview() {
-  const overview = useApiData(getOfficeOverview)
-
   return (
     <>
       <PageHeading
@@ -38,7 +34,11 @@ export function OfficeOverview() {
         Creating and editing opportunities opens with the publisher screens (#20).
       </p>
 
-      <AsyncContent result={overview} loadingLabel="Loading your office overview…">
+      <OrganizationScope
+        kind="office or department"
+        load={getOfficeOverview}
+        loadingLabel="Loading your office overview…"
+      >
         {({ stats, recent }) => (
           <>
             <StatTiles label="Office summary">
@@ -91,7 +91,7 @@ export function OfficeOverview() {
             </Panel>
           </>
         )}
-      </AsyncContent>
+      </OrganizationScope>
     </>
   )
 }

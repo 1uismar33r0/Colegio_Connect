@@ -4,7 +4,7 @@ Observation date: **2026-10-26**. Baseline: [`main` at `1714e5e0f000f9ad4a2ff6a0
 
 ## Authority and scope
 
-**Issue #122 dashboard checkpoint (2026-11-10):** PR #127 supplies persisted reads for discovery, student activity, office/company summaries and moderator review. Revised V6 supports organization and capstone-team ownership with three approved trust labels; 18 deterministic backend feed-filter cases cover category, source, organization, Puerto Rico deadline, keyword and combinations. This partially supports O1/O2/O3 but does not accept I1–I9: listing publishing/write flows, student project review and sponsorship, external applicant registration, frontend filter integration, complete privacy/performance evidence and team review remain. The six approved categories are preserved; `Event` is excluded. See [dashboard contract](../roles/dashboard-api-contract.md) and [TE-15](../testing/test-evidence.md#te-15).
+**Issue #122 dashboard checkpoint (2026-11-10):** PR #127 supplies persisted reads for discovery, student activity, office/company summaries and moderator review. Revised V6 supports organization and capstone-team ownership with three approved trust labels; 18 deterministic backend feed-filter cases cover category, source, organization, Puerto Rico deadline, keyword and combinations. This partially supports O1/O2/O3 but does not accept I1–I9: listing publishing/write flows, student project review and sponsorship, external applicant registration, complete privacy/performance evidence and team review remain. Frontend filter integration is on `feat/issue-122-role-pages` ([TE-14](../testing/test-evidence.md#te-14) run 3). The six approved categories are preserved; `Event` is excluded. See [dashboard contract](../roles/dashboard-api-contract.md) and [TE-15](../testing/test-evidence.md#te-15).
 
 The authoritative source is the approved, 30-page **Colegio Connect Proposal.pdf**, preserved as [approved-proposal.pdf](sources/approved-proposal.pdf), SHA-256 `88038171ef23ffbd42bcbe38cd0ec5177240e42ab010fb6fbed96107b1b8f98c`. The alternative DOCX is not the baseline. Page references below mean PDF page numbers. Live issue bodies and PR metadata were captured on 2026-10-26; links identify the remote sources, which may change after that date.
 
@@ -456,14 +456,15 @@ Source: [#122](https://github.com/1uismar33r0/Colegio_Connect/issues/122). It wa
 
 Milestone: **M1 - Access foundation**. Proposal mapping: **O5; I15; Table 8; Figure 3**. The role features themselves remain with their own issues (#16, #20, #22, #23, #31, #33, #37, #39).
 
-Engineering state: **Verified on branch**. Location: `feat/issue-122-role-pages`, in `frontend/src/pages/{student,institution,company,moderation}/`, `frontend/src/components/RoleShell.tsx`, `frontend/src/api/admin.ts` (real endpoints), `frontend/src/api/contracts.ts` (proposed) and `frontend/src/test/mockApi.ts`.
+Engineering state: **Verified on branch**. Location: `feat/issue-122-role-pages`, in `frontend/src/pages/{student,institution,company,moderation}/`, `frontend/src/components/{RoleShell,OrganizationScope}.tsx`, `frontend/src/api/roleData.ts` and `frontend/src/api/admin.ts` (generated OpenAPI types on the typed client), and `frontend/src/test/mockApi.ts` (component tests only).
 
 Evidence / blockers: **TE-14** in [test evidence](../testing/test-evidence.md#te-14).
-- The administrator pages use the real `/api/admin/organizations/pending`, `/api/admin/role-assignments` and `/api/admin/audit-events`, and were checked live.
-- The student, office and company pages still use the mock API. Their endpoints depend on listings and responses (M2/M3); open PR #126 proposes a different contract.
-- No account can get `STUDENT` or `COMPANY` yet, and there is no user or organization search.
-- Admin = `MODERATOR` has no ADR on `main`.
-- Team review and hosted CI are pending.
+- All four role areas read real, authorized backend data: the dashboard reads from PR #127 (merged 2026-11-11) and the administrator endpoints from #10/#15/#16. Runtime pages no longer use mock data.
+- The student feed uses the approved filters (category, keyword, `sourceLabel`, `organizationId`, Puerto Rico `deadlineOnOrBefore`) and shows `sourceLabel` apart from `source`. The company page shows the persisted `approvalStatus`, including the pending owner's read-only view.
+- Several eligible organizations: the office and company pages ask for an organization ID after the backend's 409. **Backend dependency:** no endpoint lists a user's organizations, so the user must enter the ID.
+- Checked in a real browser (headless Chrome) against a disposable backend seeded with synthetic data.
+- Write flows (save, respond, publish, report, review) remain disabled until their endpoints exist. No account can get `STUDENT` or `COMPANY` through the API, and there is no user search.
+- Admin = `MODERATOR` has no ADR on `main`. Team review and hosted CI are pending.
 
 ### Issue #14: Frontend: register, verify and login screens
 

@@ -1,29 +1,36 @@
 import { useCallback, useId, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
-import type { FeedItem, StudentFeedFilters } from '../../api/contracts'
-import { getStudentActivity, getStudentFeed } from '../../api/roleData'
+import { uuidError } from '../../api/ids'
+import { FEED_PAGE_SIZE, OPPORTUNITY_CATEGORIES, SOURCE_LABELS } from '../../api/listingOptions'
+import {
+  getStudentActivity,
+  getStudentFeed,
+  type FeedItem,
+  type StudentFeedFilters,
+} from '../../api/roleData'
 import { useApiData } from '../../api/useApiData'
 import { AsyncContent } from '../../components/AsyncContent'
 import { EmptyState, PageHeading, Panel, StatusPill } from '../../components/PagePieces'
+import { Pager } from '../../components/Pager'
 import { shortDate } from '../format'
-
-// Wireframe placeholders; the real categories and fields come from the listing model (#18).
-const TYPE_OPTIONS = ['Internship', 'Capstone sponsorship', 'Event']
-const FIELD_OPTIONS = ['Technology', 'Community']
 
 const PENDING_NOTE_ID = 'discover-pending-note'
 
 export function StudentDiscover() {
-  const [filters, setFilters] = useState<StudentFeedFilters>({})
-  const loadFeed = useCallback(() => getStudentFeed(filters), [filters])
+  const [query, setQuery] = useState<{ filters: StudentFeedFilters; page: number }>({
+    filters: {},
+    page: 0,
+  })
+  const loadFeed = useCallback(() => getStudentFeed(query.filters, query.page), [query])
   const feed = useApiData(loadFeed)
   const activity = useApiData(getStudentActivity)
+  const filtered = Object.values(query.filters).some(Boolean)
 
   return (
     <>
       <PageHeading
         title="Find your next opportunity"
-        description="Explore internships, projects, events, and capstone sponsorships."
+        description="Explore jobs, internships, co-ops, research and capstone sponsorships."
         action={
           <Link className="button-link secondary" to="/student/responses">
             View my responses
@@ -31,7 +38,7 @@ export function StudentDiscover() {
         }
       />
 
-      <FeedFilters onApply={setFilters} />
+      <FeedFilters onApply={(filters) => setQuery({ filters, page: 0 })} />
 
       <div className="columns">
         <section aria-labelledby="feed-heading">
@@ -42,15 +49,29 @@ export function StudentDiscover() {
           <AsyncContent result={feed} loadingLabel="Loading opportunities…">
             {(items) =>
               items.length === 0 ? (
-                <EmptyState>No opportunities match these filters yet.</EmptyState>
+                <EmptyState>
+                  {query.page > 0
+                    ? 'There are no more opportunities.'
+                    : filtered
+                      ? 'No opportunities match these filters.'
+                      : 'There are no open opportunities right now.'}
+                </EmptyState>
               ) : (
-                <ul className="card-list">
-                  {items.map((item) => (
-                    <li key={item.id}>
-                      <OpportunityCard item={item} />
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <ul className="card-list">
+                    {items.map((item) => (
+                      <li key={item.id}>
+                        <OpportunityCard item={item} />
+                      </li>
+                    ))}
+                  </ul>
+                  <Pager
+                    label="Opportunity pages"
+                    page={query.page}
+                    hasNext={items.length === FEED_PAGE_SIZE}
+                    onChange={(page) => setQuery((q) => ({ ...q, page }))}
+                  />
+                </>
               )
             }
           </AsyncContent>
@@ -87,49 +108,95 @@ export function StudentDiscover() {
 
 function FeedFilters({ onApply }: { onApply: (filters: StudentFeedFilters) => void }) {
   const id = useId()
-  const [keyword, setKeyword] = useState('')
-  const [type, setType] = useState('')
-  const [field, setField] = useState('')
+  const [organizationError, setOrganizationError] = useState<string>()
 
-  const submit = (e: FormEvent) => {
+  const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    const form = e.currentTarget
+    const data = new FormData(form)
+    const value = (name: string) => String(data.get(name) ?? '').trim() || undefined
+    const organizationId = value('organizationId')?.toLowerCase()
+
+    const problem = organizationId ? uuidError(organizationId, 'organization ID') : undefined
+    setOrganizationError(problem)
+    if (problem) {
+      // Open the disclosure first; a field inside a closed <details> can't take focus.
+      form.querySelector('details')?.setAttribute('open', '')
+      form.querySelector<HTMLElement>('[name="organizationId"]')?.focus()
+      return
+    }
     onApply({
-      keyword: keyword.trim() || undefined,
-      type: type || undefined,
-      field: field || undefined,
+      keyword: value('keyword'),
+      category: value('category'),
+      sourceLabel: value('sourceLabel'),
+      deadlineOnOrBefore: value('deadlineOnOrBefore'),
+      organizationId,
     })
   }
 
   return (
-    <form className="filters" role="search" aria-label="Filter opportunities" onSubmit={submit}>
+    <form
+      className="filters"
+      role="search"
+      aria-label="Filter opportunities"
+      onSubmit={submit}
+      noValidate
+    >
       <div className="filter">
         <label htmlFor={`${id}-keyword`}>Keyword</label>
+        <input id={`${id}-keyword`} name="keyword" type="search" placeholder="Search by keyword" />
+      </div>
+      <div className="filter">
+        <label htmlFor={`${id}-category`}>Category</label>
+        <select id={`${id}-category`} name="category" defaultValue="">
+          <option value="">All categories</option>
+          {OPPORTUNITY_CATEGORIES.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="filter">
+        <label htmlFor={`${id}-source`}>Publisher</label>
+        <select id={`${id}-source`} name="sourceLabel" defaultValue="">
+          <option value="">All verified publishers</option>
+          {SOURCE_LABELS.map((s) => (
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="filter">
+        <label htmlFor={`${id}-deadline`}>Closes on or before</label>
         <input
-          id={`${id}-keyword`}
-          type="search"
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-          placeholder="Search by keyword"
+          id={`${id}-deadline`}
+          name="deadlineOnOrBefore"
+          type="date"
+          aria-describedby={`${id}-deadline-hint`}
         />
+        <span id={`${id}-deadline-hint`} className="hint">
+          Puerto Rico date
+        </span>
       </div>
-      <div className="filter">
-        <label htmlFor={`${id}-type`}>Opportunity type</label>
-        <select id={`${id}-type`} value={type} onChange={(e) => setType(e.target.value)}>
-          <option value="">All opportunity types</option>
-          {TYPE_OPTIONS.map((t) => (
-            <option key={t}>{t}</option>
-          ))}
-        </select>
-      </div>
-      <div className="filter">
-        <label htmlFor={`${id}-field`}>Field of interest</label>
-        <select id={`${id}-field`} value={field} onChange={(e) => setField(e.target.value)}>
-          <option value="">All fields</option>
-          {FIELD_OPTIONS.map((f) => (
-            <option key={f}>{f}</option>
-          ))}
-        </select>
-      </div>
+      <details className="filter more-filters">
+        <summary>More filters</summary>
+        <label htmlFor={`${id}-organization`}>Organization ID</label>
+        <input
+          id={`${id}-organization`}
+          name="organizationId"
+          autoComplete="off"
+          spellCheck={false}
+          aria-invalid={organizationError ? true : undefined}
+          aria-describedby={organizationError ? `${id}-organization-error` : undefined}
+        />
+        {organizationError && (
+          <span id={`${id}-organization-error`} className="field-error">
+            {organizationError}
+          </span>
+        )}
+      </details>
       <button type="submit" className="secondary">
         Apply filters
       </button>
@@ -146,6 +213,10 @@ function OpportunityCard({ item }: { item: FeedItem }) {
           <h3 id={headingId}>{item.title}</h3>
           <p className="hint">
             {item.source} · Posted <time dateTime={item.postedAt}>{shortDate(item.postedAt)}</time>
+          </p>
+          <p className="trust-label">
+            <span aria-hidden="true">✓ </span>
+            {item.sourceLabel}
           </p>
         </div>
         <span className="tag">{item.type}</span>

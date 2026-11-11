@@ -1,7 +1,6 @@
-import type { ProfileStatus } from '../../api/contracts'
-import { getCompanyDashboard } from '../../api/roleData'
-import { useApiData } from '../../api/useApiData'
-import { AsyncContent } from '../../components/AsyncContent'
+import { getCompanyDashboard, type ApprovalStatus } from '../../api/roleData'
+import { Notice } from '../../components/Notice'
+import { OrganizationScope } from '../../components/OrganizationScope'
 import {
   EmptyState,
   PageHeading,
@@ -12,18 +11,16 @@ import {
 } from '../../components/PagePieces'
 import { shortDate, twoDigits } from '../format'
 
-// "Profile status" is an open wireframe question; PENDING_APPROVAL covers the #16 workflow.
-const PROFILE_LABEL: Record<ProfileStatus, string> = {
-  COMPLETE: 'Complete',
-  INCOMPLETE: 'Incomplete',
-  PENDING_APPROVAL: 'Pending approval',
+// The organization's persisted approval state (#16), as the backend reports it.
+const APPROVAL_LABEL: Record<ApprovalStatus, string> = {
+  PENDING: 'Pending approval',
+  APPROVED: 'Approved',
+  REJECTED: 'Not approved',
 }
 
 const PENDING_NOTE_ID = 'company-pending-note'
 
 export function OrgDashboard() {
-  const dashboard = useApiData(getCompanyDashboard)
-
   return (
     <>
       <PageHeading
@@ -40,13 +37,30 @@ export function OrgDashboard() {
         approved.
       </p>
 
-      <AsyncContent result={dashboard} loadingLabel="Loading your organization dashboard…">
+      <OrganizationScope
+        kind="organization"
+        load={getCompanyDashboard}
+        loadingLabel="Loading your organization dashboard…"
+      >
         {({ stats, active, attention }) => (
           <>
+            {stats.approvalStatus === 'PENDING' && (
+              <Notice>
+                Your organization is waiting for administrator approval. You can view this
+                dashboard, but you can't post opportunities until it's approved.
+              </Notice>
+            )}
+            {stats.approvalStatus === 'REJECTED' && (
+              <Notice>
+                Your organization's registration was not approved. Contact an administrator if you
+                think this is a mistake.
+              </Notice>
+            )}
+
             <StatTiles label="Organization summary">
               <StatTile label="Active listings" value={twoDigits(stats.activeListings)} />
               <StatTile label="Student responses" value={twoDigits(stats.responses)} />
-              <StatTile label="Profile status" value={PROFILE_LABEL[stats.profileStatus]} />
+              <StatTile label="Approval status" value={APPROVAL_LABEL[stats.approvalStatus]} />
             </StatTiles>
 
             <div className="columns">
@@ -84,17 +98,17 @@ export function OrgDashboard() {
                   </li>
                   <li className="row">
                     <div>
-                      <strong>Organization profile</strong>
-                      <span className="hint">Keep your identity clear for students</span>
+                      <strong>Organization approval</strong>
+                      <span className="hint">Reviewed by a Colegio Connect administrator</span>
                     </div>
-                    <StatusPill>{PROFILE_LABEL[stats.profileStatus]}</StatusPill>
+                    <StatusPill>{APPROVAL_LABEL[stats.approvalStatus]}</StatusPill>
                   </li>
                 </ul>
               </Panel>
             </div>
           </>
         )}
-      </AsyncContent>
+      </OrganizationScope>
     </>
   )
 }

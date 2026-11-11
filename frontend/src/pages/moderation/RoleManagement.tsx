@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router'
 import { assignRole, getRoleAssignments, revokeRole, type RoleAssignment } from '../../api/admin'
+import { isUuid, uuidError } from '../../api/ids'
 import { useApiData } from '../../api/useApiData'
 import { ASSIGNABLE_ROLES, type AssignableRole, type Role } from '../../auth/roles'
 import { describeFailure, useFormSubmit, ValidationFailure } from '../../auth/useFormSubmit'
@@ -17,17 +18,8 @@ const ROLE_LABEL: Record<Role, string> = {
   MODERATOR: 'Administrator / moderator',
 }
 
-const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
 const isAssignable = (role: Role | undefined): role is AssignableRole =>
   (ASSIGNABLE_ROLES as readonly string[]).includes(role ?? '')
-
-function uuidError(value: string, what: string): string | undefined {
-  if (!value) return `Enter the ${what}.`
-  if (!UUID_SHAPE.test(value))
-    return `Enter the full ${what}, like 0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b.`
-  return undefined
-}
 
 /**
  * Wireframe "Accounts": assign and revoke INSTITUTIONAL and MODERATOR roles through
@@ -37,7 +29,7 @@ function uuidError(value: string, what: string): string | undefined {
 export function RoleManagement() {
   const [params, setParams] = useSearchParams()
   const userId = params.get('userId') ?? ''
-  const validUserId = UUID_SHAPE.test(userId) ? userId.toLowerCase() : ''
+  const validUserId = isUuid(userId) ? userId.toLowerCase() : ''
 
   return (
     <>

@@ -50,6 +50,32 @@ describe('role areas', () => {
     },
   )
 
+  it('lets an external-organization account without a role open its read-only dashboard', async () => {
+    // Pending company owners hold no COMPANY role (PR #127); the backend decides what they see.
+    const router = renderWithAuth(
+      routes,
+      '/company',
+      fakeAuth({
+        roles: [],
+        user: { id: '1', email: 'owner@example.test', accountType: 'EXTERNAL_ORGANIZATION' },
+      }),
+    )
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Organization dashboard' }),
+    ).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/company')
+    expect(screen.getByRole('navigation', { name: 'Primary' })).toHaveTextContent('Company')
+  })
+
+  it('keeps a UPRM account without the role out of the company area', () => {
+    const router = renderWithAuth(
+      routes,
+      '/company',
+      fakeAuth({ roles: [], user: { id: '1', email: 'a@upr.edu', accountType: 'UPRM_MEMBER' } }),
+    )
+    expect(router.state.location.pathname).toBe('/forbidden')
+  })
+
   it('sends anonymous visitors to sign in', () => {
     const router = renderWithAuth(routes, '/student', fakeAuth({ status: 'anonymous', user: null }))
     expect(router.state.location.pathname).toBe('/login')

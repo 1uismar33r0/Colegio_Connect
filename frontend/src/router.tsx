@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { createBrowserRouter, type RouteObject } from 'react-router'
+import { AREAS } from './auth/areas'
 import { RequireAuth, RequireRole } from './auth/guards'
 import type { Role } from './auth/roles'
 import { AppLayout, type RouteHandle } from './components/AppLayout'
@@ -41,7 +42,9 @@ function roleArea(
     ...sections.map((s) => ({ to: `/${path}/${s.path}`, label: s.label })),
   ]
   return {
-    element: <RequireRole roles={[role]} />,
+    element: (
+      <RequireRole roles={[role]} accountType={AREAS.find((a) => a.role === role)?.accountType} />
+    ),
     children: [
       {
         path,

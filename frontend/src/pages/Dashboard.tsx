@@ -1,11 +1,10 @@
 import { Link } from 'react-router'
-import { AREAS } from '../auth/areas'
-import { hasAnyRole } from '../auth/roles'
+import { AREAS, canOpenArea } from '../auth/areas'
 import { useAuth } from '../auth/useAuth'
 
 export function Dashboard() {
   const { user, roles } = useAuth()
-  const areas = AREAS.filter((a) => hasAnyRole(roles, [a.role]))
+  const areas = AREAS.filter((a) => canOpenArea(a, roles, user))
 
   return (
     <>

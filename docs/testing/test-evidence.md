@@ -266,8 +266,8 @@ Number note: TE-13 is used on main for #11 and by open PR #123, and TE-15 by ope
   - the administrator pages on real endpoints: Review queue (`GET /api/admin/organizations/pending`), Accounts (`/api/admin/role-assignments`) and Audit log (`GET /api/admin/audit-events`)
   - `Login.tsx` detecting unverified accounts by `problem.code === 'EMAIL_NOT_VERIFIED'` instead of the message text
 - **Data sources:**
-  - **Mock only:** the student, office and company pages read data through `frontend/src/api/roleData.ts`, which calls endpoints proposed in `frontend/src/api/contracts.ts`. Those depend on listings and responses (M2/M3) and don't exist on `main`.
-  - **Real endpoints, mocked in component tests:** the admin pages use `frontend/src/api/admin.ts` on the typed client. Their component tests replace it with the typed fixtures in `frontend/src/test/mockApi.ts`.
+  - **Runs 1–2:** the student, office and company pages used the mock API through a proposed contract (`frontend/src/api/contracts.ts`, now deleted). The admin pages used real endpoints through `frontend/src/api/admin.ts`.
+  - **Run 3:** all four areas call real endpoints through the typed client, using generated OpenAPI types (`roleData.ts`, `admin.ts`). `frontend/src/test/mockApi.ts` only stands in for the backend inside component tests.
   - All data is synthetic.
 - **Run 1, 2026-11-10, mock only:** branch `feat/issue-122-role-pages` from `main` at `5ff99744`, commit `94fd9fa`; Windows 11, Node `24.16.0`, Vitest `5.1.0` (jsdom), axe-core `4.14`.
   - Baseline before the change: 5 files and 22 tests passed.
@@ -292,6 +292,33 @@ Number note: TE-13 is used on main for #11 and by open PR #123, and TE-15 by ope
     - Revoking one's own moderator role returns 400; revoking again returns 404.
     - The audit log holds `ROLE_ASSIGNED` and `ROLE_REVOKED` with the admin as actor and `USER` as target.
   - **Test client note:** the session cookie is `Secure`, and .NET Framework drops it over `http://`. The script re-adds it the way a browser does for `http://localhost`.
+- **Run 3, 2026-11-11 UTC (2026-11-10 Puerto Rico):** `main` at `309ffa9` (PR #127 merged) merged into the branch.
+  - **Merge:** only additive conflicts, in `development-log.md`, `test-evidence.md` and the two generated API files. The generated files were then regenerated from the rebuilt backend; the result matches main's apart from the server URL. OpenAPI 3.1.0, 16 paths.
+  - **Migration (per Gabriel's PR #127 handover):**
+    - **API layer:** `contracts.ts` deleted; `roleData.ts` uses generated `components['schemas']` types and the typed client. The feed sends only the approved filters: `category`, `keyword`, `sourceLabel`, `organizationId`, `deadlineOnOrBefore`, plus `page`/`size`. It never sends `field` or the deprecated `type`.
+    - **Student feed:** the six approved categories, with no `Event`. `sourceLabel` is shown apart from `source`. Dates are formatted in `America/Puerto_Rico`. Paging uses Previous/Next, since the feed returns a plain list.
+    - **Company dashboard:** shows the persisted `approvalStatus` (Pending approval / Approved / Not approved) instead of a derived profile status. A pending owner gets a notice and the read-only view.
+    - **Pending owners and the company area:** a pending owner has no `COMPANY` role, so the `/company` guard and nav now also admit `EXTERNAL_ORGANIZATION` accounts. The backend still answers 403 for any external account without an approved or pending membership.
+    - **Office and company organization choice:** after a 409, the user enters an organization ID, which is kept in `?organizationId=`. The frontend never picks one, rejects malformed IDs before calling the API, and shows the 403 message for an organization the user doesn't belong to.
+    - **Errors:** 401 now shows "Your session has ended" with a sign-in link.
+    - **Unchanged:** the moderator pages keep their current endpoints, and "Reported listings" stays "not available" until reporting (#37) has a write workflow. Save, View details, Create, Post, Manage/Edit and Review stay disabled with the issue that builds them.
+  - **Frontend checks:** typecheck, lint and build exited 0. **`npx vitest run`: 20 files and 177 tests passed.**
+    - Tests added for: the approved filter set and query, the category and publisher lists, organization-ID validation, empty feeds with and without filters, paging, 401, `approvalStatus` (pending and rejected), the 409 picker, an address-bar organization, a malformed ID, and the external-account guard.
+    - `roleData.test.ts` now runs the real typed client with only `fetch` stubbed.
+    - Prettier with `--end-of-line auto` passed. The unmodified `npm run format:check` reported 66 files, all because of Windows CRLF working-tree line endings (see TE-12); Linux CI is authoritative.
+  - **Real-browser check:** headless Google Chrome via `playwright-core` 1.49.1, installed in a scratchpad and not added to the project, ran `ui122-browser.mjs` (scratchpad, not committed). It drove Vite (`VITE_API_TARGET=http://localhost:18090`) against a disposable Compose project, `colegio-ui-122`, on alternate ports, built from the merged code (Flyway V1–V8).
+    - **Seed:** seven synthetic `ui122.*` accounts were registered and verified through the API. Roles, four organizations, a capstone team, six listings (including the `2026-11-21T03:59:59Z` / `04:00:00Z` boundary pair), a save, two responses and a report were inserted with SQL into that disposable database only. Registration accepts only `@upr.edu`, so the company and pending-owner accounts were switched to `EXTERNAL_ORGANIZATION` with `example.test` emails by SQL.
+    - **First result: 45 passed, 1 failed.** At 375px, an administrator's header nav (five links on one non-wrapping row) made the page 448px wide. The fix lets the nav wrap. Two script-side selector and timing fixes followed.
+    - **Final: 46/46 passed on two consecutive runs:**
+      - **Student feed:** shows the five eligible listings and no draft, with source labels kept apart. Each filter returns the expected rows: category, publisher, organization and keyword. Deadline `2026-11-20` keeps `03:59:59Z` and drops `04:00:00Z`. A partial organization ID is refused with focus on the field, and the filtered empty state appears.
+      - **Student activity:** 2 active responses and 1 saved.
+      - **Office:** tiles show 2/1/1, and the backend picked the user's only office. With two offices, the picker appears and validates input; it leads to an empty department and then to a populated office. A foreign organization shows 403.
+      - **Company:** tiles 2/1/Approved. The pending owner reaches the read-only dashboard from Dashboard and sees Pending approval, with posting disabled.
+      - **Moderator:** the queue lists the pending company. Assigning `MODERATOR` to the student lets the student's open session reach moderation on its next load. After revoking with confirmation, the student's next request shows the 403 message. The audit log shows both events.
+      - **Access:** a student is sent from `/institution` to `/forbidden`, and an anonymous visitor to `/login`. Clearing cookies mid-session shows the 401 message.
+      - **Keyboard and accessibility:** Tab reaches the sidebar with a solid focus outline, and Enter opens the section. **axe-core in Chrome with colour contrast enabled** (WCAG 2 A/AA, 2.1 AA, best practice) found no violations on the student, office, picker, company, pending-company, review-queue and accounts pages.
+      - **Layout:** no horizontal scroll at 375px on the student, office, company and audit-log pages.
+    - **Disposable stack:** the `colegio-ui-122` stack is not the developer stack and was removed after the run.
 - **Expected:**
   - For each page: content, loading, empty, retryable error and 403 states.
   - `scope="col"` headers; unbuilt actions disabled, with their accessible description naming the issue that builds them.
@@ -299,17 +326,17 @@ Number note: TE-13 is used on main for #11 and by open PR #123, and TE-15 by ope
   - Role guards admit the matching role and the administrator, and send other roles to `/forbidden` and anonymous visitors to `/login`.
   - The live check returns the statuses, messages and shapes the admin pages rely on.
 - **Actual:** as listed for each run above. jsdom prints `HTMLCanvasElement's getContext() … not implemented` during axe runs; it is a warning only, and those tests pass.
-- **Source:** [Issue #122](https://github.com/1uismar33r0/Colegio_Connect/issues/122), PRs [#124](https://github.com/1uismar33r0/Colegio_Connect/pull/124) and [#125](https://github.com/1uismar33r0/Colegio_Connect/pull/125), the commit containing this record, and the core wireframes on `Issue-13-Wireframes`.
-- **Result:** **Pass** on this branch. That means mock-backed behaviour for the student, office and company pages, and component tests plus a live API check for the admin pages.
+- **Source:** [Issue #122](https://github.com/1uismar33r0/Colegio_Connect/issues/122), PRs [#124](https://github.com/1uismar33r0/Colegio_Connect/pull/124), [#125](https://github.com/1uismar33r0/Colegio_Connect/pull/125) and [#127](https://github.com/1uismar33r0/Colegio_Connect/pull/127), the commit containing this record, and the core wireframes on `Issue-13-Wireframes`.
+- **Result:** **Pass** on this branch. Run 3 covers all four role areas on real backend data, through component tests and a real-browser check against a disposable synthetic backend.
 - **Limitations:**
-  - The student, office and company endpoints are a proposal. Open PR #126 implements a different, unmerged contract, which needs reconciling before these pages switch to real data.
-  - No account can get `STUDENT` or `COMPANY`: registration doesn't assign them and the API refuses them, so only the administrator reaches those areas today.
-  - There is no user search by email, so Accounts looks users up by ID, taken from the audit log.
-  - There is no organization list or search, so `INSTITUTIONAL` needs a pasted organization ID; there is no API that creates UPRM organizations, so a live assign of `INSTITUTIONAL` wasn't exercised.
-  - The live check doesn't drive the React screens in a browser. Colour contrast, a keyboard-only pass and the layout under 760px still need a real browser.
-  - Admin = `MODERATOR` has no ADR on `main`; open PR #123 proposes one.
-  - The plain `npm run format:check` fails on Windows line endings in untouched files, as TE-12 recorded; Linux CI is the authoritative run.
-  - Hosted CI and teammate review are pending. This does not accept I15 or any issue criterion by itself.
+  - **No organization list (backend dependency):** no endpoint lists the organizations a user belongs to. The organization choice and the feed's organization filter take a typed organization ID, and Accounts needs a pasted ID for `INSTITUTIONAL`.
+  - **No user search:** there is no user search by email, so Accounts looks users up by ID taken from the audit log.
+  - **Roles that can't be assigned:** no API assigns `STUDENT` or `COMPANY`, and registration links no pending company owner (`company_application_owners`). The browser check created both with SQL in the disposable database.
+  - **Write flows:** listing creation, saving, responses, reporting and moderation decisions have no write endpoints yet. Their buttons stay disabled.
+  - **Browser coverage:** headless Chrome at 1280px and 375px. No screen reader, Firefox/Safari or touch device was tested.
+  - **Seeding:** the browser seed bypasses the missing write flows with SQL, so it shows the reads work, not how the data gets created.
+  - **No ADR:** admin = `MODERATOR` has no ADR on `main`; open PR #123 proposes one.
+  - **Hosted CI and review:** both are pending. This does not accept I15 or any issue criterion by itself.
 
 <a id="te-15"></a>
 
