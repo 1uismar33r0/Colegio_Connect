@@ -1,6 +1,6 @@
 # ADR 0001 — Hosting selection after resource measurements
 
-**Status: PROPOSED / PENDING APPROVAL.** Updated 2026-10-26. Owner: Gabriel; reviewers: Cristian and Luis; budget/account owner: not assigned. Related [Issue #4](https://github.com/1uismar33r0/Colegio_Connect/issues/4), aliases and exact acceptance in [traceability](../project/traceability.md).
+**Status: Historical multi-provider comparison; Render Free selected for a staging implementation trial in [ADR 0002](0002-render-free-staging.md), not for public provisioning.** Updated 2026-11-10 (trial note); original comparison 2026-10-26. Owner: Gabriel; reviewers: Cristian and Luis; budget/account owner: not assigned. Related [Issue #4](https://github.com/1uismar33r0/Colegio_Connect/issues/4), aliases and exact acceptance in [traceability](../project/traceability.md).
 
 No provider is selected or approved. No recurring payment is authorized. Gabriel reports no provider resources provisioned; this task did not inventory provider accounts. The earlier **$44/month Render recommendation is superseded by a measurement-led decision process**, not by approval of a cheaper configuration.
 
