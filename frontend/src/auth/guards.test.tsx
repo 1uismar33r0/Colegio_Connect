@@ -60,6 +60,16 @@ describe('RequireRole', () => {
     expect(screen.getByRole('heading', { name: 'Student page' })).toBeInTheDocument()
   })
 
+  it('lets the administrator (MODERATOR) through every role guard', () => {
+    renderWithAuth(routes, '/student', fakeAuth({ roles: ['MODERATOR'] }))
+    expect(screen.getByRole('heading', { name: 'Student page' })).toBeInTheDocument()
+  })
+
+  it('does not let other roles stand in for the required one', () => {
+    renderWithAuth(routes, '/student', fakeAuth({ roles: ['INSTITUTIONAL', 'COMPANY'] }))
+    expect(screen.getByRole('heading', { name: 'Forbidden page' })).toBeInTheDocument()
+  })
+
   it('still requires sign-in before checking roles', () => {
     renderWithAuth(routes, '/student', fakeAuth({ status: 'anonymous', user: null }))
     expect(screen.getByRole('heading', { name: 'Login page' })).toBeInTheDocument()

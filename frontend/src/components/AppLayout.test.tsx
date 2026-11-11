@@ -40,10 +40,24 @@ describe('AppLayout', () => {
   })
 
   it('shows only the role areas the user holds', () => {
+    renderWithAuth(routes, '/', fakeAuth({ roles: ['STUDENT'] }))
+    const nav = screen.getByRole('navigation', { name: 'Primary' })
+    expect(nav).toHaveTextContent('Student')
+    expect(nav).not.toHaveTextContent('Moderation')
+    expect(nav).not.toHaveTextContent('Company')
+  })
+
+  it('shows every area to the administrator', () => {
     renderWithAuth(routes, '/', fakeAuth({ roles: ['MODERATOR'] }))
     const nav = screen.getByRole('navigation', { name: 'Primary' })
-    expect(nav).toHaveTextContent('Moderation')
-    expect(nav).not.toHaveTextContent('Student')
+    for (const area of ['Student', 'Institution', 'Company', 'Moderation']) {
+      expect(nav).toHaveTextContent(area)
+    }
+  })
+
+  it('labels the account with the roles it holds', () => {
+    renderWithAuth(routes, '/', fakeAuth({ roles: ['INSTITUTIONAL', 'MODERATOR'] }))
+    expect(screen.getByText('University office, Administrator')).toBeInTheDocument()
   })
 
   it('has no axe violations', async () => {

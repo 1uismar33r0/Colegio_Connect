@@ -38,8 +38,8 @@ export function Login() {
       try {
         await login(email, password)
       } catch (err) {
-        // Unverified accounts get a 403; send them to finish verification.
-        if (err instanceof ApiError && err.status === 403 && /verify/i.test(err.message)) {
+        // Unverified accounts get a 403 with a stable code; send them to finish verification.
+        if (err instanceof ApiError && err.problem.code === 'EMAIL_NOT_VERIFIED') {
           const state: AuthFlowState = {
             email,
             notice:

@@ -1,22 +1,15 @@
 import { useEffect, useRef } from 'react'
 import { NavLink, Outlet, useLocation, useMatches } from 'react-router'
+import { AREAS, accountLabels, canOpenArea } from '../auth/areas'
 import { useAuth } from '../auth/useAuth'
-import { hasAnyRole, type Role } from '../auth/roles'
 
 export type RouteHandle = { title?: string }
 
 const APP_NAME = 'Colegio Connect'
 
-const AREAS: { to: string; label: string; role: Role }[] = [
-  { to: '/student', label: 'Student', role: 'STUDENT' },
-  { to: '/institution', label: 'Institution', role: 'INSTITUTIONAL' },
-  { to: '/company', label: 'Company', role: 'COMPANY' },
-  { to: '/moderation', label: 'Moderation', role: 'MODERATOR' },
-]
-
 export function AppLayout() {
-  const { status, roles, logout } = useAuth()
-  const visibleAreas = AREAS.filter((a) => hasAnyRole(roles, [a.role]))
+  const { status, roles, user, logout } = useAuth()
+  const visibleAreas = AREAS.filter((a) => canOpenArea(a, roles, user))
 
   // Page title: the deepest route that declares handle.title wins.
   const matches = useMatches()
@@ -65,9 +58,14 @@ export function AppLayout() {
         </nav>
         <div className="session">
           {status === 'authenticated' ? (
-            <button type="button" onClick={() => void logout()}>
-              Sign out
-            </button>
+            <>
+              {roles.length > 0 && (
+                <span className="account-role">{accountLabels(roles).join(', ')}</span>
+              )}
+              <button type="button" onClick={() => void logout()}>
+                Sign out
+              </button>
+            </>
           ) : (
             <NavLink to="/login">Sign in</NavLink>
           )}
