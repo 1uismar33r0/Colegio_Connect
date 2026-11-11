@@ -81,11 +81,11 @@ describe('Login', () => {
   })
 
   it.each([
-    [401, 'Invalid email or password.'],
-    [403, 'This account is suspended.'],
-    [429, 'Too many failed attempts. Try again later.'],
-  ])('shows the backend message for %i', async (status, detail) => {
-    vi.mocked(login).mockRejectedValue(apiError(status, { detail }))
+    [401, 'Invalid email or password.', undefined],
+    [403, 'This account is suspended.', 'ACCOUNT_SUSPENDED'],
+    [429, 'Too many failed attempts. Try again later.', undefined],
+  ])('shows the backend message for %i', async (status, detail, code) => {
+    vi.mocked(login).mockRejectedValue(apiError(status, { detail, code }))
     const auth = renderLogin()
 
     await signIn('a@upr.edu', 'wrong-password')
@@ -94,9 +94,9 @@ describe('Login', () => {
     expect(auth.refresh).not.toHaveBeenCalled()
   })
 
-  it('sends unverified accounts to the verify screen with their email', async () => {
+  it('sends unverified accounts (code EMAIL_NOT_VERIFIED) to the verify screen', async () => {
     vi.mocked(login).mockRejectedValue(
-      apiError(403, { detail: 'Verify your email before logging in.' }),
+      apiError(403, { detail: 'Verify your email before logging in.', code: 'EMAIL_NOT_VERIFIED' }),
     )
     renderLogin()
 
@@ -104,6 +104,17 @@ describe('Login', () => {
 
     expect(await screen.findByRole('heading', { name: 'Verify page' })).toBeInTheDocument()
     expect(screen.getByTestId('state')).toHaveTextContent('"email":"new@upr.edu"')
+  })
+
+  it('relies on the code, not the message text, to detect unverified accounts', async () => {
+    // A reworded message must not change behaviour, and a 403 without the code is not "unverified".
+    vi.mocked(login).mockRejectedValue(apiError(403, { detail: 'Please verify something else.' }))
+    renderLogin()
+
+    await signIn('a@upr.edu', 'correct-horse')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Please verify something else.')
+    expect(screen.queryByRole('heading', { name: 'Verify page' })).not.toBeInTheDocument()
   })
 
   it('requires both fields before calling the API', async () => {

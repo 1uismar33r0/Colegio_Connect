@@ -101,7 +101,8 @@ button.secondary {
 
 .app-header nav ul {
   display: flex;
-  gap: 1rem;
+  flex-wrap: wrap; /* an administrator sees every area; keep 375px screens from scrolling sideways */
+  gap: 0.25rem 1rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -186,6 +187,356 @@ button.secondary {
 .field-error {
   margin: 0;
   color: var(--color-error);
+}
+
+/* ---- Role areas (core wireframes, #122) ---- */
+.container:has(.role-shell) {
+  max-width: 76rem;
+}
+
+.app-header .session {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.account-role {
+  color: var(--color-muted);
+}
+
+button.secondary,
+.button-link {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-primary);
+  border-radius: 4px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+button.secondary,
+.button-link.secondary {
+  background: var(--color-bg);
+  color: var(--color-primary);
+}
+
+button.small {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.875rem;
+}
+
+.role-shell {
+  display: grid;
+  grid-template-columns: 13rem minmax(0, 1fr);
+  gap: 2rem;
+}
+
+.role-nav {
+  padding: 1rem 0.5rem;
+  border-right: 1px solid var(--color-border);
+}
+
+.role-nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.role-nav a {
+  display: block;
+  margin: 0.15rem 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.role-nav a[aria-current='page'] {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  font-weight: 700;
+}
+
+.role-content {
+  min-width: 0;
+}
+
+.page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.page-heading h1 {
+  margin: 0 0 0.25rem;
+}
+
+.page-heading + .hint {
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.filter {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.filter input,
+.filter select {
+  font: inherit;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(14rem, 0.8fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.columns h2,
+.panel h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.125rem;
+}
+
+.card-list,
+.rows,
+.tags,
+.stat-tiles {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card,
+.panel,
+.stat-tile {
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg);
+}
+
+.card-list li + li,
+.panel + .panel {
+  margin-top: 0.75rem;
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.card h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.tag,
+.status-pill {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.card-actions,
+.inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.inline-actions {
+  margin-top: 0;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--color-surface);
+}
+
+.row:first-child {
+  border-top: 0;
+}
+
+.row strong,
+.row .hint {
+  display: block;
+}
+
+.stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.stat-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--color-muted);
+}
+
+.stat-value {
+  font-size: 1.5rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid var(--color-surface);
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.empty-state {
+  color: var(--color-muted);
+}
+
+.field select {
+  font: inherit;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.lookup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.lookup .field {
+  flex: 1 1 22rem;
+  margin-bottom: 0;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.confirm {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+}
+
+.confirm p {
+  margin-top: 0;
+}
+
+td code,
+.scope code {
+  font-size: 0.8125rem;
+  word-break: break-all;
+}
+
+/* Verified publisher type, kept apart from the publisher name (PR #127). */
+.trust-label {
+  margin: 0.25rem 0 0;
+  color: var(--color-primary); /* 8.74:1 */
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.more-filters summary {
+  cursor: pointer;
+  color: var(--color-primary);
+}
+
+.more-filters[open] {
+  flex-basis: 100%;
+}
+
+/* Wireframe: one column below 760px; the sidebar becomes a horizontal strip. */
+@media (max-width: 760px) {
+  .role-shell,
+  .columns,
+  .stat-tiles {
+    grid-template-columns: 1fr;
+  }
+
+  .role-shell {
+    gap: 1rem;
+  }
+
+  .role-nav {
+    padding: 0 0 0.5rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+    overflow-x: auto;
+  }
+
+  .role-nav ul {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .role-nav a {
+    white-space: nowrap;
+  }
+
+  .page-heading {
+    flex-direction: column;
+  }
 }
 
 /* ---- Auth forms (Issue #14) ---- */

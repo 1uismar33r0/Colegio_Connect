@@ -5,6 +5,8 @@ export type ProblemDetail = {
   detail?: string
   instance?: string
   errors?: Record<string, string>
+  /** Stable machine-readable reason, e.g. login 403s: EMAIL_NOT_VERIFIED, ACCOUNT_SUSPENDED. */
+  code?: string
 }
 
 export class ApiError extends Error {

@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { Loading } from '../components/Loading'
+import type { AccountType } from './areas'
 import { hasAnyRole, type Role } from './roles'
 import { useAuth } from './useAuth'
 
@@ -29,8 +30,17 @@ export function RequireAuth() {
   return <Outlet />
 }
 
-export function RequireRole({ roles }: { roles: readonly Role[] }) {
-  const { roles: userRoles } = useAuth()
-  if (!hasAnyRole(userRoles, roles)) return <Navigate to="/forbidden" replace />
+export function RequireRole({
+  roles,
+  accountType,
+}: {
+  roles: readonly Role[]
+  /** Also admit this account type without the role (see AREAS). */
+  accountType?: AccountType
+}) {
+  const { roles: userRoles, user } = useAuth()
+  const allowed =
+    hasAnyRole(userRoles, roles) || (accountType !== undefined && user?.accountType === accountType)
+  if (!allowed) return <Navigate to="/forbidden" replace />
   return <Outlet />
 }
