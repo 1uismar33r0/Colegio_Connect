@@ -1,6 +1,6 @@
-# Render Free staging runbook (pre-provisioning)
+# Render Free staging runbook
 
-**State:** local verification on `gabriel/issue-4-render-staging`, created from `main` `309ffa93b7403ae2269251374aeb73ad38e81b34` and merged with approved `main` `f0c4efe133d60e4fcc714838ee5fb43c4e1b76ea` (PR #128 role dashboards). No Colegio Connect Render resource or public URL has been created. Do not apply the Blueprint until team review and explicit deployment authorization. [ADR 0002](../decisions/0002-render-free-staging.md) explains the architecture trial; [TE-16](../testing/test-evidence.md#te-16) records executed checks.
+**State:** the existing `colegio-connect` Free Docker service and `colegio-connect-db` Free PostgreSQL 18 instance were observed in **My Workspace** on 2026-11-10 local / 2026-11-11 UTC. The service's assigned URL is `https://colegio-connect.onrender.com`, but repeated deploys of branch `gabriel/issue-4-render-staging` at `0f5dace8` failed before startup; the URL is **not a verified working application**. The service has automatic deploys off and no custom health-check path, so the current dashboard settings differ from the proposed `render.yaml` (which targets `main` and readiness). Preserve the existing service and unrelated PurpleGlass resources. [APP-01](../bugs/bug-log.md#app-01--render-startup-rejects-a-portless-postgresql-url) tracks the startup fix; [TE-16](../testing/test-evidence.md#te-16) records local verification.
 
 ## Intended request and process path
 
@@ -37,6 +37,8 @@ The proposed [`render.yaml`](../../render.yaml) defines `colegio-connect` as a F
 | `JAVA_TOOL_OPTIONS` | JVM heap and single-CPU tuning | Optional | Image `-Xms64m -Xmx256m -XX:+UseSerialGC -XX:ActiveProcessorCount=1` | No | Runtime |
 
 Node 24 and Java 25 are build-image versions, not runtime environment variables. `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD` are set by the entrypoint after parsing the private Render database reference. Never paste a populated connection URL or credentials into Git, PR comments, logs or the report. The startup path is `tini` → entrypoint → loopback Mailpit plus Spring Boot; Spring serves the built Vite files and relative `/api` on the same origin. Render terminates HTTPS and forwards trusted request headers; the staging Spring profile interprets those headers while the existing Secure/HttpOnly/SameSite=Lax session cookie and CSRF header flow remain in force.
+
+**Portless URI fix:** `DATABASE_URL` must be the complete private `postgresql://` or `postgres://` URI, not a hostname or JDBC URL. Its authority may include `:port`; if omitted, the entrypoint uses PostgreSQL's default 5432. `DB_NAME` must match the URI database path, while `DB_USER` and `DB_PASSWORD` remain separately supplied variables. Encode reserved characters in the URI's userinfo; the entrypoint does not parse/decode credential values and never logs them. The URL parser rejects missing/invalid scheme, host, explicit port or database with an error containing no values. **No Render variable changes are needed** for a valid private URI and matching database references. If the next deploy reports a database mismatch, verify the four variables' *sources* in the service dashboard without copying their values. The live secret values were not available through the connected read-only service metadata.
 
 ## Reproduce local verification
 

@@ -22,6 +22,7 @@ RUN apk add --no-cache tini && addgroup --system app && adduser --system --ingro
 WORKDIR /app
 COPY --from=backend-build --chown=app:app /workspace/backend/target/*.jar /app/app.jar
 COPY --from=mailpit-binary /mailpit /usr/local/bin/mailpit
+COPY --chown=app:app infra/render/parse-database-url.sh /app/parse-database-url.sh
 COPY --chown=app:app infra/render/entrypoint.sh /app/entrypoint.sh
 RUN sed -i 's/\r$//' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 USER app:app

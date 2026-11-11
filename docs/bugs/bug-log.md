@@ -60,7 +60,14 @@ Incident status describes a problem, not a feature's engineering acceptance. An 
 
 ## B. Confirmed application defects
 
-No unresolved product defect with reproducible failing application evidence was established by this A1 audit. This does **not** mean the application is defect-free: most product workflows are not implemented, and security/privacy/performance acceptance is not run. Global error handling and its tests are implemented behavior, not evidence of a previously reproduced production incident.
+No unresolved product defect with reproducible failing application evidence was established by the October 26 A1 audit. The later Render incident below is a separate observation.
+
+### APP-01 — Render startup rejects a portless PostgreSQL URL
+
+- **Observed:** 2026-11-10 local / 2026-11-11 UTC, Issue #4, deployed branch `gabriel/issue-4-render-staging` at `0f5dace8`. Render service `colegio-connect` repeatedly failed before Java startup with `Private PostgreSQL URL has no host and port.` The Colegio Free PostgreSQL instance was available; no secret value was inspected or recorded.
+- **Reproduction and cause:** The old `infra/render/entrypoint.sh` required `*:*` in the URL authority. A network-free local image run with a synthetic `postgresql://user:encoded-password@db.internal/database` URL without `:port` failed with the identical message. A PostgreSQL URI may omit the default 5432 port; the unconditional explicit-port check was the confirmed parser bug. The live secret's exact shape could not be read through the connected Render service metadata, so an additional environment mistake cannot be ruled out until the new deploy starts.
+- **Fix and verification:** `infra/render/parse-database-url.sh` validates scheme, host, port and matching database name, defaults an omitted port to 5432, accepts `postgres://` or `postgresql://`, and derives JDBC host/port without logging or decoding URL credentials. `infra/render/test-database-url.mjs` passed 13 synthetic valid/invalid cases, including encoded special characters; output contained no credentials. A capped local app startup against synthetic portless PostgreSQL was tested separately; see [TE-16](../testing/test-evidence.md#te-16).
+- **Status:** local parser fix verified; actual Render restart/deploy and hosted readiness require separate observation. No Render environment variable change is indicated by this reproduction if `DATABASE_URL` is the full private URI and `DB_NAME`, `DB_USER`, `DB_PASSWORD` refer to that same database.
 
 When a real defect is found, record: observation/discovery date, revision/environment, issue/component, safe reproduction, expected/actual result, confirmed or unknown cause, attempted fix, regression test result, status and PR/test links. Never turn an unimplemented requirement or a tool failure into a claimed product bug.
 
