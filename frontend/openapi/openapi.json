@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8080",
+      "url": "http://127.0.0.1:18083",
       "description": "Generated server url"
     }
   ],
@@ -206,6 +206,190 @@
         }
       }
     },
+    "/api/me/activity": {
+      "get": {
+        "tags": [
+          "student-activity-controller"
+        ],
+        "summary": "Current student's saved and active response counts",
+        "operationId": "current",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentActivityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/listings/feed": {
+      "get": {
+        "tags": [
+          "discovery-feed-controller"
+        ],
+        "summary": "Discover published opportunities",
+        "description": "Filters currently eligible, published, unexpired listings. deadlineOnOrBefore is an inclusive America/Puerto_Rico calendar date; listings without a closing time are not published. Results are ordered by publication time and ID; page starts at zero and size is 1 to 100. The old field filter returns 400 because field is not part of the approved model.",
+        "operationId": "find",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Temporary alias for category; remove after Luis migrates.",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sourceLabel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "deadlineOnOrBefore",
+            "in": "query",
+            "description": "Inclusive Puerto Rico local date (YYYY-MM-DD).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FeedItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/institution/overview": {
+      "get": {
+        "tags": [
+          "office-overview-controller"
+        ],
+        "summary": "Institutional overview for a selected authorized organization",
+        "operationId": "current_1",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfficeOverviewResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/company/dashboard": {
+      "get": {
+        "tags": [
+          "company-dashboard-controller"
+        ],
+        "summary": "Company dashboard for a selected approved organization",
+        "operationId": "current_2",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyDashboardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/auth/me": {
       "get": {
         "tags": [
@@ -235,6 +419,50 @@
         "responses": {
           "204": {
             "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/admin/review-queue": {
+      "get": {
+        "tags": [
+          "review-queue-controller"
+        ],
+        "summary": "Review pending companies and reported listings",
+        "description": "Pending verification counts pending company profile checks in the existing approval queue. Results are paged and ordered by persisted receipt time and ID.",
+        "operationId": "find_1",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewQueueResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -523,6 +751,311 @@
         },
         "required": [
           "decision"
+        ]
+      },
+      "StudentActivityResponse": {
+        "type": "object",
+        "properties": {
+          "activeResponses": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "saved": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "activeResponses",
+          "saved"
+        ]
+      },
+      "FeedItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "sourceLabel": {
+            "type": "string"
+          },
+          "postedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "postedAt",
+          "source",
+          "sourceLabel",
+          "summary",
+          "tags",
+          "title",
+          "type"
+        ]
+      },
+      "OfficeOverviewResponse": {
+        "type": "object",
+        "properties": {
+          "stats": {
+            "$ref": "#/components/schemas/OfficeStats"
+          },
+          "recent": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OfficeRecentItem"
+            }
+          }
+        },
+        "required": [
+          "recent",
+          "stats"
+        ]
+      },
+      "OfficeRecentItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "newResponses": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PUBLISHED",
+              "DRAFT",
+              "CLOSED"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "newResponses",
+          "status",
+          "title",
+          "type"
+        ]
+      },
+      "OfficeStats": {
+        "type": "object",
+        "properties": {
+          "published": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "newResponses": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "drafts": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "drafts",
+          "newResponses",
+          "published"
+        ]
+      },
+      "CompanyActiveItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "closesAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "responses": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "closesAt",
+          "id",
+          "responses",
+          "title",
+          "type"
+        ]
+      },
+      "CompanyAttention": {
+        "type": "object",
+        "properties": {
+          "newResponses": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "newResponses"
+        ]
+      },
+      "CompanyDashboardResponse": {
+        "type": "object",
+        "properties": {
+          "stats": {
+            "$ref": "#/components/schemas/CompanyStats"
+          },
+          "active": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompanyActiveItem"
+            }
+          },
+          "attention": {
+            "$ref": "#/components/schemas/CompanyAttention"
+          }
+        },
+        "required": [
+          "active",
+          "attention",
+          "stats"
+        ]
+      },
+      "CompanyStats": {
+        "type": "object",
+        "properties": {
+          "activeListings": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "responses": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "approvalStatus": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED"
+            ]
+          }
+        },
+        "required": [
+          "activeListings",
+          "approvalStatus",
+          "responses"
+        ]
+      },
+      "ReviewQueueItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "submission": {
+            "type": "string"
+          },
+          "submittedBy": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "NEW_ORGANIZATION",
+              "REPORTED_LISTING"
+            ]
+          },
+          "receivedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Unknown for legacy organization records without a UUIDv7 timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "reason",
+          "receivedAt",
+          "submission",
+          "submittedBy"
+        ]
+      },
+      "ReviewQueueResponse": {
+        "type": "object",
+        "properties": {
+          "stats": {
+            "$ref": "#/components/schemas/ReviewQueueStats"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewQueueItem"
+            }
+          }
+        },
+        "required": [
+          "items",
+          "stats"
+        ]
+      },
+      "ReviewQueueStats": {
+        "type": "object",
+        "properties": {
+          "awaitingReview": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "reportedListings": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "pendingVerification": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "awaitingReview",
+          "pendingVerification",
+          "reportedListings"
         ]
       },
       "PendingCompanyPageResponse": {

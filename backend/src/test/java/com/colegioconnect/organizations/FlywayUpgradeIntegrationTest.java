@@ -24,9 +24,9 @@ class FlywayUpgradeIntegrationTest {
     @Autowired private DataSource dataSource;
 
     @Test
-    void v3IdentityDataSurvivesAuditAndCompanyDecisionMigrations() {
+    void v5IdentityAndAuditDataSurvivesDashboardMigrations() {
         String schema = "upgrade_" + UUID.randomUUID().toString().replace("-", "");
-        flyway(schema, MigrationVersion.fromVersion("3")).migrate();
+        flyway(schema, MigrationVersion.fromVersion("5")).migrate();
 
         JdbcTemplate jdbc = new JdbcTemplate(dataSource);
         UUID actorId = UUID.randomUUID();
@@ -47,6 +47,12 @@ class FlywayUpgradeIntegrationTest {
         jdbc.update("INSERT INTO " + schema + ".role_assignments "
                         + "(id, user_id, role, organization_id) VALUES (?, ?, 'COMPANY', ?)",
                 companyAssignmentId, actorId, companyId);
+
+        UUID auditId = UUID.randomUUID();
+        jdbc.update("INSERT INTO " + schema + ".audit_log "
+                        + "(id, actor_id, action, target_type, target_id) "
+                        + "VALUES (?, ?, 'ORGANIZATION_APPROVED', 'ORGANIZATION', ?)",
+                auditId, actorId, companyId);
 
         flyway(schema, null).migrate();
 
@@ -70,13 +76,16 @@ class FlywayUpgradeIntegrationTest {
         assertThat(jdbc.queryForObject(
                 "SELECT version FROM " + schema + ".flyway_schema_history "
                         + "WHERE success = TRUE ORDER BY installed_rank DESC LIMIT 1",
-                String.class)).isEqualTo("5");
+                String.class)).isEqualTo("8");
+        assertThat(jdbc.queryForObject(
+                "SELECT review_received_at FROM " + schema + ".organizations WHERE id = ?",
+                java.time.OffsetDateTime.class, companyId)).isNull();
+        for (String table : new String[] {"listings", "saved_listings", "listing_responses",
+                "listing_reports", "company_application_owners", "capstone_teams"}) {
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM " + schema + "." + table,
+                    Integer.class)).as(table).isZero();
+        }
 
-        UUID auditId = UUID.randomUUID();
-        jdbc.update("INSERT INTO " + schema + ".audit_log "
-                        + "(id, actor_id, action, target_type, target_id) "
-                        + "VALUES (?, ?, 'ORGANIZATION_APPROVED', 'ORGANIZATION', ?)",
-                auditId, actorId, companyId);
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM " + schema + ".audit_log WHERE id = ?",
                 Integer.class, auditId)).isEqualTo(1);

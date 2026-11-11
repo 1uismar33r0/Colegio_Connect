@@ -100,6 +100,77 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current student's saved and active response counts */
+        get: operations["current"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/listings/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Discover published opportunities
+         * @description Filters currently eligible, published, unexpired listings. deadlineOnOrBefore is an inclusive America/Puerto_Rico calendar date; listings without a closing time are not published. Results are ordered by publication time and ID; page starts at zero and size is 1 to 100. The old field filter returns 400 because field is not part of the approved model.
+         */
+        get: operations["find"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/institution/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Institutional overview for a selected authorized organization */
+        get: operations["current_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/company/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Company dashboard for a selected approved organization */
+        get: operations["current_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/me": {
         parameters: {
             query?: never;
@@ -124,6 +195,26 @@ export interface paths {
             cookie?: never;
         };
         get: operations["csrf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/review-queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Review pending companies and reported listings
+         * @description Pending verification counts pending company profile checks in the existing approval queue. Results are paged and ordered by persisted receipt time and ID.
+         */
+        get: operations["find_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -237,6 +328,98 @@ export interface components {
             /** @enum {string} */
             decision: "PENDING" | "APPROVED" | "REJECTED";
             reason?: string;
+        };
+        StudentActivityResponse: {
+            /** Format: int64 */
+            activeResponses: number;
+            /** Format: int64 */
+            saved: number;
+        };
+        FeedItem: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            source: string;
+            sourceLabel: string;
+            /** Format: date-time */
+            postedAt: string;
+            type: string;
+            summary: string;
+            tags: string[];
+        };
+        OfficeOverviewResponse: {
+            stats: components["schemas"]["OfficeStats"];
+            recent: components["schemas"]["OfficeRecentItem"][];
+        };
+        OfficeRecentItem: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            type: string;
+            /** Format: int64 */
+            newResponses: number | null;
+            /** @enum {string} */
+            status: "PUBLISHED" | "DRAFT" | "CLOSED";
+        };
+        OfficeStats: {
+            /** Format: int64 */
+            published: number;
+            /** Format: int64 */
+            newResponses: number;
+            /** Format: int64 */
+            drafts: number;
+        };
+        CompanyActiveItem: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            type: string;
+            /** Format: date-time */
+            closesAt: string;
+            /** Format: int64 */
+            responses: number;
+        };
+        CompanyAttention: {
+            /** Format: int64 */
+            newResponses: number;
+        };
+        CompanyDashboardResponse: {
+            stats: components["schemas"]["CompanyStats"];
+            active: components["schemas"]["CompanyActiveItem"][];
+            attention: components["schemas"]["CompanyAttention"];
+        };
+        CompanyStats: {
+            /** Format: int64 */
+            activeListings: number;
+            /** Format: int64 */
+            responses: number;
+            /** @enum {string} */
+            approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
+        };
+        ReviewQueueItem: {
+            /** Format: uuid */
+            id: string;
+            submission: string;
+            submittedBy: string;
+            /** @enum {string} */
+            reason: "NEW_ORGANIZATION" | "REPORTED_LISTING";
+            /**
+             * Format: date-time
+             * @description Unknown for legacy organization records without a UUIDv7 timestamp
+             */
+            receivedAt: string | null;
+        };
+        ReviewQueueResponse: {
+            stats: components["schemas"]["ReviewQueueStats"];
+            items: components["schemas"]["ReviewQueueItem"][];
+        };
+        ReviewQueueStats: {
+            /** Format: int64 */
+            awaitingReview: number;
+            /** Format: int64 */
+            reportedListings: number;
+            /** Format: int64 */
+            pendingVerification: number;
         };
         PendingCompanyPageResponse: {
             items?: components["schemas"]["PendingCompanyResponse"][];
@@ -450,6 +633,104 @@ export interface operations {
             };
         };
     };
+    current: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StudentActivityResponse"];
+                };
+            };
+        };
+    };
+    find: {
+        parameters: {
+            query?: {
+                keyword?: string;
+                category?: string;
+                /**
+                 * @deprecated
+                 * @description Temporary alias for category; remove after Luis migrates.
+                 */
+                type?: string;
+                sourceLabel?: string;
+                organizationId?: string;
+                /** @description Inclusive Puerto Rico local date (YYYY-MM-DD). */
+                deadlineOnOrBefore?: string;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FeedItem"][];
+                };
+            };
+        };
+    };
+    current_1: {
+        parameters: {
+            query?: {
+                organizationId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["OfficeOverviewResponse"];
+                };
+            };
+        };
+    };
+    current_2: {
+        parameters: {
+            query?: {
+                organizationId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CompanyDashboardResponse"];
+                };
+            };
+        };
+    };
     me: {
         parameters: {
             query?: never;
@@ -485,6 +766,29 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    find_1: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReviewQueueResponse"];
+                };
             };
         };
     };
