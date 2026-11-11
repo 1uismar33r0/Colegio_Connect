@@ -6,7 +6,7 @@
 
 Browser → Render HTTPS → Spring Boot on `$PORT` → private PostgreSQL 18. Vite compiles React once; Spring serves the assets and routes `/api` separately. Spring Security retains server sessions, a Secure/HttpOnly/SameSite=Lax session cookie, and the existing XSRF-TOKEN/X-XSRF-TOKEN flow. Render's proxy headers are interpreted by the staging profile. Mailpit SMTP and UI bind only to `127.0.0.1` inside the web container; no public Mailpit route or port is configured.
 
-`backend/Dockerfile` and `compose.yaml` remain the local development path. The planned root `Dockerfile.render` builds both applications and includes the Mailpit binary. It does not run a Node development server at runtime. `application-render-staging.properties` binds Spring to the Render port, enables a small Hikari pool, exposes status-only health/readiness checks, turns off public Swagger/OpenAPI, and disables registration/resend by default. Local Compose uses the default profile and retains its registration flow.
+`backend/Dockerfile` and `compose.yaml` remain the local development path. The root `Dockerfile.render` builds both applications and includes the Mailpit binary. It does not run a Node development server at runtime. `application-render-staging.properties` binds Spring to the Render port, enables a small Hikari pool, exposes status-only health/readiness checks, turns off public Swagger/OpenAPI, and disables registration/resend by default. Local Compose uses the default profile and retains its registration flow. The image uses a non-root user and `tini`; the entrypoint stops both Java and Mailpit on SIGTERM or if either child exits unexpectedly.
 
 ## Public access boundary
 
@@ -17,7 +17,44 @@ The public React shell and known browser routes may load anonymously; React hand
 - Render Free web: 512 MB/0.1 CPU, idle spin-down after 15 minutes and ephemeral filesystem. Session and Mailpit messages in process/local storage may be lost on spin-down.
 - Render Free PostgreSQL: 256 MB/0.1 CPU, 1 GB, one active Free instance per workspace, expiry after 30 days, no managed backups. The team must plan a fresh staging database or authorized upgrade before the December 12 demonstration.
 - The connected workspace's two PurpleGlass Free web services and paid database are unrelated and must remain untouched. Remaining Free hours and a Colegio database slot require a final dashboard check at authorized provisioning.
-- The local container measurement, Blueprint validation, database recovery, browser checks and current-head CI results will be added here as each phase completes. Do not infer a public HTTPS result from local tests.
+- [TE-16](../testing/test-evidence.md#te-16) records the first local 512 MiB/0.1 CPU image measurement, V1–V8 migration, HTTP smoke, and dependency-recovery test. Browser, hosted HTTPS, current-head CI and secure remote verification still require evidence. The Render CLI's online Blueprint validation returned 401 on this machine; do not treat that as a schema pass.
+
+## Blueprint and environment inventory
+
+The proposed [`render.yaml`](../../render.yaml) defines `colegio-connect` as a Free Docker web service in Oregon, built from `main` with `Dockerfile.render` and root context. Automatic deploys and preview environments are off. `/actuator/health/readiness` is the health path. `colegio-connect-db` is a separate Free PostgreSQL 18 database in Oregon, with public IP access disabled. The Blueprint uses `fromDatabase` references; it must be validated in the authorized Render account before applying. The existing PurpleGlass resources are unrelated. The proposed Blueprint does not create them, reuse them, or affect them.
+
+| Variable | Purpose | Required | Default/source | Sensitive | Phase |
+| --- | --- | --- | --- | --- | --- |
+| `PORT` | Spring public listener | Yes | Blueprint `10000`, Render may supply its port | No | Runtime |
+| `DATABASE_URL` | Private PostgreSQL URL, parsed for host/port | Yes | Render `colegio-connect-db` `connectionString` | Yes | Runtime |
+| `DB_NAME` | JDBC database name | Yes | Render database reference | No | Runtime |
+| `DB_USER` | JDBC username | Yes | Render database reference | Yes | Runtime |
+| `DB_PASSWORD` | JDBC password | Yes | Render database reference | Yes | Runtime |
+| `DB_SSLMODE` | PostgreSQL TLS mode | Optional | `require` in entrypoint; `disable` only for isolated local Docker test | No | Runtime |
+| `APP_REGISTRATION_ENABLED` | Enable registration and resend | Optional | `false` in Blueprint/profile; keep false publicly until secure inbox access is reviewed | No | Runtime |
+| `SPRING_PROFILES_ACTIVE` | Staging Spring configuration | Yes | Image `render-staging` | No | Runtime |
+| `JAVA_TOOL_OPTIONS` | JVM heap and single-CPU tuning | Optional | Image `-Xms64m -Xmx256m -XX:+UseSerialGC -XX:ActiveProcessorCount=1` | No | Runtime |
+
+Node 24 and Java 25 are build-image versions, not runtime environment variables. `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD` are set by the entrypoint after parsing the private Render database reference. Never paste a populated connection URL or credentials into Git, PR comments, logs or the report. The startup path is `tini` → entrypoint → loopback Mailpit plus Spring Boot; Spring serves the built Vite files and relative `/api` on the same origin. Render terminates HTTPS and forwards trusted request headers; the staging Spring profile interprets those headers while the existing Secure/HttpOnly/SameSite=Lax session cookie and CSRF header flow remain in force.
+
+## Reproduce local verification
+
+Use a clean isolated Docker network and synthetic PostgreSQL 18 database; do not reuse a developer database or existing Compose services. Build with `docker build -f Dockerfile.render -t colegio-connect:render-staging-local .`. Run the web image with `--memory 512m --cpus 0.1`, and a separate PostgreSQL 18 container with `--memory 256m --cpus 0.1`. Publish only the web port to host loopback (for example `127.0.0.1:18084:10000`). Supply `DATABASE_URL`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, and **local only** `DB_SSLMODE=disable` from disposable synthetic test values. Run `node infra/render/smoke.mjs http://127.0.0.1:18084`. The script checks the default disabled-registration boundary. For a private synthetic mail-flow test only, start a new disposable app with `APP_REGISTRATION_ENABLED=true` and run `node infra/render/synthetic-mail-smoke.mjs http://127.0.0.1:18084 <temporary-app-container>`; this script reads Mailpit through `docker exec`, does not print the code, and must never target a public service. Remove only the containers/network created for this test when finished. See TE-16 for actual results and exact revision.
+
+## Authorized deployment sequence and evidence gate
+
+1. Obtain Cristian's review of the registration gate, Spring security/CSRF, private DB configuration, and Mailpit isolation; obtain Luis's review of the UI routes and browser behavior. Require green CI at the reviewed commit. These reviews have not occurred yet.
+2. Confirm the account has a Free PostgreSQL slot and sufficient remaining shared Free web instance hours. Render's one-Free-database and 30-day expiry rules are decisive; plan a fresh database/export/import or separately authorized paid continuation before December 12.
+3. In the authorized Render dashboard, connect the private `1uismar33r0/Colegio_Connect` repository to **My Workspace** (`tea-d6sa3j1aae7s73d7js40`), select the reviewed `main` commit/Blueprint, inspect the two proposed Colegio resources and environment references, and validate the Blueprint. Keep auto-deploy off. Do not select or modify PurpleGlass resources. Provisioning requires separate authorization.
+4. After deployment, record the service/deploy ID, exact source SHA, date, HTTPS URL, sanitized health output, signed-out browser routes, actual login/session/CSRF behavior, measured cold-start and memory, Flyway version, and failures in the [Capstone deployment evidence](../reports/midterm/render-deployment-evidence.md). Never infer these from a local container result.
+
+## Troubleshooting, rollback and continuity
+
+- If startup fails, inspect sanitized service logs, profile, port, database-reference presence and Flyway failure. Do not copy credential-bearing URLs into reports. A slow Free cold start is expected in the local 0.1 CPU trial; measure Render's actual health timeout before acceptance.
+- If readiness is 503, check the private database and migration status. Basic process liveness does not prove database readiness. Reconnection was observed locally; hosted behavior remains unverified.
+- If SPA routes show 401/404, confirm the combined image contains `static/index.html` and built assets, and that the requested path is an explicit browser route. API failures must remain JSON/401/403 rather than SPA HTML.
+- If mail is absent, check loopback SMTP and Mailpit process inside a controlled local test. Mailpit's `/tmp` storage is ephemeral. Never expose its UI/API or switch on public registration as a troubleshooting shortcut.
+- Roll back the web service only to a reviewed image compatible with the *current* Flyway schema. Flyway migrations are forward-only here; app rollback does not reverse them. With Free PostgreSQL, no managed backup or durable recovery guarantee exists. Test export/import to a fresh isolated database before relying on it for the final demo. The Free database expires after 30 days and the shared web hours can be exhausted by other Free services in the same workspace.
 
 ## Reference sources
 

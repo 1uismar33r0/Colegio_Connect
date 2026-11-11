@@ -4,11 +4,11 @@ Colegio Connect is a three-developer university capstone project. The planned pl
 
 ## Development status
 
-As rechecked on November 4, 2026, `main` contains the Spring Boot backend foundation, Docker development environment, CI/Dependabot, and the Flyway identity database baseline from merged PRs #88 and #89. PRs #92 and #93 updated Spring Boot to 4.1.2 and springdoc to 3.2.0. Luis's exploratory HTML wireframes remain separate from `main`; no React application is established there. Authentication and business workflows remain incomplete on `main`.
+As rechecked on November 10, 2026, approved `main` at `309ffa93` contains the React/Vite frontend, Spring Boot 4.1.2 backend, server-session authentication, role-aware APIs, Docker Compose development stack, CI, and PostgreSQL 18 Flyway migrations V1–V8. Some role dashboard UI work remains on Luis's separate branch; a merged schema or passing unit suite does not imply every Capstone workflow is accepted. The Render Free staging build in this branch is a preparation PR, not a deployed service.
 
 Start with the [project status and ordered roadmap](docs/project/status.md), [approved proposal and requirement/issue traceability](docs/project/traceability.md), and [verified test evidence](docs/testing/test-evidence.md). The status page records observation dates, exact revisions, contributions and blockers. The architecture below describes the intended system, not completed functionality.
 
-The [development policy](AGENTS.md) makes inspection, proposal alignment, testing, documentation and review part of every task. Historical progress and incidents are linked from the dashboard; the [midterm evidence index](docs/reports/midterm/evidence-index.md) tracks the November 10 report. Hosting remains a [pending decision](docs/decisions/0001-hosting.md); [deployment prerequisites](docs/deployment.md) describe the work still needed.
+The [development policy](AGENTS.md) makes inspection, proposal alignment, testing, documentation and review part of every task. Historical progress and incidents are linked from the dashboard; the [midterm evidence index](docs/reports/midterm/evidence-index.md) tracks the November 10 report. The [Render Free staging runbook](docs/deployment/render-staging.md) and [staging ADR](docs/decisions/0002-render-free-staging.md) describe the proposed deployment, local evidence and review gates. No public Colegio Connect URL exists yet.
 
 ## Planned architecture
 
@@ -24,13 +24,17 @@ The [development policy](AGENTS.md) makes inspection, proposal alignment, testin
 | Path | Purpose |
 | --- | --- |
 | `backend/` | Spring Boot application and backend tests (Cristian) |
-| `frontend/` | React application and frontend tests; `main` currently contains a placeholder |
+| `frontend/` | React/Vite application and frontend tests |
 | `docs/` | Shared project and development documentation |
-| `infra/` | Docker and deployment configuration, to be added by Gabriel |
+| `infra/` | Staging entrypoint and local verification scripts |
 | `e2e/` | End-to-end tests when the application flows exist |
 | `load-tests/` | Load tests when there are endpoints to measure |
 
-Directories without a project contain placeholders until their owners add them. Each owner documents their commands when their project is initialized; Gabriel will document the combined local environment when it exists.
+The local Compose stack and the proposed Render staging image have separate instructions. The staging image is built from the root [`Dockerfile.render`](Dockerfile.render) and is not needed for ordinary development.
+
+## Render Free staging preparation
+
+The proposed [`render.yaml`](render.yaml) defines a Free Docker web service and a separate Free PostgreSQL 18 database, with automatic deploys off. The image combines compiled React assets, Java 25 Spring Boot and loopback-only Mailpit; the browser uses relative `/api` requests on one origin. Public registration and resend are disabled until the team has a reviewed secure way to access verification mail. Build locally with `docker build -f Dockerfile.render -t colegio-connect:render-staging-local .`; follow the [runbook](docs/deployment/render-staging.md) for isolated 512 MiB testing, environment variables, review, provisioning, troubleshooting and rollback. This branch does not create Render resources.
 
 ## Getting started
 
@@ -47,7 +51,7 @@ Requirements: Docker Desktop with Docker Compose.
 1. Copy `.env.example` to `.env`.
 2. Replace `POSTGRES_PASSWORD` in `.env` with a local-only password.
 3. From the repository root, run `docker compose up --build --wait`.
-4. Confirm that `docker compose ps` reports all three services as healthy. Use `docker compose logs -f backend` to follow backend logs when needed.
+4. Confirm that `docker compose ps` reports the services as healthy. Use `docker compose logs -f backend` to follow backend logs when needed.
 
 The stack exposes:
 

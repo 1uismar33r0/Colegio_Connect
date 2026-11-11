@@ -1,0 +1,22 @@
+# Colegio Connect — Render staging evidence for Fall 2026 report
+
+**Observed:** 2026-11-10 local / 2026-11-11 UTC. **Source baseline:** approved `main` `309ffa93b7403ae2269251374aeb73ad38e81b34`; preparation branch `gabriel/issue-4-render-staging`. **State:** local verification in progress, no Render resource deployed. This is a source record for the report, not a replacement report draft. See [TE-16](../../testing/test-evidence.md#te-16) for commands/results and the [runbook](../../deployment/render-staging.md) for configuration.
+
+| Evidence item | State | Observation or missing proof |
+| --- | --- | --- |
+| Build configuration | Implemented and locally verified | `Dockerfile.render` combines Node 24 Vite assets, Java 25 Spring Boot, and private Mailpit; local Docker build succeeded. |
+| Target Render web service | Configured, not provisioned | `colegio-connect`, Free Docker, Oregon, `main` branch, automatic deploy off; public URL and deploy ID **not available**. |
+| Target database | Configured, not provisioned | `colegio-connect-db`, Free PostgreSQL 18, internal reference, no public IP list; real Render creation/version/expiry date **not available**. |
+| Fresh migrations | Implemented and locally verified | Isolated PostgreSQL 18.6 received Flyway V1–V8; eight migration rows. Hosted migration **not verified**. |
+| Frontend/API routes | Implemented and locally verified | Eight SPA routes and a built asset loaded in 19 local HTTP checks; anonymous APIs denied. Hosted browser screenshots, console/network checks and HTTPS **not available**. |
+| Authentication/CSRF | Partly locally verified | Missing CSRF 403; staging registration disabled 503. With a private local-only override, a synthetic account completed Mailpit capture, verification, login, session restoration and role denial. Public staging registration remains disabled. Hosted cookie/proxy behavior **not verified**. |
+| Health/dependency behavior | Implemented and locally verified | Readiness 200, then 503 during isolated database outage, 200 after restart. This is not the proposal's timed recovery acceptance. Actual Render health response **not available**. |
+| Resource observations | Local only | 130.895-second fresh startup under 0.1 CPU; 259.5 MiB web idle observation under 512 MiB cap; Mailpit process `22m` RSS. No sustained peak, concurrent load or hosted CPU/memory evidence. |
+| Mailpit privacy | Locally verified boundary | `netstat` showed SMTP/UI bound only to container loopback; no host port publication. Mailpit does not deliver to Outlook. No safe remote inbox workflow exists; remote verification is **blocked**. |
+| Repository/review | Pending | Blueprint online validation, final-head CI and Cristian/Luis review are required. No merge or provisioning authorized. |
+
+## Suggested Section 8.1 wording for team review
+
+> A Render Free staging configuration was prepared on a branch based on approved `main` `309ffa93`. A local production-style image combines the compiled React frontend, Java 25 Spring Boot API, and loopback-only Mailpit; a separate PostgreSQL 18.6 container applied all eight Flyway migrations. Under a 512 MiB/0.1 CPU web limit, first startup took 130.895 seconds, and one idle observation was 259.5 MiB. Nineteen local HTTP checks passed, including SPA routes, API authorization boundaries, CSRF and readiness; an isolated database outage changed readiness to 503 and reconnection restored 200. A synthetic local account completed email verification and login through private Mailpit. This does not establish hosted HTTPS, remote browser behavior, performance target I3 or recovery target I16. Public registration is disabled because the staging inbox has no reviewed remote-access method. No Colegio Connect Render URL existed at the observation date.
+
+Do not paste this wording into the report without checking the final source SHA and review outcome. If a public deployment is later authorized, add the actual deploy ID, URL, plan/version, date, sanitized health response, signed-out browser screenshots, auth/session result and measured hosted resource values here before changing the report. Free PostgreSQL's 30-day expiry and lack of managed backups must remain visible in any report claim.

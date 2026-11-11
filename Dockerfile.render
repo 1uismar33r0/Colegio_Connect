@@ -1,0 +1,31 @@
+# Render staging only. Local Compose keeps backend/Dockerfile and its own build context.
+FROM node:24-alpine AS frontend-build
+WORKDIR /workspace/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
+FROM eclipse-temurin:25-jdk-alpine AS backend-build
+WORKDIR /workspace/backend
+COPY backend/.mvn/ .mvn/
+COPY backend/mvnw backend/pom.xml ./
+RUN chmod +x mvnw && ./mvnw -B -ntp dependency:go-offline
+COPY backend/src/ src/
+COPY --from=frontend-build /workspace/frontend/dist/ src/main/resources/static/
+RUN ./mvnw -B -ntp package -DskipTests
+
+FROM axllent/mailpit:v1.31.5 AS mailpit-binary
+
+FROM eclipse-temurin:25-jre-alpine
+RUN apk add --no-cache tini && addgroup --system app && adduser --system --ingroup app app
+WORKDIR /app
+COPY --from=backend-build --chown=app:app /workspace/backend/target/*.jar /app/app.jar
+COPY --from=mailpit-binary /mailpit /usr/local/bin/mailpit
+COPY --chown=app:app infra/render/entrypoint.sh /app/entrypoint.sh
+RUN sed -i 's/\r$//' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+USER app:app
+ENV SPRING_PROFILES_ACTIVE=render-staging \
+    JAVA_TOOL_OPTIONS="-Xms64m -Xmx256m -XX:+UseSerialGC -XX:ActiveProcessorCount=1"
+EXPOSE 10000
+ENTRYPOINT ["/sbin/tini", "-g", "--", "/app/entrypoint.sh"]

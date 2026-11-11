@@ -1,0 +1,15 @@
+.git
+.worktrees
+**/.env
+**/.env.*
+.env
+.env.*
+**/node_modules
+**/target
+**/dist
+**/*.log
+**/*.tar
+**/.DS_Store
+docs
+.agents
+.codex

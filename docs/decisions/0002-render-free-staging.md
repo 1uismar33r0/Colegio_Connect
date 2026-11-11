@@ -21,3 +21,7 @@ A database created around November 10 would expire before the December 12 final 
 ## Acceptance gates
 
 A is selected only after an isolated 512 MB container test reports startup time, heap/process memory, Mailpit overhead, HTTP/SPA/auth/CSRF behavior, database migration/restart behavior, and controlled shutdown. A public URL and report claim require a separate authorized Render provisioning step, signed-out HTTPS/browser checks, and teammate review. No proposal performance or recovery indicator is accepted by this local trial.
+
+## Local trial checkpoint (2026-11-10 local)
+
+Trial A built and started with a 512 MiB/0.1 CPU cap. Fresh-schema startup took 130.895 seconds, and the first idle observation after HTTP checks was 259.5 MiB for the combined web container, with Java and Mailpit separately present. The container applied Flyway V1–V8, served eight SPA paths and built assets, kept API/health responses separate, and recovered readiness after an isolated database restart. [TE-16](../testing/test-evidence.md#te-16) records the procedure and limits. This supports continuing Trial A as a staging candidate; it does not establish hosted cold-start reliability, concurrent-load capacity, session durability, or the approved I3/I16 targets. Trial B remains an unimplemented fallback because A has not failed the local resource gate and B would add cross-origin session/CSRF work without reducing Java/Mailpit memory.

@@ -61,6 +61,8 @@ When discovery exists, collect real k6 results for the full documented workload 
 
 ## Evidence preservation and report gate
 
+**Render staging preparation (November 10 local):** [the deployment evidence record](render-deployment-evidence.md) links the local combined-image, PostgreSQL 18, private Mailpit and HTTP checks in [TE-16](../../testing/test-evidence.md#te-16). It explicitly marks the public URL, hosted HTTPS/browser checks, final PR review and Render provisioning as unavailable. Its suggested Section 8.1 wording is for team review only; it is not a deployed-app claim.
+
 Preserve run URLs, source SHAs and a sanitized summary promptly; downloadable CI artifacts/logs may expire. Store only intentional redacted screenshots/reports with date/SHA and clear captions. Exclude tokens, private student information, credentials and live database URLs. A screenshot must show the actual system/run, not a reconstruction.
 
 Before submission, all three members should confirm their contributions, actual review responses, implemented/proposed diagram labels, indicator limitations, report length/date, working repository/webpage access, and every claimed result's evidence. A1 makes the report assembleable; it does not make the midterm report complete or prove milestone acceptance.
