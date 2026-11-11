@@ -1,5 +1,7 @@
 # Deployment prerequisites and verification plan
 
+**November 10 local staging update:** Approved `main` `f0c4efe` includes merged #128 role dashboards. The isolated Issue #4 Render Free preparation branch now has a combined production-style image, a proposed Free PostgreSQL 18 Blueprint and local evidence in the [Render staging runbook](deployment/render-staging.md) and [TE-16](testing/test-evidence.md#te-16). The dated checklist below is the October 26 baseline and should not be read as current source status. No Colegio Connect Render resource, public HTTPS URL or hosted recovery result exists; team review, authenticated Blueprint validation and deployment authorization remain required.
+
 **Updated / observed: 2026-10-26. Status: Blocked for hosted acceptance.** No hosted application was verified. Gabriel reports no provider resources provisioned; A1 did not inspect provider accounts or provision anything. This is a prerequisite checklist for [Issue #4](https://github.com/1uismar33r0/Colegio_Connect/issues/4), not an operational runbook for an existing deployment.
 
 The provider/budget decision remains [PROPOSED / PENDING APPROVAL](decisions/0001-hosting.md). Existing local setup is in [environment.md](environment.md); current PR dependencies are in [project status](project/status.md).

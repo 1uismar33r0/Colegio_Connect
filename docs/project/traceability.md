@@ -168,9 +168,9 @@ Sources: [canonical #4](https://github.com/1uismar33r0/Colegio_Connect/issues/4)
 
 Milestone: **M1 - Access foundation**. Original issue references: Section 3(b), C3 (deadline: end of Week 2). Proposal mapping: **O1, O5; I3, I13, I16; infrastructure enabler; Figure 1**.
 
-Engineering state: **In progress**. Acceptance note: blocked by dependencies below. Location: research and this documentation branch; no deployed service verified.
+Engineering state: **In progress**. Acceptance note: local staging preparation is verified on `gabriel/issue-4-render-staging`, but AC1 and hosted AC2 remain unaccepted. Location: deployment feature branch; no deployed service verified.
 
-Evidence / blockers (apply to every AC below): **TE-00** in [test evidence](../testing/test-evidence.md). Hosting research and the [pending ADR](../decisions/0001-hosting.md) exist. Provider/budget approval, provisioned credentials, HTTPS deployment and measured host CPU/memory are absent; see [deployment prerequisites](../deployment.md).
+Evidence / blockers (apply to every AC below): **TE-16** in [test evidence](../testing/test-evidence.md) records the combined image and isolated Free-sized local checks; [staging ADR 0002](../decisions/0002-render-free-staging.md) and the [Render runbook](../deployment/render-staging.md) record the provisional provider choice and limits. The older [multi-provider ADR](../decisions/0001-hosting.md) remains historical. Team review, authenticated Blueprint validation, provisioning authorization, public HTTPS deployment, and actual Render CPU/memory evidence are absent. Local Docker sizing does not satisfy hosted AC2 or proposal I3/I16.
 
 Exact source description shared by both issues:
 

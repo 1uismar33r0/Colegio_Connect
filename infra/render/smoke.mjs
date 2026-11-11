@@ -14,8 +14,9 @@ async function expect(path, expected, contentType) {
   return response
 }
 
-for (const path of ['/', '/login', '/register', '/dashboard', '/student/discover',
-  '/institution/overview', '/company/dashboard', '/moderation/review-queue']) {
+for (const path of ['/', '/login', '/register', '/dashboard', '/student',
+  '/student/responses', '/institution', '/company', '/moderation',
+  '/moderation/accounts', '/moderation/audit']) {
   await expect(path, 200, 'text/html')
 }
 const root = await fetch(base)
@@ -55,5 +56,22 @@ const registration = await fetch(new URL('/api/auth/register', base), {
 })
 if (registration.status !== 503) throw new Error(`Staging registration gate: ${registration.status}`)
 checks.push('registration with CSRF: 503 (disabled)')
+const requestHeaders = {
+  'Content-Type': 'application/json',
+  Cookie: [xsrf, session].filter(Boolean).join('; '),
+  'X-XSRF-TOKEN': decodeURIComponent(xsrf.split('=')[1]),
+}
+const resend = await fetch(new URL('/api/auth/resend', base), {
+  method: 'POST', headers: requestHeaders,
+  body: JSON.stringify({ email: 'render.disabled@upr.edu' }),
+})
+if (resend.status !== 503) throw new Error(`Staging resend gate: ${resend.status}`)
+checks.push('resend with CSRF: 503 (disabled)')
+const verify = await fetch(new URL('/api/auth/verify', base), {
+  method: 'POST', headers: requestHeaders,
+  body: JSON.stringify({ email: 'render.disabled@upr.edu', code: '000000' }),
+})
+if (verify.status !== 400) throw new Error(`Unknown-account verify: ${verify.status}`)
+checks.push('unknown-account verify: 400')
 console.log(checks.join('\n'))
 console.log(`PASS ${checks.length} local HTTP checks`)

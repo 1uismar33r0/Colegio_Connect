@@ -5,7 +5,10 @@ import { execFileSync } from 'node:child_process'
 const base = process.argv[2]
 const container = process.argv[3]
 if (!base || !container) throw new Error('Pass local app URL and isolated app container name')
-const email = `synthetic.${Date.now()}@upr.edu`
+if (!['localhost', '127.0.0.1'].includes(new URL(base).hostname)) {
+  throw new Error('Synthetic mail smoke is restricted to an explicit loopback URL')
+}
+const email = process.env.SYNTHETIC_EMAIL ?? `synthetic.${Date.now()}@upr.edu`
 const password = 'SyntheticOnly123!'
 let cookies = []
 let token = ''
